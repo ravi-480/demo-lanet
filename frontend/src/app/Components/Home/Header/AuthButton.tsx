@@ -19,7 +19,6 @@ export const AuthButtons = () => {
   const isAuthenticated = !!user;
 
   if (!isClient) {
-    // Return a placeholder with the same dimensions to prevent layout shift
     return <div className="w-[100px] h-[40px]"></div>;
   }
 
@@ -28,7 +27,7 @@ export const AuthButtons = () => {
       <span className="text-white">{user?.name}</span>
       <Button
         onClick={() => dispatch(logout())}
-        className="bg-red-500 hover:bg-red-600"
+        className="bg-red-500 cursor-pointer hover:bg-red-600"
       >
         Logout
       </Button>

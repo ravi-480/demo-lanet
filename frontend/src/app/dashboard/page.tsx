@@ -1,37 +1,241 @@
-// app/dashboard/page.tsx
 "use client";
 
-import { useSelector, useDispatch } from "react-redux";
-import { useRouter } from "next/navigation";
-import { RootState, AppDispatch } from "@/store/store";
-import { logout } from "@/store/authSlice";
+import React, { useState } from "react";
+import Budget from "../Components/DashBoard/Budget";
+import SideBar from "../Components/DashBoard/SideBar";
+import Testimonials from "../Components/DashBoard/Testimonial";
+import Bottom from "../Components/DashBoard/Bottom";
+import EventDisplay from "../Components/DashBoard/EventDisplay";
+import Welcome from "../Components/DashBoard/Welcome";
 import AuthGuard from "../Components/Home/AuthGuard/AuthGuard";
+import { Expense } from "@/Interface/interface";
+
+// Types
+type EventStatus = "upcoming" | "in-progress" | "completed" | "draft";
+type EventCategory =
+  | "wedding"
+  | "corporate"
+  | "birthday"
+  | "conference"
+  | "other";
+
+interface Event {
+  id: string;
+  name: string;
+  date: string;
+  time: string;
+  location: string;
+  budget: {
+    allocated: number;
+    spent: number;
+  };
+  rsvp: {
+    confirmed: number;
+    total: number;
+  };
+  status: EventStatus;
+  category: EventCategory;
+  image?: string;
+}
+
+// Sample data
+const sampleEvents: Event[] = [
+  {
+    id: "1",
+    name: "Company Annual Meeting",
+    date: "2025-05-15",
+    time: "10:00 AM",
+    location: "Grand Convention Center",
+    budget: {
+      allocated: 5000,
+      spent: 2400,
+    },
+    rsvp: {
+      confirmed: 15,
+      total: 20,
+    },
+    status: "upcoming",
+    category: "corporate",
+    image: "/api/placeholder/400/200",
+  },
+  {
+    id: "2",
+    name: "Smith Wedding",
+    date: "2025-06-20",
+    time: "4:00 PM",
+    location: "Seaside Resort",
+    budget: {
+      allocated: 15000,
+      spent: 9800,
+    },
+    rsvp: {
+      confirmed: 78,
+      total: 100,
+    },
+    status: "upcoming",
+    category: "wedding",
+    image: "/api/placeholder/400/200",
+  },
+  {
+    id: "3",
+    name: "Product Launch",
+    date: "2025-04-10",
+    time: "2:00 PM",
+    location: "Tech Hub",
+    budget: {
+      allocated: 8000,
+      spent: 7900,
+    },
+    rsvp: {
+      confirmed: 45,
+      total: 50,
+    },
+    status: "draft",
+    category: "corporate",
+    image: "/api/placeholder/400/200",
+  },
+  {
+    id: "4",
+    name: "Quarterly Team Retreat",
+    date: "2025-03-15",
+    time: "9:00 AM",
+    location: "Mountain Lodge",
+    budget: {
+      allocated: 3000,
+      spent: 3200,
+    },
+    rsvp: {
+      confirmed: 18,
+      total: 18,
+    },
+    status: "completed",
+    category: "corporate",
+    image: "/api/placeholder/400/200",
+  },
+];
+
+const sampleExpenses: Expense[] = [
+  {
+    id: "e1",
+    eventId: "1",
+    date: "2025-04-01",
+    vendor: "ABC Catering",
+    amount: 1200,
+    category: "Food & Drinks",
+  },
+  {
+    id: "e2",
+    eventId: "1",
+    date: "2025-04-05",
+    vendor: "Sound Systems Inc",
+    amount: 800,
+    category: "Equipment",
+  },
+  {
+    id: "e3",
+    eventId: "2",
+    date: "2025-04-10",
+    vendor: "Floral Designs",
+    amount: 1500,
+    category: "Decoration",
+  },
+  {
+    id: "e4",
+    eventId: "2",
+    date: "2025-04-12",
+    vendor: "Wedding Photographer",
+    amount: 2500,
+    category: "Services",
+  },
+  {
+    id: "e5",
+    eventId: "3",
+    date: "2025-04-15",
+    vendor: "Promo Materials",
+    amount: 1200,
+    category: "Marketing",
+  },
+];
 
 const Dashboard = () => {
-  const router = useRouter();
-  const dispatch = useDispatch<AppDispatch>();
-  const { user } = useSelector((state: RootState) => state.auth);
+  const [activeTab, setActiveTab] = useState<
+    "all" | "upcoming" | "past" | "drafts"
+  >("all");
 
-  const handleLogout = () => {
-    dispatch(logout());
-    router.replace("/login");
+  // Filter events based on active tab
+  const filteredEvents = sampleEvents.filter((event) => {
+    if (activeTab === "all") return true;
+    if (activeTab === "upcoming") return event.status === "upcoming";
+    if (activeTab === "past") return event.status === "completed";
+    if (activeTab === "drafts") return event.status === "draft";
+    return true;
+  });
+
+  // Calculate budget statistics
+  const totalBudget = sampleEvents.reduce(
+    (sum, event) => sum + event.budget.allocated,
+    0
+  );
+  const totalSpent = sampleEvents.reduce(
+    (sum, event) => sum + event.budget.spent,
+    0
+  );
+  const remainingBudget = totalBudget - totalSpent;
+
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(amount);
+  };
+
+  // Get badge color based on budget status
+  const getBudgetStatusColor = (allocated: number, spent: number) => {
+    const ratio = spent / allocated;
+    if (ratio > 1) return "bg-red-100 text-red-800";
+    if (ratio > 0.8) return "bg-yellow-100 text-yellow-800";
+    return "bg-green-100 text-green-800";
   };
 
   return (
     <AuthGuard>
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
-        <div className="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md">
-          <h1 className="text-2xl font-bold text-center text-[#d4c99e]">
-            Welcome, {user?.name}
-          </h1>
-          <div className="mt-4 text-center">
-            <button
-              onClick={handleLogout}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
-            >
-              Logout
-            </button>
+      <div className="min-h-screen bg-gray-900">
+        <div className="container mx-auto px-4 py-8">
+          {/* Welcome Section */}
+          <Welcome filteredEvents={filteredEvents} />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Content */}
+            <div className="lg:col-span-2">
+              {/* Events Display */}
+              <EventDisplay
+                events={sampleEvents}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                formatCurrency={formatCurrency}
+                getBudgetStatusColor={getBudgetStatusColor}
+              />
+
+              {/* Budget Summary Section */}
+              <Budget
+                expenses={sampleExpenses}
+                totalBudget={totalBudget}
+                totalSpent={totalSpent}
+                remainingBudget={remainingBudget}
+                events={sampleEvents}
+                formatCurrency={formatCurrency}
+              />
+            </div>
+
+            {/* Sidebar */}
+            <SideBar />
           </div>
+
+          {/* Testimonials Section */}
+          <Testimonials />
+
+          {/* Bottom Section */}
+          <Bottom />
         </div>
       </div>
     </AuthGuard>

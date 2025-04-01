@@ -2,32 +2,8 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
 import type { RootState } from "./store";
 import Cookies from "js-cookie";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-}
-
-interface LoginResponse {
-  user: User;
-  token: string;
-}
-
-interface SignupResponse {
-  success: boolean;
-  message: string;
-}
-
-interface ForgotPasswordResponse {
-  success: boolean;
-  message: string;
-}
-
-interface ResetPasswordResponse {
-  success: boolean;
-  message: string;
-}
+import { LoginResponse, StandardResponse } from "@/Interface/interface";
+import { User } from "@/Types/type";
 
 interface AuthState {
   user: User | null;
@@ -43,6 +19,7 @@ interface AuthState {
   resetPasswordMessage: string | null;
 }
 
+// Initialize state from cookies
 const storedUser = Cookies.get("user")
   ? JSON.parse(Cookies.get("user")!)
   : null;
@@ -62,145 +39,109 @@ const initialState: AuthState = {
   resetPasswordMessage: null,
 };
 
-// Existing login and signup thunks
+// Helper function for API requests
+const makeAuthRequest = async (url: string, data: any) => {
+  try {
+    const response = await axios.post(
+      `http://localhost:5000/api/auth/${url}`,
+      data,
+      {
+        withCredentials: true,
+        validateStatus: (status) => status < 500,
+      }
+    );
 
+    if (response.data.success) {
+      return { success: true, data: response.data };
+    }
+
+    return {
+      success: false,
+      message: response.data.message || `${url} operation failed`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.response?.data?.message || "Network error occurred",
+    };
+  }
+};
+
+// Thunks
 export const loginUser = createAsyncThunk<
   LoginResponse,
   { email: string; password: string },
   { rejectValue: string }
 >("auth/login", async (credentials, { rejectWithValue }) => {
-  try {
-    const response = await axios.post(
-      "http://localhost:5000/api/auth/login",
-      credentials,
-      {
-        withCredentials: true,
-        validateStatus: (status) => status < 500,
-      }
-    );
+  const result = await makeAuthRequest("login", credentials);
 
-    if (response.data.success) {
-      const { user, token } = response.data.data || response.data;
+  if (result.success) {
+    const { user, token } = result.data.data || result.data;
 
-      // Store token in client-side cookie (for client access)
-      Cookies.set("token", token, {
-        expires: 7,
-        path: "/",
-        sameSite: "lax",
-      });
+    // Store in cookies
+    Cookies.set("token", token, { expires: 7, path: "/", sameSite: "lax" });
+    Cookies.set("user", JSON.stringify(user), {
+      expires: 7,
+      path: "/",
+      sameSite: "lax",
+    });
 
-      // Store user data in a cookie
-      Cookies.set("user", JSON.stringify(user), {
-        expires: 7,
-        path: "/",
-        sameSite: "lax",
-      });
-
-      return { user, token };
-    }
-
-    return rejectWithValue(response.data.message || "Login failed");
-  } catch (error: any) {
-    return rejectWithValue(
-      error.response?.data?.message || "Network error occurred"
-    );
+    return { user, token };
   }
+
+  return rejectWithValue(result.message);
 });
 
 export const signupUser = createAsyncThunk<
-  SignupResponse,
+  StandardResponse,
   { name: string; email: string; password: string; confirmPassword: string },
   { rejectValue: string }
 >("auth/signup", async (userData, { rejectWithValue }) => {
-  try {
-    const response = await axios.post(
-      "http://localhost:5000/api/auth/signup",
-      userData,
-      {
-        withCredentials: true,
-        validateStatus: (status) => status < 500,
-      }
-    );
+  const result = await makeAuthRequest("signup", userData);
 
-    if (response.data.success) {
-      return {
-        success: true,
-        message:
-          response.data.message ||
-          "Signup successful. Please login to continue.",
-      };
-    }
-
-    return rejectWithValue(response.data.message || "Signup failed");
-  } catch (error: any) {
-    return rejectWithValue(
-      error.response?.data?.message || "Network error occurred"
-    );
+  if (result.success) {
+    return {
+      success: true,
+      message:
+        result.data.message || "Signup successful. Please login to continue.",
+    };
   }
+
+  return rejectWithValue(result.message);
 });
 
-// New forgot password thunk
 export const forgotPassword = createAsyncThunk<
-  ForgotPasswordResponse,
+  StandardResponse,
   { email: string },
   { rejectValue: string }
 >("auth/forgotPassword", async (data, { rejectWithValue }) => {
-  try {
-    const response = await axios.post(
-      "http://localhost:5000/api/auth/forgot-password",
-      data,
-      {
-        withCredentials: true,
-        validateStatus: (status) => status < 500,
-      }
-    );
+  const result = await makeAuthRequest("forgot-password", data);
 
-    if (response.data.success) {
-      return {
-        success: true,
-        message: response.data.message || "Reset link sent to your email.",
-      };
-    }
-
-    return rejectWithValue(
-      response.data.message || "Failed to send reset link"
-    );
-  } catch (error: any) {
-    return rejectWithValue(
-      error.response?.data?.message || "Network error occurred"
-    );
+  if (result.success) {
+    return {
+      success: true,
+      message: result.data.message || "Reset link sent to your email.",
+    };
   }
+
+  return rejectWithValue(result.message);
 });
 
-// New reset password thunk
 export const resetPassword = createAsyncThunk<
-  ResetPasswordResponse,
+  StandardResponse,
   { token: string; password: string; confirmPassword: string },
   { rejectValue: string }
 >("auth/resetPassword", async (data, { rejectWithValue }) => {
-  try {
-    const response = await axios.post(
-      "http://localhost:5000/api/auth/reset-password",
-      data,
-      {
-        withCredentials: true,
-        validateStatus: (status) => status < 500,
-      }
-    );
+  const result = await makeAuthRequest("reset-password", data);
 
-    if (response.data.success) {
-      return {
-        success: true,
-        message: response.data.message || "Password reset successful.",
-      };
-    }
-
-    return rejectWithValue(response.data.message || "Failed to reset password");
-  } catch (error: any) {
-    return rejectWithValue(
-      error.response?.data?.message || "Network error occurred"
-    );
+  if (result.success) {
+    return {
+      success: true,
+      message: result.data.message || "Password reset successful.",
+    };
   }
+
+  return rejectWithValue(result.message);
 });
 
 const authSlice = createSlice({
@@ -223,14 +164,12 @@ const authSlice = createSlice({
       state.resetPasswordSuccess = false;
       state.resetPasswordMessage = null;
     },
-    // Add the setUser reducer
     setUser: (state, action: PayloadAction<User>) => {
       state.user = action.payload;
       state.isAuthenticated = true;
       state.status = "succeeded";
       state.error = null;
 
-      // Optionally update the cookie as well to keep things in sync
       Cookies.set("user", JSON.stringify(action.payload), {
         expires: 7,
         path: "/",
@@ -254,110 +193,81 @@ const authSlice = createSlice({
       Cookies.remove("token");
       Cookies.remove("user");
 
-      // Call logout API endpoint to clear HttpOnly cookies
+      // Call logout API endpoint
       axios
         .post(
           "http://localhost:5000/api/auth/logout",
           {},
-          {
-            withCredentials: true,
-          }
+          { withCredentials: true }
         )
-        .catch((error) => {
-          console.error("Error during logout:", error);
-        });
+        .catch((error) => console.error("Error during logout:", error));
     },
   },
   extraReducers: (builder) => {
+    // Generic pending handler
+    const setPending = (state: AuthState) => {
+      state.status = "loading";
+      state.error = null;
+    };
+
+    // Generic rejection handler
+    const setRejected = (state: AuthState, action: any) => {
+      state.status = "failed";
+      state.error = action.payload ?? "An error occurred";
+    };
+
     builder
-      // Signup cases
-      .addCase(signupUser.pending, (state) => {
-        state.status = "loading";
+      // Signup
+      .addCase(signupUser.pending, setPending)
+      .addCase(signupUser.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.signupSuccess = action.payload.success;
+        state.signupMessage = action.payload.message;
         state.error = null;
-        state.signupSuccess = false;
-        state.signupMessage = null;
       })
-      .addCase(
-        signupUser.fulfilled,
-        (state, action: PayloadAction<SignupResponse>) => {
-          state.status = "succeeded";
-          state.signupSuccess = action.payload.success;
-          state.signupMessage = action.payload.message;
-          state.error = null;
-        }
-      )
       .addCase(signupUser.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload ?? "An error occurred";
+        setRejected(state, action);
         state.signupSuccess = false;
         state.signupMessage = null;
       })
 
-      // Login cases
-      .addCase(loginUser.pending, (state) => {
-        state.status = "loading";
+      // Login
+      .addCase(loginUser.pending, setPending)
+      .addCase(loginUser.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.user = action.payload.user;
+        state.isAuthenticated = true;
+        state.token = action.payload.token;
         state.error = null;
+        state.signupSuccess = false;
+        state.signupMessage = null;
       })
-      .addCase(
-        loginUser.fulfilled,
-        (state, action: PayloadAction<LoginResponse>) => {
-          state.status = "succeeded";
-          state.user = action.payload.user;
-          state.isAuthenticated = true;
-          state.token = action.payload.token;
-          state.error = null;
-          // Reset signup flags after successful login
-          state.signupSuccess = false;
-          state.signupMessage = null;
-        }
-      )
-      .addCase(loginUser.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload ?? "An error occurred";
-      })
+      .addCase(loginUser.rejected, setRejected)
 
-      // Forgot password cases
-      .addCase(forgotPassword.pending, (state) => {
-        state.status = "loading";
+      // Forgot password
+      .addCase(forgotPassword.pending, setPending)
+      .addCase(forgotPassword.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.forgotPasswordSuccess = action.payload.success;
+        state.forgotPasswordMessage = action.payload.message;
         state.error = null;
-        state.forgotPasswordSuccess = false;
-        state.forgotPasswordMessage = null;
       })
-      .addCase(
-        forgotPassword.fulfilled,
-        (state, action: PayloadAction<ForgotPasswordResponse>) => {
-          state.status = "succeeded";
-          state.forgotPasswordSuccess = action.payload.success;
-          state.forgotPasswordMessage = action.payload.message;
-          state.error = null;
-        }
-      )
       .addCase(forgotPassword.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload ?? "An error occurred";
+        setRejected(state, action);
         state.forgotPasswordSuccess = false;
         state.forgotPasswordMessage = null;
       })
 
-      // Reset password cases
-      .addCase(resetPassword.pending, (state) => {
-        state.status = "loading";
+      // Reset password
+      .addCase(resetPassword.pending, setPending)
+      .addCase(resetPassword.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.resetPasswordSuccess = action.payload.success;
+        state.resetPasswordMessage = action.payload.message;
         state.error = null;
-        state.resetPasswordSuccess = false;
-        state.resetPasswordMessage = null;
       })
-      .addCase(
-        resetPassword.fulfilled,
-        (state, action: PayloadAction<ResetPasswordResponse>) => {
-          state.status = "succeeded";
-          state.resetPasswordSuccess = action.payload.success;
-          state.resetPasswordMessage = action.payload.message;
-          state.error = null;
-        }
-      )
       .addCase(resetPassword.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload ?? "An error occurred";
+        setRejected(state, action);
         state.resetPasswordSuccess = false;
         state.resetPasswordMessage = null;
       });
@@ -370,7 +280,7 @@ export const {
   clearSignupState,
   clearForgotPasswordState,
   clearResetPasswordState,
-  setUser, // Export the new setUser action
+  setUser,
 } = authSlice.actions;
 
 // Selectors

@@ -23,6 +23,7 @@ export default function RootLayout({
         <ReduxProvider>
           <Header />
           {children}
+          <div id="portal-root"></div>
         </ReduxProvider>
       </body>
     </html>
