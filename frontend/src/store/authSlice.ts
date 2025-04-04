@@ -19,10 +19,19 @@ interface AuthState {
   resetPasswordMessage: string | null;
 }
 
-// Initialize state from cookies
-const storedUser = Cookies.get("user")
-  ? JSON.parse(Cookies.get("user")!)
-  : null;
+// Initialize state from cookies with safer parsing
+let storedUser = null;
+try {
+  const userCookie = Cookies.get("user");
+  if (userCookie && userCookie !== "undefined") {
+    storedUser = JSON.parse(userCookie);
+  }
+} catch (error) {
+  console.error("Error parsing user cookie:", error);
+  // Clear the invalid cookie
+  Cookies.remove("user");
+}
+
 const storedToken = Cookies.get("token") || null;
 
 const initialState: AuthState = {
@@ -75,22 +84,40 @@ export const loginUser = createAsyncThunk<
 >("auth/login", async (credentials, { rejectWithValue }) => {
   const result = await makeAuthRequest("login", credentials);
 
+  console.log("API response:", result);
+
   if (result.success) {
-    const { user, token } = result.data.data || result.data;
+    // Handle nested data structure from API
+    const data = result.data.data || result.data;
+    const user = data.user;
+    const accessToken = data.accessToken;
 
-    // Store in cookies
-    Cookies.set("token", token, { expires: 7, path: "/", sameSite: "lax" });
-    Cookies.set("user", JSON.stringify(user), {
-      expires: 7,
-      path: "/",
-      sameSite: "lax",
-    });
+    console.log("Extracted values:", { user, accessToken });
 
-    return { user, token };
+    // Validate data before storing in cookies
+    if (user && accessToken) {
+      // Store in cookies
+      Cookies.set("token", accessToken, {
+        expires: 7,
+        path: "/",
+        sameSite: "lax",
+      });
+      Cookies.set("user", JSON.stringify(user), {
+        expires: 7,
+        path: "/",
+        sameSite: "lax",
+      });
+
+      return { user, token: accessToken };
+    } else {
+      return rejectWithValue("Invalid login data received from server");
+    }
   }
 
   return rejectWithValue(result.message);
 });
+
+// Rest of your thunks remain the same
 
 export const signupUser = createAsyncThunk<
   StandardResponse,
@@ -109,6 +136,9 @@ export const signupUser = createAsyncThunk<
 
   return rejectWithValue(result.message);
 });
+
+
+
 
 export const forgotPassword = createAsyncThunk<
   StandardResponse,
@@ -170,11 +200,15 @@ const authSlice = createSlice({
       state.status = "succeeded";
       state.error = null;
 
-      Cookies.set("user", JSON.stringify(action.payload), {
-        expires: 7,
-        path: "/",
-        sameSite: "lax",
-      });
+      try {
+        Cookies.set("user", JSON.stringify(action.payload), {
+          expires: 7,
+          path: "/",
+          sameSite: "lax",
+        });
+      } catch (error) {
+        console.error("Error setting user cookie:", error);
+      }
     },
     logout: (state) => {
       state.user = null;

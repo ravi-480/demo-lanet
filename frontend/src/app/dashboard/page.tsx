@@ -8,7 +8,6 @@ import Bottom from "../Components/DashBoard/Bottom";
 import EventDisplay from "../Components/DashBoard/EventDisplay";
 import Welcome from "../Components/DashBoard/Welcome";
 import AuthGuard from "../Components/Home/AuthGuard/AuthGuard";
-import { Expense } from "@/Interface/interface";
 
 // Types
 type EventStatus = "upcoming" | "in-progress" | "completed" | "draft";
@@ -114,7 +113,7 @@ const sampleEvents: Event[] = [
   },
 ];
 
-const sampleExpenses: Expense[] = [
+const sampleExpenses = [
   {
     id: "e1",
     eventId: "1",
@@ -162,15 +161,6 @@ const Dashboard = () => {
     "all" | "upcoming" | "past" | "drafts"
   >("all");
 
-  // Filter events based on active tab
-  const filteredEvents = sampleEvents.filter((event) => {
-    if (activeTab === "all") return true;
-    if (activeTab === "upcoming") return event.status === "upcoming";
-    if (activeTab === "past") return event.status === "completed";
-    if (activeTab === "drafts") return event.status === "draft";
-    return true;
-  });
-
   // Calculate budget statistics
   const totalBudget = sampleEvents.reduce(
     (sum, event) => sum + event.budget.allocated,
@@ -203,18 +193,12 @@ const Dashboard = () => {
       <div className="min-h-screen bg-gray-900">
         <div className="container mx-auto px-4 py-8">
           {/* Welcome Section */}
-          <Welcome filteredEvents={filteredEvents} />
+          <Welcome />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Main Content */}
             <div className="lg:col-span-2">
               {/* Events Display */}
-              <EventDisplay
-                events={sampleEvents}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                formatCurrency={formatCurrency}
-                getBudgetStatusColor={getBudgetStatusColor}
-              />
+              <EventDisplay />
 
               {/* Budget Summary Section */}
               <Budget

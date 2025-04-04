@@ -19,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-[#1a1a1a] text-white`}>
+      <body className={`${inter.className} bg-gray-950 text-white`}>
         <ReduxProvider>
           <Header />
           {children}

@@ -1,22 +1,17 @@
-import { Request, Response, NextFunction } from "express";
-import { verifyToken } from "../utils/jwtHelper";
+import { NextFunction } from "express";
 import ApiError from "../utils/ApiError";
 import { asyncHandler } from "../utils/asyncHandler";
+import { verifyToken } from "../utils/jwtHelper";
 
 interface AuthRequest extends Request {
   user?: any;
 }
-
 export const authenticate = asyncHandler(
-  async (req: AuthRequest, res: Response, next: NextFunction) => {
-    console.log("Incoming Headers:", req.headers); // ✅ Debug log
-    console.log("Incoming Cookies:", req.cookies); // ✅ Debug log
-
-    let token: string | undefined;
-    ``;
-
+  async (req: AuthRequest, _res: Response, next: NextFunction) => {
     // Get token from Authorization header
     const authHeader = req.headers.authorization;
+    let token: string | undefined;
+
     if (authHeader && authHeader.startsWith("Bearer ")) {
       token = authHeader.split(" ")[1];
     }
@@ -26,8 +21,6 @@ export const authenticate = asyncHandler(
       token = req.cookies.token;
     }
 
-    console.log("Extracted Token:", token); // ✅ Debug log
-
     if (!token) {
       throw new ApiError(401, "Authentication required");
     }
@@ -35,7 +28,7 @@ export const authenticate = asyncHandler(
     try {
       const decoded = verifyToken(token);
       req.user = decoded;
-      console.log("User authenticated:", req.user); // ✅ Debug log
+      console.log("User authenticated:", req.user);
       next();
     } catch (error) {
       console.error("Token verification failed:", error);

@@ -1,0 +1,169 @@
+import mongoose, { Schema, Document } from "mongoose";
+import { IEvent } from "../interfaces/user.interface";
+
+export interface EventDocument extends Omit<Document, "id">, IEvent {
+  _id: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Define the budget type for use in the schema
+interface Budget {
+  allocated: number;
+  spent: number;
+}
+
+// Define the RSVP type for use in the schema
+interface RSVP {
+  total: number;
+  confirmed: number;
+}
+
+const eventSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Event name is required"],
+      trim: true,
+    },
+    date: {
+      type: Date,
+      required: [true, "Event date is required"],
+    },
+    time: {
+      type: String,
+      required: false,
+    },
+    location: {
+      type: String,
+      required: [true, "Event location is required"],
+      trim: true,
+    },
+    description: {
+      type: String,
+      required: [true, "Description is required"],
+      trim: true,
+    },
+    status: {
+      type: String,
+      required: true,
+      enum: ["upcoming", "completed", "draft"],
+      default: "draft",
+    },
+    image: {
+      type: String,
+      default: null,
+    },
+    budget: {
+      type: new mongoose.Schema(
+        {
+          allocated: {
+            type: Number,
+            required: true,
+            min: [0, "Budget must be a positive number"],
+          },
+          spent: {
+            type: Number,
+            default: 0,
+            min: [0, "Spent budget must be a positive number"],
+          },
+        },
+        { _id: false }
+      ),
+    },
+    guestLimit: {
+      type: Number,
+      required: true,
+      min: [0, "Guest limit must be a positive integer"],
+    },
+    rsvp: {
+      type: new mongoose.Schema(
+        {
+          total: {
+            type: Number,
+            default: 0,
+          },
+          confirmed: {
+            type: Number,
+            default: 0,
+            min: [0, "Confirmed RSVP count must be a positive integer"],
+          },
+        },
+        { _id: false }
+      ),
+    },
+    creator: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    attendees: [
+      {
+        type: new mongoose.Schema(
+          {
+            userId: {
+              type: Schema.Types.ObjectId,
+              ref: "User",
+            },
+            status: {
+              type: String,
+              enum: ["pending", "confirmed", "declined"],
+              default: "pending",
+            },
+            responseDate: {
+              type: Date,
+              default: Date.now,
+            },
+          },
+          { _id: false }
+        ),
+      },
+    ],
+  },
+  { timestamps: true }
+);
+
+// Middleware to extract time from date field if not provided separately
+eventSchema.pre("save", function (next) {
+  // If time is not explicitly set, extract it from the date
+  if (!this.time && this.date) {
+    const eventDate = new Date(this.date);
+    this.time = eventDate.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+  next();
+});
+
+// Transform the budget field from the form to the structured format
+eventSchema.pre("save", function (next) {
+  // Handle the case where budget might come in as a plain number
+  if (this.isNew && typeof this.budget === "number") {
+    const budgetValue = this.budget;
+    this.budget = {
+      allocated: budgetValue,
+      spent: 0,
+    };
+  }
+
+  // Set rsvp.total to match guestLimit if not provided
+  if (this.isNew && this.guestLimit && (!this.rsvp || !this.rsvp.total)) {
+    if (!this.rsvp) {
+      this.rsvp = { total: this.guestLimit, confirmed: 0 };
+    } else {
+      this.rsvp.total = this.guestLimit;
+    }
+  }
+
+  next();
+});
+
+// Indexes for optimizing queries
+eventSchema.index({ creator: 1 });
+eventSchema.index({ date: 1 });
+eventSchema.index({ status: 1 });
+eventSchema.index({ "attendees.userId": 1 });
+
+const Event = mongoose.model<EventDocument>("Event", eventSchema);
+export default Event;

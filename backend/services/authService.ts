@@ -1,4 +1,6 @@
-import { Request, Response } from "express";
+import dotenv from "dotenv";
+dotenv.config();
+
 import crypto from "crypto";
 import { sendEmail } from "../utils/emailService"; // You'll need to implement this
 
@@ -12,7 +14,7 @@ import {
 } from "../interfaces/user.interface";
 
 // Environment variables with fallbacks (use actual env vars in production)
-const JWT_ACCESS_SECRET = "access-secret-key";
+const JWT_ACCESS_SECRET = process.env.JWT_SECRET as string;
 const JWT_REFRESH_SECRET = "refresh-secret-key";
 const ACCESS_TOKEN_EXPIRY = "15m"; // 15 minutes
 const REFRESH_TOKEN_EXPIRY = "7d";

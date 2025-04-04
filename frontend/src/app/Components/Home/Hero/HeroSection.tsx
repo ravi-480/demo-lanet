@@ -1,7 +1,7 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import ImageSliderWrapper from "../ImageSlider/ImageSliderWrapper";
+import Link from "next/link";
 
 const HeroSection: React.FC = () => {
   return (
@@ -15,9 +15,11 @@ const HeroSection: React.FC = () => {
           <p className="text-lg md:text-xl text-amber-50 mb-8">
             Streamline your event planning with intuitive modern design.
           </p>
-          <Button className="bg-[#d4c99e] hover:bg-[#c4b98e] text-black font-medium text-base h-12 px-6">
-            Streamline RSVP
-          </Button>
+          <Link href="/dashboard">
+            <Button className="bg-[#d4c99e] cursor-pointer hover:bg-[#c4b98e] text-black font-medium text-base h-12 px-6">
+              Get Started
+            </Button>
+          </Link>
         </div>
         <div className="w-full h-full min-h-[300px]">
           <ImageSliderWrapper />
