@@ -9,9 +9,6 @@ interface AuthRequest extends Request {
 
 export const authenticate = asyncHandler(
   async (req: AuthRequest, res: Response, next: NextFunction) => {
-    console.log("Incoming Headers:", req.headers); // ✅ Debug log
-    console.log("Incoming Cookies:", req.cookies); // ✅ Debug log
-
     let token: string | undefined;
     ``;
 
@@ -26,7 +23,7 @@ export const authenticate = asyncHandler(
       token = req.cookies.token;
     }
 
-    console.log("Extracted Token:", token); // ✅ Debug log
+    console.log("Extracted Token:", token);
 
     if (!token) {
       throw new ApiError(401, "Authentication required");

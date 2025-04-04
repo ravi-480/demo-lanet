@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { selectEvents } from "@/store/eventSlice";
 import { RootState } from "@/store/store";
 import { Plus } from "lucide-react";
 import Link from "next/link";
@@ -7,6 +8,18 @@ import React from "react";
 import { useSelector } from "react-redux";
 
 const Welcome = () => {
+  const events = useSelector(selectEvents) || [];
+  const now = new Date().getTime();
+  let val = 0;
+  events.filter((event) => {
+    const eventDate = new Date(event.date).getTime();
+    if (eventDate > now) {
+      val = val + 1;
+    }
+    return val;
+  }, 0);
+  console.log(events);
+
   const { user } = useSelector((state: RootState) => state.auth);
   return (
     <div className="bg-blue-950 rounded-lg shadow-sm p-6 mb-6">
@@ -15,7 +28,7 @@ const Welcome = () => {
           <h1 className="text-2xl font-bold text-white-800">
             Welcome back, {user?.name}
           </h1>
-          <p className="text-gray-400 mt-1">You have 2 upcoming events</p>
+          <p className="text-gray-400 mt-1">You have {val} upcoming events</p>
         </div>
 
         <Input className="w-50" type="email" placeholder="Search events" />

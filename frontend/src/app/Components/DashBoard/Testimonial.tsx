@@ -1,10 +1,9 @@
-import { Testimonials1 } from "@/Interface/interface";
 import { Star } from "lucide-react";
 import React, { useState } from "react";
 
 // Define the Testimonial type
 
-const testimonials: Testimonials1[] = [
+const testimonials = [
   {
     id: "t1",
     name: "Sarah Johnson",
@@ -37,8 +36,8 @@ const Testimonials: React.FC = () => {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
-      <h2 className="text-lg font-medium text-gray-800 mb-6">
+    <div className="bg-blue-950 rounded-lg shadow-sm p-6 mt-6">
+      <h2 className="text-lg font-medium text-gray-300 mb-6">
         Success Stories
       </h2>
 
@@ -52,7 +51,7 @@ const Testimonials: React.FC = () => {
           >
             {testimonials.map((testimonial, index) => (
               <div key={testimonial.id} className="w-full flex-shrink-0 px-4">
-                <div className="bg-gray-50 rounded-lg p-6">
+                <div className="bg-blue-900 rounded-lg p-6">
                   <div className="flex items-center mb-4">
                     <img
                       src={testimonial.image}
@@ -60,10 +59,10 @@ const Testimonials: React.FC = () => {
                       className="w-12 h-12 rounded-full mr-4"
                     />
                     <div>
-                      <h3 className="font-medium text-gray-800">
+                      <h3 className="font-medium text-gray-300">
                         {testimonial.name}
                       </h3>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-400">
                         {testimonial.eventType}
                       </p>
                       <div className="flex mt-1">
@@ -81,7 +80,7 @@ const Testimonials: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  <p className="text-gray-700 italic">"{testimonial.quote}"</p>
+                  <p className="text-gray-300 italic">"{testimonial.quote}"</p>
                 </div>
               </div>
             ))}

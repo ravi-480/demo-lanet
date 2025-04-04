@@ -15,7 +15,6 @@ export default function Home() {
       <Testimonials />
       <FeatureSections2 />
       <FaqSection />
-      <Footer />
     </main>
   );
 }

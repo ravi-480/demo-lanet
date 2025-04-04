@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "./Components/Home/Header/Header";
 import ReduxProvider from "@/store/storeProvider";
+import Footer from "./Components/Home/Footer/Footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,6 +25,7 @@ export default function RootLayout({
           <Header />
           {children}
           <div id="portal-root"></div>
+          <Footer />
         </ReduxProvider>
       </body>
     </html>

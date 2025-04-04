@@ -52,7 +52,6 @@ const EventForm = () => {
   });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.files);
 
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];

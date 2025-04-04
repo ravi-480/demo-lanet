@@ -219,7 +219,7 @@ const Dashboard = () => {
           <Testimonials />
 
           {/* Bottom Section */}
-          <Bottom />
+          {/* <Bottom /> */}
         </div>
       </div>
     </AuthGuard>

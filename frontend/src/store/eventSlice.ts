@@ -59,7 +59,7 @@ export const fetchEvents = createAsyncThunk(
       const response = await axios.get("http://localhost:5000/api/events", {
         withCredentials: true,
       });
-      return response.data;
+      return response.data.events;
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch events"
@@ -91,7 +91,7 @@ const eventSlice = createSlice({
         fetchEvents.fulfilled,
         (state, action: PayloadAction<IEvent[]>) => {
           state.isLoading = false;
-          state.events = action.payload;
+          state.events = action.payload || [];
         }
       )
       .addCase(fetchEvents.rejected, (state, action) => {
@@ -124,7 +124,7 @@ const eventSlice = createSlice({
 export const { clearEventErrors, resetEventState } = eventSlice.actions;
 
 // Selectors
-export const selectEvents = (state: RootState) => state.event.events;
+export const selectEvents = (state: RootState) => state.event.events || [];
 export const selectEventLoading = (state: RootState) => state.event.isLoading;
 export const selectEventError = (state: RootState) => state.event.error;
 

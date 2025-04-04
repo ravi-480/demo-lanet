@@ -92,11 +92,44 @@ export const createEvent = asyncHandler(
   }
 );
 
-export const fetchEvents = async (req: Request, res: Response) => {
+export const fetchEvents = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
-    const events = await Event.find().sort({ createdAt: -1 }).lean();
+    // Ensure cookies are available
+    if (!req.cookies || !req.cookies.user) {
+      res
+        .status(401)
+        .json({ success: false, message: "Unauthorized - No user data" });
+      return;
+    }
 
-    res.status(200).json(events);
+    // Parse user data safely
+    let userData;
+    try {
+      userData = JSON.parse(req.cookies.user);
+    } catch (error) {
+      res.status(400).json({ success: false, message: "Invalid user data" });
+      return;
+    }
+
+    const userId = userData?.id; // MongoDB uses `_id`
+    console.log("User ID:", userId);
+
+    if (!userId) {
+      res.status(401).json({ success: false, message: "Unauthorized" });
+      return;
+    }
+
+    // Fetch only events created by this user
+    const events = await Event.find({ creator: userId })
+      .sort({ date: 1 })
+      .lean();
+    console.log(events);
+
+    res.status(200).json({ success: true, events });
+    return;
   } catch (error: any) {
     console.error("Error fetching events:", error);
     res.status(500).json({
@@ -104,5 +137,6 @@ export const fetchEvents = async (req: Request, res: Response) => {
       message: "Failed to fetch events",
       error: error.message,
     });
+    return;
   }
 };

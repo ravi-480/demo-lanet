@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Clock, Edit2, Eye, MapPin, Plus, Trash2 } from "lucide-react";
+import {
+  Clock,
+  Edit2,
+  Eye,
+  MapPin,
+  Plus,
+  Trash2,
+  DollarSign,
+  Users,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../../../store/store";
@@ -12,7 +21,7 @@ import {
 
 const EventDisplay: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const events = useSelector(selectEvents);
+  const events = useSelector(selectEvents) || [];
   const isLoading = useSelector(selectEventLoading);
   const error = useSelector(selectEventError);
   const [activeTab, setActiveTab] = useState<string>("all");
@@ -39,9 +48,19 @@ const EventDisplay: React.FC = () => {
     { id: "draft", label: "Drafts" },
   ];
 
+  const now = new Date().getTime();
+
   const filteredEvents =
     events?.filter((event) => {
       if (activeTab === "all") return true;
+      if (activeTab === "upcoming") {
+        const eventDate = new Date(event.date).getTime();
+        return eventDate > now;
+      }
+      if (activeTab === "past") {
+        const eventDate = new Date(event.date).getTime();
+        return eventDate <= now;
+      }
       return event.status === activeTab;
     }) || [];
 
@@ -58,7 +77,6 @@ const EventDisplay: React.FC = () => {
     return "text-green-400";
   };
 
-  // Render event status badge safely
   const renderEventStatusBadge = (status?: string) => {
     if (!status)
       return (
@@ -93,6 +111,16 @@ const EventDisplay: React.FC = () => {
     }
   };
 
+  const getEventStatus = (date?: string | Date): string => {
+    if (!date) return "unknown";
+    try {
+      const eventDate = new Date(date).getTime();
+      return eventDate > now ? "upcoming" : "past";
+    } catch {
+      return "unknown";
+    }
+  };
+
   if (isLoading || !isInitialized) {
     return (
       <div className="bg-blue-950 text-white rounded-lg shadow-sm p-6 mb-6">
@@ -120,7 +148,6 @@ const EventDisplay: React.FC = () => {
     );
   }
 
-  // Handle API errors
   if (error) {
     return (
       <div className="text-center py-12 text-red-400">
@@ -177,7 +204,7 @@ const EventDisplay: React.FC = () => {
                   <h3 className="font-medium text-lg text-white">
                     {event.name || "Unnamed Event"}
                   </h3>
-                  {renderEventStatusBadge(event.status)}
+                  {renderEventStatusBadge(getEventStatus(event.date))}
                 </div>
 
                 <div className="mt-3 space-y-2">
@@ -190,6 +217,33 @@ const EventDisplay: React.FC = () => {
                   <div className="flex items-center text-gray-300">
                     <MapPin size={16} className="mr-2" />
                     <span>{event.location || "No location set"}</span>
+                  </div>
+
+                  <div className="flex items-center text-gray-300">
+                    <DollarSign size={16} className="mr-2" />
+                    <span>
+                      Budget: {formatCurrency(event.budget?.allocated || 0)}
+                      {event.budget?.spent !== undefined && (
+                        <span
+                          className={getBudgetStatusColor(
+                            event.budget?.allocated || 0,
+                            event.budget?.spent || 0
+                          )}
+                        >
+                          {" "}
+                          ({formatCurrency(event.budget?.spent || 0)} spent)
+                        </span>
+                      )}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center text-gray-300">
+                    <Users size={16} className="mr-2" />
+                    <span>
+                      RSVPs: {event.rsvp?.confirmed || 0} confirmed
+                      {event.rsvp?.total !== undefined &&
+                        ` / ${event.rsvp.total} invited`}
+                    </span>
                   </div>
                 </div>
 
