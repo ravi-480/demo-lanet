@@ -23,7 +23,6 @@ export const authenticate = asyncHandler(
       token = req.cookies.token;
     }
 
-    console.log("Extracted Token:", token);
 
     if (!token) {
       throw new ApiError(401, "Authentication required");

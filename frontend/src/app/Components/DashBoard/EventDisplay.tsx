@@ -18,6 +18,7 @@ import {
   selectEventLoading,
   selectEventError,
 } from "../../../store/eventSlice";
+import Link from "next/link";
 
 const EventDisplay: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -230,7 +231,6 @@ const EventDisplay: React.FC = () => {
                             event.budget?.spent || 0
                           )}
                         >
-                          {" "}
                           ({formatCurrency(event.budget?.spent || 0)} spent)
                         </span>
                       )}
@@ -246,18 +246,9 @@ const EventDisplay: React.FC = () => {
                     </span>
                   </div>
                 </div>
-
-                <div className="mt-4 flex space-x-2">
-                  <button className="p-2 text-gray-300 hover:bg-gray-950 rounded">
-                    <Eye size={18} />
-                  </button>
-                  <button className="p-2 text-gray-300 hover:bg-gray-950 rounded">
-                    <Edit2 size={18} />
-                  </button>
-                  <button className="p-2 text-gray-300 hover:bg-gray-950 rounded">
-                    <Trash2 size={18} />
-                  </button>
-                </div>
+                <Link href={`/events/${event._id}`}>
+                  <Button className="mt-3 cursor-pointer">View more</Button>
+                </Link>
               </div>
             </div>
           ))}
