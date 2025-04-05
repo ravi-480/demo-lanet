@@ -1,14 +1,7 @@
-import EventHeader from "@/app/Components/Events/EventHeader";
-import React from "react";
-import EventTabs from '../../Components/Events/EventTabComponent';
+import EventDetailClient from "@/app/Components/Events/EventDetailClient";
 
-const EventDetail = () => {
-  return (
-    <div className="p-5 ">
-      <EventHeader />
-      <EventTabs />
-    </div>
-  );
+const EventDetail = ({ params }: { params: { id: string } }) => {
+  return <EventDetailClient id={params.id} />;
 };
 
 export default EventDetail;

@@ -29,3 +29,25 @@ export enum AuthActionTypes {
   CLEAR_ERROR = "CLEAR_ERROR",
   CHECK_AUTH_STATUS = "CHECK_AUTH_STATUS",
 }
+
+
+export enum EventType {
+  Wedding = "Wedding",
+  Birthday = "Birthday",
+  Corporate = "Corporate",
+  Anniversary = "Anniversary",
+  BabyShower = "Baby Shower",
+  Engagement = "Engagement",
+  Graduation = "Graduation",
+  Festival = "Festival",
+  Concert = "Concert",
+  CharityGala = "Charity Gala",
+  Farewell = "Farewell Party",
+  Housewarming = "Housewarming",
+  Workshop = "Workshop",
+}
+
+export const eventTypeOptions = Object.entries(EventType).map(([key, value]) => ({
+  label: value,
+  value: key.toLowerCase(),
+}));

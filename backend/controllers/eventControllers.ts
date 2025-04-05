@@ -12,7 +12,7 @@ interface AuthenticatedRequest extends Request {
 
 export const createEvent = asyncHandler(
   async (req: AuthenticatedRequest, res: Response) => {
-    const { name, date, location, description, budget, guestLimit } = req.body;
+    const { name, date, location, description, budget, guestLimit,eventType,durationInDays } = req.body;
 
     // Ensure user is authenticated
     if (!req.user || !req.user.id) {
@@ -71,6 +71,8 @@ export const createEvent = asyncHandler(
           confirmed: 0,
         },
         creator: new mongoose.Types.ObjectId(userId),
+        eventType,
+        durationInDays,
         attendees: [],
       };
 
@@ -115,7 +117,6 @@ export const fetchEvents = async (
     }
 
     const userId = userData?.id; // MongoDB uses `_id`
-    console.log("User ID:", userId);
 
     if (!userId) {
       res.status(401).json({ success: false, message: "Unauthorized" });
@@ -126,7 +127,6 @@ export const fetchEvents = async (
     const events = await Event.find({ creator: userId })
       .sort({ date: 1 })
       .lean();
-    console.log(events);
 
     res.status(200).json({ success: true, events });
     return;
@@ -138,5 +138,25 @@ export const fetchEvents = async (
       error: error.message,
     });
     return;
+  }
+};
+
+export const fetchById = async (req: Request, res: Response) => {
+  try {
+    const eventId = req.params.id;
+    if (!eventId) {
+      res.status(400).json({ success: false, meesage: "Event ID is required" });
+      return;
+    }
+    const event = await Event.findById(eventId).lean();
+
+    if (!event) {
+      res.status(404).json({ success: false, message: "Event Not Found" });
+    }
+    res.status(200).json({ success: true, event });
+  } catch (error: any) {
+    console.log("Error fetching Event By Id", error);
+    res.status(500).json({ success: false, message: "Failed to fetch Event" });
+    error: error.message;
   }
 };

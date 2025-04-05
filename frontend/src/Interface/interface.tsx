@@ -1,5 +1,7 @@
 import { SliderImage } from "@/Types/type";
+import { EventType } from "react-hook-form";
 // Interface/interface.ts
+
 export interface IEvent {
   _id: string;
   name: string;
@@ -20,6 +22,8 @@ export interface IEvent {
   };
   creator: string;
   attendees: string[];
+  eventType: EventType;
+  durationInDays: number;
   createdAt: string | Date;
   updatedAt: string | Date;
 }

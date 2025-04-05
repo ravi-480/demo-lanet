@@ -3,6 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { storeEvent } from "@/store/eventSlice";
 import { RootState } from "@/store/store";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,6 +19,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { z } from "zod";
 import AuthGuard from "../Components/Home/AuthGuard/AuthGuard";
 import { useRouter } from "next/navigation";
+import { eventTypeOptions } from "@/Types/type";
 
 const eventFormSchema = z.object({
   name: z.string().min(1, { message: "Event name is required" }),
@@ -24,6 +32,10 @@ const eventFormSchema = z.object({
   guestLimit: z.coerce
     .number()
     .min(0, { message: "Number of guest atleast 1" }),
+  eventType: z.string().min(1, { message: "Event type is required" }),
+  durationInDays: z.coerce
+    .number()
+    .min(1, { message: "Duration must be at least 1 day" }),
 });
 
 type EventFormValues = z.infer<typeof eventFormSchema>;
@@ -38,6 +50,7 @@ const EventForm = () => {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
@@ -48,17 +61,16 @@ const EventForm = () => {
       description: "",
       budget: 0,
       guestLimit: 0,
+      eventType: "",
+      durationInDays: 1,
     },
   });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
       setImageFile(selectedFile);
       const objectUrl = URL.createObjectURL(selectedFile);
-      console.log(objectUrl);
-
       setImagePreview(objectUrl);
     }
   };
@@ -87,13 +99,13 @@ const EventForm = () => {
 
   return (
     <AuthGuard>
-      <div className="bg-blue-950 max-w-2xl p-6 mx-auto mt-4 rounded-lg ">
-        <h1 className="text-center font-bold mb-6">Create New Event</h1>
+      <div className="bg-blue-950 max-w-2xl p-6 mx-auto mt-4 rounded-lg">
+        <h1 className="text-center font-bold mb-6 text-white">
+          Create New Event
+        </h1>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="mt-4">
-            <Label className="mb-2" htmlFor="name">
-              Event Name
-            </Label>
+            <Label htmlFor="name">Event Name</Label>
             <Input
               {...register("name")}
               id="name"
@@ -103,10 +115,9 @@ const EventForm = () => {
               <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
             )}
           </div>
+
           <div className="mt-4">
-            <Label className="mb-2" htmlFor="date">
-              Event Date
-            </Label>
+            <Label htmlFor="date">Event Date</Label>
             <Input
               {...register("date")}
               id="date"
@@ -117,10 +128,9 @@ const EventForm = () => {
               <p className="text-red-500 text-sm mt-1">{errors.date.message}</p>
             )}
           </div>
+
           <div className="mt-4">
-            <Label className="mb-2" htmlFor="location">
-              Location
-            </Label>
+            <Label htmlFor="location">Location</Label>
             <Input
               {...register("location")}
               id="location"
@@ -133,16 +143,15 @@ const EventForm = () => {
               </p>
             )}
           </div>
+
           <div className="mt-4">
-            <Label className="mb-2" htmlFor="image">
-              Upload Image
-            </Label>
+            <Label htmlFor="image">Upload Image</Label>
             <Input
               accept="image/*"
               id="image"
               type="file"
               onChange={handleImageChange}
-              className="py-1  cursor-pointer"
+              className="py-1 cursor-pointer"
             />
             {imagePreview && (
               <div className="mt-2">
@@ -154,10 +163,9 @@ const EventForm = () => {
               </div>
             )}
           </div>
+
           <div className="mt-4">
-            <Label className="mb-2" htmlFor="description">
-              Description
-            </Label>
+            <Label htmlFor="description">Description</Label>
             <Textarea {...register("description")} id="description" />
             {errors.description && (
               <p className="text-red-500 text-sm mt-1">
@@ -165,10 +173,9 @@ const EventForm = () => {
               </p>
             )}
           </div>
+
           <div className="mt-4">
-            <Label className="mb-2" htmlFor="budget">
-              Budget
-            </Label>
+            <Label htmlFor="budget">Budget</Label>
             <Input {...register("budget")} id="budget" type="number" min="0" />
             {errors.budget && (
               <p className="text-red-500 text-sm mt-1">
@@ -176,10 +183,9 @@ const EventForm = () => {
               </p>
             )}
           </div>
+
           <div className="mt-4">
-            <Label className="mb-2" htmlFor="guestLimit">
-              Maximum Number of Guests
-            </Label>
+            <Label htmlFor="guestLimit">Maximum Number of Guests</Label>
             <Input
               {...register("guestLimit")}
               id="guestLimit"
@@ -193,6 +199,49 @@ const EventForm = () => {
               </p>
             )}
           </div>
+
+          <div className="mt-4">
+            <Label htmlFor="eventType">Event Type</Label>
+            <Select
+              onValueChange={(value: string) => setValue("eventType", value)}
+              defaultValue=""
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select event type" />
+              </SelectTrigger>
+              <SelectContent>
+                {eventTypeOptions.map((type) => (
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <input type="hidden" {...register("eventType")} id="eventType" />
+            {errors.eventType && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.eventType.message}
+              </p>
+            )}
+          </div>
+
+          {/* New: Duration in Days */}
+          <div className="mt-4">
+            <Label htmlFor="durationInDays">Duration (in Days)</Label>
+            <Input
+              {...register("durationInDays")}
+              id="durationInDays"
+              type="number"
+              min={1}
+              className="py-1"
+            />
+            {errors.durationInDays && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.durationInDays.message}
+              </p>
+            )}
+          </div>
+
           <Button
             disabled={isLoading}
             type="submit"

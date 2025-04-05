@@ -97,6 +97,16 @@ const eventSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    eventType: {
+      type: String,
+      required: [true, "Event type is required"],
+      trim: true,
+    },
+    durationInDays: {
+      type: Number,
+      required: [true, "Duration in days is required"],
+      min: [1, "Duration must be at least 1 day"],
+    },
     attendees: [
       {
         type: new mongoose.Schema(

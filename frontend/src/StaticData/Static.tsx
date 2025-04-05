@@ -143,3 +143,97 @@ export const contactInfo = {
 };
 
 export default images;
+
+export function formatDate(isoString: string): string {
+  const date = new Date(isoString);
+
+  const day = date.getDate().toString().padStart(2, "0");
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const year = date.getFullYear();
+
+  let hours = date.getHours();
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12 || 12;
+
+  return `${day}/${month}/${year} • ${hours}:${minutes}${ampm}`;
+}
+
+export const eventVendorMapping = {
+  Wedding: [
+    { category: "catering", pricingUnit: "per plate" },
+    { category: "photography", pricingUnit: "per hour" },
+    { category: "decoration", pricingUnit: "flat rate" },
+    { category: "music", pricingUnit: "per hour" },
+    { category: "venue", pricingUnit: "per day" },
+    { category: "videography", pricingUnit: "per hour" },
+    { category: "lighting/sound", pricingUnit: "flat rate" },
+  ],
+  Birthday: [
+    { category: "catering", pricingUnit: "per plate" },
+    { category: "decoration", pricingUnit: "flat rate" },
+    { category: "music", pricingUnit: "per hour" },
+    { category: "photography", pricingUnit: "per hour" },
+    { category: "venue", pricingUnit: "per day" },
+  ],
+  Corporate: [
+    { category: "catering", pricingUnit: "per plate" },
+    { category: "venue", pricingUnit: "per day" },
+    { category: "lighting/sound", pricingUnit: "flat rate" },
+    { category: "decoration", pricingUnit: "flat rate" },
+  ],
+  Anniversary: [
+    { category: "catering", pricingUnit: "per plate" },
+    { category: "music", pricingUnit: "per hour" },
+    { category: "photography", pricingUnit: "per hour" },
+    { category: "decoration", pricingUnit: "flat rate" },
+  ],
+  BabyShower: [
+    { category: "catering", pricingUnit: "per plate" },
+    { category: "decoration", pricingUnit: "flat rate" },
+    { category: "venue", pricingUnit: "per day" },
+  ],
+  Engagement: [
+    { category: "catering", pricingUnit: "per plate" },
+    { category: "photography", pricingUnit: "per hour" },
+    { category: "decoration", pricingUnit: "flat rate" },
+    { category: "music", pricingUnit: "per hour" },
+  ],
+  Graduation: [
+    { category: "venue", pricingUnit: "per day" },
+    { category: "catering", pricingUnit: "per plate" },
+    { category: "music", pricingUnit: "per hour" },
+  ],
+  Festival: [
+    { category: "catering", pricingUnit: "per plate" },
+    { category: "music", pricingUnit: "per hour" },
+    { category: "lighting/sound", pricingUnit: "flat rate" },
+    { category: "decoration", pricingUnit: "flat rate" },
+  ],
+  Concert: [
+    { category: "music", pricingUnit: "per hour" },
+    { category: "lighting/sound", pricingUnit: "flat rate" },
+    { category: "venue", pricingUnit: "per day" },
+  ],
+  CharityGala: [
+    { category: "catering", pricingUnit: "per plate" },
+    { category: "decoration", pricingUnit: "flat rate" },
+    { category: "photography", pricingUnit: "per hour" },
+    { category: "venue", pricingUnit: "per day" },
+  ],
+  Farewell: [
+    { category: "venue", pricingUnit: "per day" },
+    { category: "music", pricingUnit: "per hour" },
+    { category: "catering", pricingUnit: "per plate" },
+  ],
+  Housewarming: [
+    { category: "decoration", pricingUnit: "flat rate" },
+    { category: "catering", pricingUnit: "per plate" },
+    { category: "music", pricingUnit: "per hour" },
+  ],
+  Workshop: [
+    { category: "venue", pricingUnit: "per day" },
+    { category: "lighting/sound", pricingUnit: "flat rate" },
+    { category: "catering", pricingUnit: "per plate" },
+  ],
+};
