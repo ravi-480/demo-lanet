@@ -139,3 +139,26 @@ export interface Testimonials1 {
   quote: string;
   eventType: string;
 }
+
+
+
+// shared/types.ts
+export interface BaseVendor {
+  event: string;
+  title: string;
+  type: string;
+  address: string;
+  rating: number;
+  reviews: number;
+  description?: string;
+  website?: string;
+  directionsLink?: string;
+  placeId: string;
+  yearsInBusiness?: string;
+  phone?: string;
+  price: number;
+  pricingUnit: string;
+  category: string;
+  numberOfGuests: number;
+  addedBy: string;
+}

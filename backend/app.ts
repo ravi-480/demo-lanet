@@ -5,6 +5,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes";
 import eventRoutes from "./routes/eventRoute";
+import vendorRoutes from "./routes/vendorRoutes";
 import { errorConverter, errorHandler } from "./middleware/errorHandler";
 
 const app = express();
@@ -25,6 +26,7 @@ app.use(morgan("dev")); // HTTP request logger
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
+app.use("/api/vendors", vendorRoutes);
 
 app.use("*", (req: Request, res: Response) => {
   res.status(404).json({

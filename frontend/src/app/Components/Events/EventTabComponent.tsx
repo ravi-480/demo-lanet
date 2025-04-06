@@ -1,68 +1,79 @@
 "use client";
 
 import { useState } from "react";
+import { useSelector } from "react-redux";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import EventOverView from "./EventOverView";
-import { IEvent } from "@/Interface/interface";
 import SearchVendor from "./SearchVendor";
 import { eventVendorMapping } from "@/StaticData/Static";
+import VendorsDetail from "./VendorDetail";
+import { RootState } from "@/store/store";
 
-export default function EventTabComponent({ event }: { event: IEvent }) {
+export default function EventTabComponent() {
   const [activeTab, setActiveTab] = useState("overview");
-  const eventType = event.eventType;
+  const event = useSelector((state: RootState) => state.event.singleEvent);
+
+  if (!event) {
+    return <p className="text-white text-center py-4">No event loaded.</p>;
+  }
+
   const formattedEventType =
-    eventType.charAt(0).toUpperCase() + eventType.slice(1).toLowerCase();
+    event.eventType.charAt(0).toUpperCase() +
+    event.eventType.slice(1).toLowerCase();
 
   const allowedCategories =
-    eventVendorMapping[formattedEventType as keyof typeof eventVendorMapping]?.map(
-      (c) => c.category
-    ) || [];
+    eventVendorMapping[
+      formattedEventType as keyof typeof eventVendorMapping
+    ]?.map((c) => c.category) || [];
+
+  const tabs = [
+    { value: "overview", label: "Overview" },
+    { value: "vendors", label: "Vendors" },
+    { value: "guests", label: "Guests" },
+    { value: "budget", label: "Budget" },
+  ];
 
   return (
     <div className="w-[95%] bg-blue-950 mt-4 border-b rounded-2xl p-4 mx-auto">
-      <Tabs
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="bg-transparent"
-      >
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="flex gap-6 border-b-2 border-gray-300">
-          {["overview", "vendors", "guests & RSVPs", "budget"].map((tab) => (
+          {tabs.map(({ value, label }) => (
             <TabsTrigger
-              key={tab}
-              value={tab}
-              className={`relative px-4 py-2 text-lg  text-gray-700 transition-all 
-                ${activeTab === tab ? "text-blue-600 " : "text-gray-500"}
-                after:absolute after:bottom-[-2px] after:left-0 after:w-full after:h-[3px] 
-                after:bg-blue-600 after:scale-x-0 after:transition-transform
-                ${activeTab === tab ? "after:scale-x-100" : ""}
+              key={value}
+              value={value}
+              className={`relative px-4 py-2 text-lg transition-all
+                ${activeTab === value ? "text-blue-600" : "text-gray-500"}
+                after:absolute after:bottom-[-2px] after:left-0 after:w-full after:h-[3px]
+                after:bg-blue-600 after:transition-transform
+                ${activeTab === value ? "after:scale-x-100" : "after:scale-x-0"}
               `}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {label}
             </TabsTrigger>
           ))}
         </TabsList>
 
-        <TabsContent value="overview">
-          <div className="p-4">
-            <EventOverView event={event} />
-          </div>
+        <TabsContent value="overview" className="p-4">
+          <EventOverView event={event} />
         </TabsContent>
-        <TabsContent value="vendors">
-          <div className="p-4">
-            <SearchVendor
-              eventType={eventType}
-              allowedCategories={allowedCategories}
-              onSelectCategory={(category) => {
-                console.log("User selected:", category);
-              }}
-            />
-          </div>
+
+        <TabsContent value="vendors" className="p-4">
+          <SearchVendor
+            eventId={event._id}
+            addedBy={event.creator}
+            noOfGuest={event.guestLimit}
+            eventType={event.eventType}
+            allowedCategories={allowedCategories}
+            eventLocation={event.location}
+          />
         </TabsContent>
-        <TabsContent value="guests">
-          <div className="p-4">Guests & RSVPs Page</div>
+
+        <TabsContent value="guests" className="p-4">
+          <VendorsDetail />
         </TabsContent>
-        <TabsContent value="budget">
-          <div className="p-4">Budget Page</div>
+
+        <TabsContent value="budget" className="p-4">
+          Budget Page
         </TabsContent>
       </Tabs>
     </div>

@@ -37,10 +37,10 @@ const Header = () => {
             Events
           </Link>
           <Link
-            href="/contact"
+            href="/vendors"
             className="hover:text-primary-600 hover:text-amber-500 px-1 py-5 text-sm font-medium"
           >
-            Contact
+            Vendors
           </Link>
         </nav>
 

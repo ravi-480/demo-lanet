@@ -2,54 +2,56 @@ import React from "react";
 import { IEvent } from "../../../Interface/interface";
 
 const EventOverView = ({ event }: { event: IEvent }) => {
+  const { budget = { allocated: 0, spent: 0 }, description, rsvp } = event;
+  const remaining = budget.allocated - budget.spent;
+
   return (
     <div>
-      <div>
-        <h1 className="mb-4 text-xl font-bold text-white">Event Description</h1>
+      {/* Description */}
+      <section className="mb-4">
+        <h1 className="text-xl font-bold text-white mb-2">Event Description</h1>
         <p className="text-gray-400">
-          A beautiful summer wedding celebrating Mark and Sarah's special day.
+          {description || "No description provided."}
         </p>
-      </div>
-      <div className="bg-gray-800 mt-2 rounded-2xl p-4">
-        <div className="mb-3">
-          <p className="text-blue-600">Guest Summary</p>
-        </div>
-        <div>
-          <div className="flex mb-1 justify-between items-center">
-            <h1>Total Invited:</h1> <p>{event.rsvp.total}</p>
-          </div>
-          <div className="flex mb-1 justify-between items-center">
-            <h1>Confirmed:</h1>
-            <p className="text-green-700">{event.rsvp.confirmed}</p>
-          </div>
+      </section>
 
-          <div className="flex mb-1 justify-between items-center">
-            <h1>Pending</h1>
-            <p className="text-amber-400">
-              {event.rsvp.total - event.rsvp.confirmed}
-            </p>
+      {/* Guest Summary */}
+      <section className="bg-gray-800 mt-2 rounded-2xl p-4">
+        <p className="text-blue-600 mb-3">Guest Summary</p>
+        <div className="space-y-1">
+          <div className="flex justify-between items-center">
+            <span>Total Invited:</span> <span>{rsvp.total}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span>Confirmed:</span>{" "}
+            <span className="text-green-700">{rsvp.confirmed}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span>Pending:</span>{" "}
+            <span className="text-amber-400">
+              {rsvp.total - rsvp.confirmed}
+            </span>
           </div>
         </div>
-      </div>
-      <div className="bg-green-950 rounded-2xl mt-3 p-4">
-        <div className="mb-3">
-          <p className="text-green-100">Budget Summary</p>
-        </div>
-        <div>
-          <div className="flex mb-1 justify-between items-center">
-            <h1>Total Budget:</h1> <p>120</p>
-          </div>
-          <div className="flex mb-1 justify-between items-center">
-            <h1>Spent:</h1>
-            <p>75</p>
-          </div>
+      </section>
 
-          <div className="flex mb-1 justify-between items-center">
-            <h1>Remainig:</h1>
-            <p className="text-blue-500">30</p>
+      {/* Budget Summary */}
+      <section className="bg-green-950 rounded-2xl mt-3 p-4">
+        <p className="text-green-100 mb-3">Budget Summary</p>
+        <div className="space-y-1">
+          <div className="flex justify-between items-center">
+            <span>Total Budget:</span>{" "}
+            <span>₹{budget.allocated.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span>Spent:</span> <span>₹{budget.spent.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span>Remaining:</span>{" "}
+            <span className="text-blue-500">₹{remaining.toLocaleString()}</span>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 };

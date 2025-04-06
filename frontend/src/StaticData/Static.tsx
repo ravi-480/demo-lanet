@@ -158,7 +158,8 @@ export function formatDate(isoString: string): string {
 
   return `${day}/${month}/${year} • ${hours}:${minutes}${ampm}`;
 }
-
+  
+// Importing event vendor mapping to use inside the component
 export const eventVendorMapping = {
   Wedding: [
     { category: "catering", pricingUnit: "per plate" },
@@ -236,4 +237,24 @@ export const eventVendorMapping = {
     { category: "lighting/sound", pricingUnit: "flat rate" },
     { category: "catering", pricingUnit: "per plate" },
   ],
+};
+
+export const getRandomPrice = (category: string, isFlatRate = false) => {
+  const normalized = category.toLowerCase();
+
+  const priceRanges: Record<string, [number, number]> = {
+    catering: [200, 700],
+    photography: [1500, 2500],
+    videography: [1500, 2500],
+    music: [1500, 2500],
+    musician: [1500, 2500],
+    dancer: [2000, 5000],
+    decoration: [10000, 15000],
+    venue: [30000, 50000],
+    "lighting/sound": [3000, 5000],
+    default: isFlatRate ? [10000, 20000] : [3000, 6000],
+  };
+
+  const [min, max] = priceRanges[normalized] || priceRanges.default;
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 };
