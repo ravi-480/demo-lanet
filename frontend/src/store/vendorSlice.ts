@@ -1,6 +1,7 @@
 // src/store/vendorSlice.ts
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
+import { RootState } from "./store";
 
 export interface VendorType {
   _id?: string;
@@ -39,7 +40,7 @@ const initialState: VendorState = {
   error: null,
 };
 
-// ✅ Create vendor
+//  Create vendor
 export const createVendor = createAsyncThunk<
   VendorType,
   VendorType,
@@ -56,7 +57,7 @@ export const createVendor = createAsyncThunk<
   }
 });
 
-// ✅ Get vendors by event
+// Get vendors by event
 export const getVendorsByEvent = createAsyncThunk<
   VendorType[],
   string,
@@ -72,7 +73,7 @@ export const getVendorsByEvent = createAsyncThunk<
   }
 });
 
-// ✅ Delete vendor
+//  Delete vendor
 export const deleteVendor = createAsyncThunk<
   string,
   string,
@@ -86,7 +87,7 @@ export const deleteVendor = createAsyncThunk<
   }
 });
 
-// ✅ Update vendor
+// Update vendor
 export const updateVendor = createAsyncThunk<
   VendorType,
   { id: string; updatedData: Partial<VendorType> },
@@ -98,6 +99,25 @@ export const updateVendor = createAsyncThunk<
       updatedData
     );
     return response.data as VendorType;
+  } catch (error: any) {
+    return rejectWithValue(error.response?.data || error.message);
+  }
+});
+
+// get vendor by user
+
+export const getVendorByUser = createAsyncThunk<
+  VendorType[],
+  void,
+  { rejectValue: string }
+>("vendors/fetchByUser", async (_, { rejectWithValue }) => {
+  try {
+    const response = await axios.get(
+      "http://localhost:5000/api/vendors/getByUser",
+      { withCredentials: true }
+    );
+
+    return response.data;
   } catch (error: any) {
     return rejectWithValue(error.response?.data || error.message);
   }
@@ -149,9 +169,22 @@ const vendorSlice = createSlice({
         if (index !== -1) {
           state.items[index] = action.payload;
         }
+      })
+      .addCase(getVendorByUser.pending, (state, action) => {
+        (state.status = "loading"), (state.error = null);
+      })
+      .addCase(getVendorByUser.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.items = action.payload;
+        state.error = null;
+      })
+      .addCase(getVendorByUser.rejected, (state, action) => {
+        (state.status = "failed"),
+          (state.error = action.payload || "Failed to fetch vendors by user");
       });
   },
 });
 
 export const { clearVendors } = vendorSlice.actions;
+export const vendorByUser = (state: RootState) => state.vendors;
 export default vendorSlice.reducer;

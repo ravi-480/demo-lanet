@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import ApiError from "./ApiError";
 
-dotenv.config(); // ✅ Load environment variables
+dotenv.config(); 
 
 interface EmailOptions {
   to: string;
@@ -13,7 +13,6 @@ interface EmailOptions {
 
 export const sendEmail = async (options: EmailOptions): Promise<void> => {
   try {
-    // ✅ Create transporter
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: Number(process.env.EMAIL_PORT) || 465,
@@ -24,7 +23,6 @@ export const sendEmail = async (options: EmailOptions): Promise<void> => {
       },
     });
 
-    // ✅ Define email options
     const mailOptions = {
       from: `"${process.env.EMAIL_FROM_NAME}" <${process.env.EMAIL_FROM_ADDRESS}>`,
       to: options.to,
@@ -33,11 +31,11 @@ export const sendEmail = async (options: EmailOptions): Promise<void> => {
       html: options.html,
     };
 
-    // ✅ Send email
+    // Send email
     await transporter.sendMail(mailOptions);
-    console.log(`📩 Email sent successfully to ${options.to}`);
+    console.log(` Email sent successfully to ${options.to}`);
   } catch (error) {
-    console.error("❌ Email send error:", error);
+    console.error("Email send error:", error);
     throw new ApiError(500, "Failed to send email");
   }
 };

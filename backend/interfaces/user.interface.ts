@@ -53,10 +53,8 @@ export interface User {
 export interface IEvent {
   name: string;
   date: Date;
-  time?: string;
   location: string;
   description: string;
-  status: "upcoming" | "completed" | "draft";
   image: string | null;
   budget: {
     allocated: number;

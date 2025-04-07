@@ -82,14 +82,24 @@ export const fetchById = createAsyncThunk(
           withCredentials: true,
         }
       );
-      console.log(response);
-      
+
       return response.data.event;
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch events"
       );
     }
+  }
+);
+
+// update Event
+
+export const updateEvent = createAsyncThunk(
+  "event/updateEvent",
+  async (data: FormData, { rejectWithValue }) => {
+    try {
+      console.log(data);
+    } catch (error) {}
   }
 );
 
@@ -152,7 +162,6 @@ const eventSlice = createSlice({
       .addCase(fetchById.fulfilled, (state, action: PayloadAction<IEvent>) => {
         state.isLoading = false;
         state.singleEvent = action.payload;
-        
       })
       .addCase(fetchById.rejected, (state, action) => {
         state.isLoading = false;
@@ -171,6 +180,6 @@ export const selectEvents = (state: RootState) => state.event.events || [];
 export const selectEventLoading = (state: RootState) => state.event.isLoading;
 export const selectEventError = (state: RootState) => state.event.error;
 // single event
-export const singleEvent = (state: RootState) => state.event.singleEvent
+export const singleEvent = (state: RootState) => state.event.singleEvent;
 
 export default eventSlice.reducer;

@@ -84,7 +84,6 @@ export const loginUser = createAsyncThunk<
 >("auth/login", async (credentials, { rejectWithValue }) => {
   const result = await makeAuthRequest("login", credentials);
 
-  console.log("API response:", result);
 
   if (result.success) {
     // Handle nested data structure from API
@@ -92,7 +91,6 @@ export const loginUser = createAsyncThunk<
     const user = data.user;
     const accessToken = data.accessToken;
 
-    console.log("Extracted values:", { user, accessToken });
 
     // Validate data before storing in cookies
     if (user && accessToken) {

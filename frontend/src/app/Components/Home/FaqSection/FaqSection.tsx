@@ -1,6 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import { DownOutlined } from "@ant-design/icons";
 import { faqData } from "@/StaticData/Static";
 
 const FAQAccordion: React.FC = () => {
@@ -38,7 +37,6 @@ const FAQAccordion: React.FC = () => {
                     faq.isOpen ? "rotate-180" : "rotate-0"
                   }`}
                 >
-                  <DownOutlined className="text-gray-500" />
                 </div>
               </div>
             </button>

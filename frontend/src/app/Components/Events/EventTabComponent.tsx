@@ -8,6 +8,9 @@ import SearchVendor from "./SearchVendor";
 import { eventVendorMapping } from "@/StaticData/Static";
 import VendorsDetail from "./VendorDetail";
 import { RootState } from "@/store/store";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export default function EventTabComponent() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -34,24 +37,32 @@ export default function EventTabComponent() {
   ];
 
   return (
-    <div className="w-[95%] bg-blue-950 mt-4 border-b rounded-2xl p-4 mx-auto">
+    <div className="w-[95%] bg-blue-950 mt-4 border-b rounded-2xl p-5 mx-auto">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="flex gap-6 border-b-2 border-gray-300">
-          {tabs.map(({ value, label }) => (
-            <TabsTrigger
-              key={value}
-              value={value}
-              className={`relative px-4 py-2 text-lg transition-all
+        <div className="flex justify-between">
+          <TabsList className="flex gap-6 border-b-2 border-gray-300">
+            {tabs.map(({ value, label }) => (
+              <TabsTrigger
+                key={value}
+                value={value}
+                className={`relative px-4 py-2 text-lg transition-all
                 ${activeTab === value ? "text-blue-600" : "text-gray-500"}
                 after:absolute after:bottom-[-2px] after:left-0 after:w-full after:h-[3px]
                 after:bg-blue-600 after:transition-transform
                 ${activeTab === value ? "after:scale-x-100" : "after:scale-x-0"}
               `}
-            >
-              {label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+              >
+                {label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          <Link href="/vendors">
+            <Button className="bg-transparent hover:bg-transparent cursor-pointer underline-offset-4  hover:underline">
+              Vendors
+              <ArrowRight />
+            </Button>
+          </Link>
+        </div>
 
         <TabsContent value="overview" className="p-4">
           <EventOverView event={event} />
@@ -68,9 +79,7 @@ export default function EventTabComponent() {
           />
         </TabsContent>
 
-        <TabsContent value="guests" className="p-4">
-          <VendorsDetail />
-        </TabsContent>
+        <TabsContent value="guests" className="p-4"></TabsContent>
 
         <TabsContent value="budget" className="p-4">
           Budget Page

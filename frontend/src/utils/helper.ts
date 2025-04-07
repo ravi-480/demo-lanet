@@ -20,3 +20,15 @@ export function getFilteredVendors(
     return matchesSearch && matchesPrice && matchesRating;
   });
 }
+
+const now = new Date().getTime();
+
+export const getEventStatus = (date?: string | Date): string => {
+  if (!date) return "unknown";
+  try {
+    const eventDate = new Date(date).getTime();
+    return eventDate > now ? "upcoming" : "past";
+  } catch {
+    return "unknown";
+  }
+};

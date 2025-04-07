@@ -9,6 +9,8 @@ import { useSelector } from "react-redux";
 
 const Welcome = () => {
   const events = useSelector(selectEvents) || [];
+
+  // calculating no of upcoming events
   const now = new Date().getTime();
   let val = 0;
   events.filter((event) => {
@@ -18,7 +20,6 @@ const Welcome = () => {
     }
     return val;
   }, 0);
-  console.log(events);
 
   const { user } = useSelector((state: RootState) => state.auth);
   return (

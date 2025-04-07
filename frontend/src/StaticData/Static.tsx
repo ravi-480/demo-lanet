@@ -158,7 +158,7 @@ export function formatDate(isoString: string): string {
 
   return `${day}/${month}/${year} • ${hours}:${minutes}${ampm}`;
 }
-  
+
 // Importing event vendor mapping to use inside the component
 export const eventVendorMapping = {
   Wedding: [
@@ -258,3 +258,39 @@ export const getRandomPrice = (category: string, isFlatRate = false) => {
   const [min, max] = priceRanges[normalized] || priceRanges.default;
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
+
+export const tabs = [
+  { id: "all", label: "All" },
+  { id: "upcoming", label: "Upcoming" },
+  { id: "past", label: "Past" },
+  { id: "draft", label: "Drafts" },
+];
+
+export const testimonials2 = [
+  {
+    id: "t1",
+    name: "Sarah Johnson",
+    image: "/images/testimonial.png",
+    rating: 5,
+    quote:
+      "EventWise helped me stay under budget while planning my dream wedding!",
+    eventType: "Wedding",
+  },
+  {
+    id: "t2",
+    name: "Michael Rodriguez",
+    image: "/images/testimonial.png",
+    rating: 5,
+    quote:
+      "Our company conference was a huge success thanks to the organization tools.",
+    eventType: "Corporate Conference",
+  },
+  {
+    id: "t3",
+    name: "Emily Chen",
+    image: "/images/testimonial.png",
+    rating: 4,
+    quote: "The vendor recommendations saved me hours of research time.",
+    eventType: "Charity Gala",
+  },
+];

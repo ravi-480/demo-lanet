@@ -1,18 +1,12 @@
 import React, { JSX } from "react";
-import {
-  FacebookOutlined,
-  TwitterOutlined,
-  InstagramOutlined,
-  LinkedinOutlined,
-} from "@ant-design/icons";
-import { socialLinks } from "@/StaticData/Static";
 
+import { socialLinks } from "@/StaticData/Static";
+import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
 
 const iconsMap: Record<string, JSX.Element> = {
-  FacebookOutlined: <FacebookOutlined className="text-xl" />,
-  TwitterOutlined: <TwitterOutlined className="text-xl" />,
-  InstagramOutlined: <InstagramOutlined className="text-xl" />,
-  LinkedinOutlined: <LinkedinOutlined className="text-xl" />,
+  TwitterOutlined: <Twitter className="text-xl" />,
+  InstagramOutlined: <Instagram className="text-xl" />,
+  LinkedinOutlined: <Linkedin className="text-xl" />,
 };
 
 const SocialLinks: React.FC = () => {

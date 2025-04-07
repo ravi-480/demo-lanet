@@ -1,23 +1,14 @@
-// "use client";
+"use client";
 
-// import React from "react";
-// import { useSelector } from "react-redux";
-// import { RootState } from "@/store/store";
-// import AddedVendorsList from "../Components/Events/AddedVendors";
-// import { useParams } from "next/navigation";
-// import VendorsDetail from "../Components/Events/VendorDetail";
+import React from "react";
+import VendorsDetail from "../Components/Events/VendorDetail";
 
-// const VendorPAge = () => {
-//   const params = useParams();
-//   const eventId = params.id as string;
+const VendorPAge = () => {
+  return (
+    <div className="p-4">
+      <VendorsDetail />
+    </div>
+  );
+};
 
-//   if (!eventId) return <p className="text-white">No event selected.</p>;
-
-//   return (
-//     <div className="p-4">
-//       <VendorsDetail />
-//     </div>
-//   );
-// };
-
-// export default VendorPAge;
+export default VendorPAge;

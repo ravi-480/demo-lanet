@@ -31,7 +31,6 @@ export const authenticate = asyncHandler(
     try {
       const decoded = verifyToken(token);
       req.user = decoded;
-      console.log("User authenticated:", req.user); // ✅ Debug log
       next();
     } catch (error) {
       console.error("Token verification failed:", error);

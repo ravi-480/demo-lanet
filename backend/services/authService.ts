@@ -16,7 +16,7 @@ import {
 // Environment variables with fallbacks (use actual env vars in production)
 const JWT_ACCESS_SECRET = process.env.JWT_SECRET as string;
 const JWT_REFRESH_SECRET = "refresh-secret-key";
-const ACCESS_TOKEN_EXPIRY = "15m"; // 15 minutes
+const ACCESS_TOKEN_EXPIRY = "25m"; // 25 minutes
 const REFRESH_TOKEN_EXPIRY = "7d";
 
 // Generate tokens

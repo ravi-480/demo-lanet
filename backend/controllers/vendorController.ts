@@ -4,6 +4,12 @@ import { asyncHandler } from "../utils/asyncHandler";
 import { Request, Response } from "express";
 const axios = require("axios");
 
+interface AuthenticatedRequest extends Request {
+  user: {
+    id: string;
+  };
+}
+
 export const getVendor = asyncHandler(async (req: Request, res: Response) => {
   const { query, location, page = 1 } = req.query;
 
@@ -74,13 +80,22 @@ export const addVendors = async (req: Request, res: Response) => {
   }
 };
 
-export const getVendorsByEvent = async (req: Request, res: Response) => {
-  try {
+export const getVendorsByEvent = asyncHandler(
+  async (req: Request, res: Response) => {
     const vendors = await Vendor.find({ event: req.params.eventId });
     res.json(vendors);
-  } catch (error: any) {
-    res
-      .status(500)
-      .json({ message: "Error fetching vendors", error: error.message });
   }
-};
+);
+
+export const getByUser = asyncHandler(async (req: Request, res: Response) => {
+  let reqUser = req as AuthenticatedRequest;
+  const userId = reqUser.user.id;
+
+  if (!userId) {
+    return res.status(401).json({ message: "unauthorized" });
+  }
+  const vendors = await Vendor.find({ addedBy: userId }).sort({
+    createdAt: -1,
+  });
+  return res.status(200).json(vendors);
+});

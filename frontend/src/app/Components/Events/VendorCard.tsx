@@ -69,14 +69,17 @@ const VendorCard = ({
       ? price * numberOfGuests
       : price;
 
-  const dispatch = useDispatch<AppDispatch>(); // ✅ Typed dispatch
+  const dispatch = useDispatch<AppDispatch>();
 
   const handleConfirmAdd = () => {
-    console.log("sdsd");
-    console.log(eventId);
-
     if (!eventId || !addedBy) return;
-    console.log("szzzzzz");
+
+    const adjustedPrice =
+      priceUnit === "per hour" || priceUnit === "per day"
+        ? Number(units) * price
+        : priceUnit === "per plate"
+        ? price * numberOfGuests
+        : price;
 
     const vendorData = {
       event: eventId,
@@ -91,13 +94,12 @@ const VendorCard = ({
       placeId: vendor.place_id || vendor.placeId || "",
       yearsInBusiness: vendor.years_in_business || "",
       phone: vendor.phone || "",
-      price,
+      price: adjustedPrice,
       pricingUnit: priceUnit,
       category,
       numberOfGuests,
       addedBy,
     };
-    console.log("sdsdsds");
 
     dispatch(createVendor(vendorData));
     setShowDialog(false);

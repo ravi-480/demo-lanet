@@ -19,7 +19,7 @@ const EventDetailClient = ({ id }: { id: string }) => {
   return (
     <div className="p-5">
       <EventHeader event={event} />
-      <EventTabs event={event} />
+      <EventTabs />
     </div>
   );
 };

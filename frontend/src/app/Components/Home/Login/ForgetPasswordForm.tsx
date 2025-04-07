@@ -47,7 +47,6 @@ const ForgotPasswordForm = () => {
     },
   });
 
-  // Clean up state when component unmounts
   useEffect(() => {
     return () => {
       dispatch(clearForgotPasswordState());

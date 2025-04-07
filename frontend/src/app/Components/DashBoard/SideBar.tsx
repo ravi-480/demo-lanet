@@ -66,27 +66,7 @@ const SideBar = () => {
         </div>
       </div>
 
-      {/* Quick Links */}
-      <div className="bg-blue-950 rounded-lg shadow-sm p-6">
-        <h2 className="text-lg font-medium text-gray-300 mb-4">Quick Links</h2>
-
-        <div className="space-y-2">
-          <button className="w-full flex items-center p-3 text-left rounded cursor-pointer hover:bg-blue-900">
-            <Calendar className="text-blue-600 mr-3" />
-            <span className="text-gray-300">View Calendar</span>
-          </button>
-
-          <button className="w-full flex items-center p-3 text-left rounded cursor-pointer hover:bg-blue-900">
-            <PieChart size={18} className="text-blue-600 mr-3" />
-            <span className="text-gray-300">Budget Reports</span>
-          </button>
-
-          <button className="w-full flex items-center p-3 text-left rounded cursor-pointer hover:bg-blue-900">
-            <FileText size={18} className="text-blue-600 mr-3" />
-            <span className="text-gray-300">Vendor Contacts</span>
-          </button>
-        </div>
-      </div>
+     
     </div>
   );
 };

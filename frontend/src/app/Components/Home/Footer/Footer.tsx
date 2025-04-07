@@ -1,13 +1,14 @@
 import React from "react";
+
 import {
-  FacebookOutlined,
-  TwitterOutlined,
-  InstagramOutlined,
-  LinkedinOutlined,
-  MailOutlined,
-  PhoneOutlined,
-  HomeOutlined,
-} from "@ant-design/icons";
+  Facebook,
+  Home,
+  Instagram,
+  Linkedin,
+  Mail,
+  Phone,
+  Twitter,
+} from "lucide-react";
 
 const Footer: React.FC = () => {
   return (
@@ -26,25 +27,25 @@ const Footer: React.FC = () => {
                 href="#"
                 className="hover:text-blue-400 transition-colors duration-300"
               >
-                <FacebookOutlined className="text-xl" />
+                <Facebook className="text-xl" />
               </a>
               <a
                 href="#"
                 className="hover:text-blue-400 transition-colors duration-300"
               >
-                <TwitterOutlined className="text-xl" />
+                <Twitter className="text-xl" />
               </a>
               <a
                 href="#"
                 className="hover:text-blue-400 transition-colors duration-300"
               >
-                <InstagramOutlined className="text-xl" />
+                <Instagram className="text-xl" />
               </a>
               <a
                 href="#"
                 className="hover:text-blue-400 transition-colors duration-300"
               >
-                <LinkedinOutlined className="text-xl" />
+                <Linkedin className="text-xl" />
               </a>
             </div>
           </div>
@@ -148,7 +149,7 @@ const Footer: React.FC = () => {
             <h3 className="text-xl font-bold mb-4">Contact Us</h3>
             <ul className="space-y-2">
               <li className="flex items-center">
-                <MailOutlined className="mr-2" />
+                <Mail className="mr-2" />
                 <a
                   href="mailto:info@eventwise.com"
                   className="hover:text-blue-400 transition-colors duration-300"
@@ -157,7 +158,7 @@ const Footer: React.FC = () => {
                 </a>
               </li>
               <li className="flex items-center">
-                <PhoneOutlined className="mr-2" />
+                <Phone className="mr-2" />
                 <a
                   href="tel:+18001234567"
                   className="hover:text-blue-400 transition-colors duration-300"
@@ -166,7 +167,7 @@ const Footer: React.FC = () => {
                 </a>
               </li>
               <li className="flex items-center">
-                <HomeOutlined className="mr-2" />
+                <Home className="mr-2" />
                 <span>
                   123 Event Street, Suite 200
                   <br />

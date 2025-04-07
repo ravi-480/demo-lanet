@@ -161,31 +161,12 @@ const Dashboard = () => {
     "all" | "upcoming" | "past" | "drafts"
   >("all");
 
-  // Calculate budget statistics
-  const totalBudget = sampleEvents.reduce(
-    (sum, event) => sum + event.budget.allocated,
-    0
-  );
-  const totalSpent = sampleEvents.reduce(
-    (sum, event) => sum + event.budget.spent,
-    0
-  );
-  const remainingBudget = totalBudget - totalSpent;
-
   // Format currency
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
     }).format(amount);
-  };
-
-  // Get badge color based on budget status
-  const getBudgetStatusColor = (allocated: number, spent: number) => {
-    const ratio = spent / allocated;
-    if (ratio > 1) return "bg-red-100 text-red-800";
-    if (ratio > 0.8) return "bg-yellow-100 text-yellow-800";
-    return "bg-green-100 text-green-800";
   };
 
   return (
@@ -201,14 +182,7 @@ const Dashboard = () => {
               <EventDisplay />
 
               {/* Budget Summary Section */}
-              <Budget
-                expenses={sampleExpenses}
-                totalBudget={totalBudget}
-                totalSpent={totalSpent}
-                remainingBudget={remainingBudget}
-                events={sampleEvents}
-                formatCurrency={formatCurrency}
-              />
+              <Budget />
             </div>
 
             {/* Sidebar */}
@@ -219,7 +193,6 @@ const Dashboard = () => {
           <Testimonials />
 
           {/* Bottom Section */}
-          {/* <Bottom /> */}
         </div>
       </div>
     </AuthGuard>

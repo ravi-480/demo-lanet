@@ -30,10 +30,7 @@ const eventSchema = new mongoose.Schema(
       type: Date,
       required: [true, "Event date is required"],
     },
-    time: {
-      type: String,
-      required: false,
-    },
+
     location: {
       type: String,
       required: [true, "Event location is required"],
@@ -44,12 +41,7 @@ const eventSchema = new mongoose.Schema(
       required: [true, "Description is required"],
       trim: true,
     },
-    status: {
-      type: String,
-      required: true,
-      enum: ["upcoming", "completed", "draft"],
-      default: "draft",
-    },
+
     image: {
       type: String,
       default: null,
@@ -132,19 +124,6 @@ const eventSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-// Middleware to extract time from date field if not provided separately
-eventSchema.pre("save", function (next) {
-  // If time is not explicitly set, extract it from the date
-  if (!this.time && this.date) {
-    const eventDate = new Date(this.date);
-    this.time = eventDate.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
-  next();
-});
 
 // Transform the budget field from the form to the structured format
 eventSchema.pre("save", function (next) {

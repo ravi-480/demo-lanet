@@ -9,7 +9,6 @@ export interface IEvent {
   time: string;
   location: string;
   description: string;
-  status: string;
   image: string;
   budget: {
     allocated: number;
@@ -123,9 +122,6 @@ export interface Event {
 }
 
 export interface BudgetProps {
-  totalBudget: number;
-  totalSpent: number;
-  remainingBudget: number;
   expenses: Expense[];
   events: Event[];
   formatCurrency: (amount: number) => string;
@@ -162,3 +158,5 @@ export interface BaseVendor {
   numberOfGuests: number;
   addedBy: string;
 }
+
+

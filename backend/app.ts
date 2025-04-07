@@ -18,7 +18,7 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: "http://localhost:3000",
-    credentials: true, // ✅ Allow cookies and credentials
+    credentials: true,
   })
 ); // Enable CORS
 app.use(morgan("dev")); // HTTP request logger
