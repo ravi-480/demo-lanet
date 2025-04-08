@@ -1,6 +1,5 @@
 import { SliderImage } from "@/Types/type";
 import { EventType } from "react-hook-form";
-// Interface/interface.ts
 
 export interface IEvent {
   _id: string;
@@ -98,8 +97,6 @@ export interface StandardResponse {
   message: string;
 }
 
-
-
 export interface CustomEvent {
   id: string;
   name: string;
@@ -116,6 +113,29 @@ export interface CustomEvent {
     confirmed: number;
     total: number;
   };
+}
+
+export interface VendorType {
+  _id?: string;
+  event: string;
+  title: string;
+  type: string;
+  address: string;
+  rating: number;
+  reviews: number;
+  description?: string;
+  website?: string;
+  directionsLink?: string;
+  placeId: string;
+  yearsInBusiness?: string;
+  phone?: string;
+  price: number;
+  pricingUnit: string;
+  category: string;
+  numberOfGuests: number;
+  addedBy: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Expense {
@@ -147,7 +167,6 @@ export interface Testimonials1 {
   eventType: string;
 }
 
-// shared/types.ts
 export interface BaseVendor {
   event: string;
   title: string;
@@ -162,8 +181,24 @@ export interface BaseVendor {
   yearsInBusiness?: string;
   phone?: string;
   price: number;
+
   pricingUnit: string;
   category: string;
   numberOfGuests: number;
   addedBy: string;
+}
+
+// split vendor interface
+
+export interface SplitVendor {
+  vendorId: string;
+  title: string;
+  category: string;
+  price: number;
+  pricingUnit: string;
+}
+
+export interface SplitState {
+  eventId: string | null;
+  vendors: SplitVendor[];
 }

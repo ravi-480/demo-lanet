@@ -2,29 +2,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
 import { RootState } from "./store";
-
-export interface VendorType {
-  _id?: string;
-  event: string;
-  title: string;
-  type: string;
-  address: string;
-  rating: number;
-  reviews: number;
-  description?: string;
-  website?: string;
-  directionsLink?: string;
-  placeId: string;
-  yearsInBusiness?: string;
-  phone?: string;
-  price: number;
-  pricingUnit: string;
-  category: string;
-  numberOfGuests: number;
-  addedBy: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
+import { VendorType } from "@/Interface/interface";
 
 type StatusType = "idle" | "loading" | "succeeded" | "failed";
 
@@ -87,23 +65,6 @@ export const deleteVendor = createAsyncThunk<
   }
 });
 
-// Update vendor
-export const updateVendor = createAsyncThunk<
-  VendorType,
-  { id: string; updatedData: Partial<VendorType> },
-  { rejectValue: string }
->("vendors/updateVendor", async ({ id, updatedData }, { rejectWithValue }) => {
-  try {
-    const response = await axios.put(
-      `http://localhost:5000/api/vendors/${id}`,
-      updatedData
-    );
-    return response.data as VendorType;
-  } catch (error: any) {
-    return rejectWithValue(error.response?.data || error.message);
-  }
-});
-
 // get vendor by user
 
 export const getVendorByUser = createAsyncThunk<
@@ -161,14 +122,6 @@ const vendorSlice = createSlice({
         state.items = state.items.filter(
           (vendor) => vendor._id !== action.payload
         );
-      })
-      .addCase(updateVendor.fulfilled, (state, action) => {
-        const index = state.items.findIndex(
-          (v) => v._id === action.payload._id
-        );
-        if (index !== -1) {
-          state.items[index] = action.payload;
-        }
       })
       .addCase(getVendorByUser.pending, (state, action) => {
         (state.status = "loading"), (state.error = null);
