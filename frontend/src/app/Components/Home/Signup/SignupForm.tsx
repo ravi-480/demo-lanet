@@ -23,21 +23,8 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-
-const formSchema = z
-  .object({
-    name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-    email: z.string().email({ message: "Please enter a valid email address." }),
-    password: z
-      .string()
-      .min(8, { message: "Password must be at least 8 characters." }),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+import { signupformSchema } from "@/schemas/ValidationSchema";
+import { SignupPayload } from "@/Interface/interface";
 
 const SignupForm = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -45,8 +32,12 @@ const SignupForm = () => {
   const authError = useSelector(selectAuthError);
   const authStatus = useSelector(selectAuthStatus);
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(signupformSchema),
     defaultValues: {
       name: "",
       email: "",
@@ -55,12 +46,7 @@ const SignupForm = () => {
     },
   });
 
-  const onSubmit = async (values: {
-    name: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-  }) => {
+  const onSubmit = async (values: SignupPayload) => {
     const resultAction = await dispatch(signupUser(values));
 
     if (signupUser.fulfilled.match(resultAction)) {
@@ -92,19 +78,17 @@ const SignupForm = () => {
           </Alert>
         )}
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-1">
             <label htmlFor="name">Full Name</label>
             <Input
               id="name"
               placeholder="John Doe"
               className="bg-transparent"
-              {...form.register("name")}
+              {...register("name")}
             />
-            {form.formState.errors.name && (
-              <p className="text-sm text-red-500">
-                {form.formState.errors.name.message}
-              </p>
+            {errors.name && (
+              <p className="text-sm text-red-500">{errors.name.message}</p>
             )}
           </div>
 
@@ -117,12 +101,10 @@ const SignupForm = () => {
               className={`bg-transparent ${
                 isEmailInUseError ? "border-red-500" : ""
               }`}
-              {...form.register("email")}
+              {...register("email")}
             />
-            {form.formState.errors.email && (
-              <p className="text-sm text-red-500">
-                {form.formState.errors.email.message}
-              </p>
+            {errors.email && (
+              <p className="text-sm text-red-500">{errors.email.message}</p>
             )}
             {isEmailInUseError && (
               <p className="text-red-500 text-sm mt-1">
@@ -138,12 +120,10 @@ const SignupForm = () => {
               type="password"
               placeholder="********"
               className="bg-transparent"
-              {...form.register("password")}
+              {...register("password")}
             />
-            {form.formState.errors.password && (
-              <p className="text-sm text-red-500">
-                {form.formState.errors.password.message}
-              </p>
+            {errors.password && (
+              <p className="text-sm text-red-500">{errors.password.message}</p>
             )}
           </div>
 
@@ -154,11 +134,11 @@ const SignupForm = () => {
               type="password"
               placeholder="********"
               className="bg-transparent"
-              {...form.register("confirmPassword")}
+              {...register("confirmPassword")}
             />
-            {form.formState.errors.confirmPassword && (
+            {errors.confirmPassword && (
               <p className="text-sm text-red-500">
-                {form.formState.errors.confirmPassword.message}
+                {errors.confirmPassword.message}
               </p>
             )}
           </div>

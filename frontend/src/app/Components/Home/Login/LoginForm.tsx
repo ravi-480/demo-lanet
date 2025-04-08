@@ -26,16 +26,12 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { loginformSchema } from "@/schemas/ValidationSchema";
 
 // Configure axios
 axios.defaults.withCredentials = true;
 
 // Form schema for validation
-const formSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address." }),
-  password: z.string().min(1, { message: "Password is required." }),
-});
 
 export default function LoginForm() {
   const dispatch = useDispatch<AppDispatch>();
@@ -44,8 +40,12 @@ export default function LoginForm() {
   const authStatus = useSelector(selectAuthStatus);
   const { user } = useSelector((state: RootState) => state.auth);
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(loginformSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -67,13 +67,8 @@ export default function LoginForm() {
     }
   }, [user, authStatus, router]);
 
-  const onSubmit = async (values: { email: any; password: any }) => {
-    await dispatch(
-      loginUser({
-        email: values.email,
-        password: values.password,
-      })
-    );
+  const onSubmit = async (values: { email: string; password: string }) => {
+    await dispatch(loginUser(values));
   };
 
   return (
@@ -92,19 +87,17 @@ export default function LoginForm() {
           </Alert>
         )}
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-1">
             <label htmlFor="email">Email</label>
             <Input
               id="email"
               type="email"
               className="bg-transparent"
-              {...form.register("email")}
+              {...register("email")}
             />
-            {form.formState.errors.email && (
-              <p className="text-sm text-red-500">
-                {form.formState.errors.email.message}
-              </p>
+            {errors.email && (
+              <p className="text-sm text-red-500">{errors.email.message}</p>
             )}
           </div>
 
@@ -114,12 +107,10 @@ export default function LoginForm() {
               id="password"
               type="password"
               className="bg-transparent"
-              {...form.register("password")}
+              {...register("password")}
             />
-            {form.formState.errors.password && (
-              <p className="text-sm text-red-500">
-                {form.formState.errors.password.message}
-              </p>
+            {errors.password && (
+              <p className="text-sm text-red-500">{errors.password.message}</p>
             )}
             <div className="text-right mt-1">
               <Link

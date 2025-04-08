@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { RootState } from "@/store/store";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useEffect, useState } from "react";
+import React, {  useState } from "react";
 import { useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 import { z } from "zod";
@@ -37,7 +37,7 @@ type EventFormValues = z.infer<typeof eventFormSchema>;
 
 interface EventFormProps {
   initialData?: Partial<IEvent>;
-  onSubmit: (formData: FormData) => void;
+  onSubmit: (data: FormData) => void;
   isEditing?: boolean;
 }
 
@@ -49,14 +49,13 @@ const EventForm: React.FC<EventFormProps> = ({
   const { isLoading } = useSelector((state: RootState) => state.event);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(
-    initialData?.image || null
+    initialData?.image ?? null
   );
 
   const {
     register,
     handleSubmit,
     setValue,
-    reset,
     formState: { errors },
   } = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
@@ -93,6 +92,8 @@ const EventForm: React.FC<EventFormProps> = ({
     onSubmit(formData);
   };
 
+  
+
   return (
     <div className="bg-blue-950 max-w-2xl p-6 mx-auto mt-4 rounded-lg">
       <h1 className="text-center font-bold mb-6 text-white">
@@ -100,7 +101,6 @@ const EventForm: React.FC<EventFormProps> = ({
       </h1>
 
       <form onSubmit={handleSubmit(submitHandler)}>
-        {/* All form fields here... */}
         <div className="mt-4">
           <Label htmlFor="name">Event Name</Label>
           <Input {...register("name")} id="name" />

@@ -44,6 +44,14 @@ export interface IAuthResponse {
   };
 }
 
+export interface ISignupResponse {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
 export interface User {
   user?: string;
 }

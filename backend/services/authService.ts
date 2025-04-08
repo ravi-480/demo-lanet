@@ -2,15 +2,16 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import crypto from "crypto";
-import { sendEmail } from "../utils/emailService"; // You'll need to implement this
+import { sendEmail } from "../utils/emailService";
 
 import User from "../models/UserModel";
 import ApiError from "../utils/ApiError";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import {
   ISignupRequest,
   ILoginRequest,
   IAuthResponse,
+  ISignupResponse,
 } from "../interfaces/user.interface";
 
 // Environment variables with fallbacks (use actual env vars in production)
@@ -35,7 +36,7 @@ const generateRefreshToken = (userId: string): string => {
 // Auth service functions
 export const signup = async (
   userData: ISignupRequest
-): Promise<IAuthResponse> => {
+): Promise<ISignupResponse> => {
   if (userData.password !== userData.confirmPassword) {
     throw new ApiError(400, "Passwords do not match");
   }
@@ -52,17 +53,9 @@ export const signup = async (
     password: userData.password,
   });
 
-  // Generate tokens
-  const accessToken = generateAccessToken(user._id.toString(), user.email);
-  const refreshToken = generateRefreshToken(user._id.toString());
-
-  // Store refresh token in database
-  user.refreshToken = refreshToken;
   await user.save();
 
   return {
-    accessToken,
-    refreshToken,
     user: {
       id: user._id.toString(),
       name: user.name,
@@ -70,6 +63,8 @@ export const signup = async (
     },
   };
 };
+
+// login user
 
 export const login = async (
   loginData: ILoginRequest

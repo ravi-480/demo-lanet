@@ -84,10 +84,21 @@ export interface LoginResponse {
   token: string;
 }
 
+// signup payload type
+
+export interface SignupPayload {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
 export interface StandardResponse {
   success: boolean;
   message: string;
 }
+
+
 
 export interface CustomEvent {
   id: string;
@@ -136,8 +147,6 @@ export interface Testimonials1 {
   eventType: string;
 }
 
-
-
 // shared/types.ts
 export interface BaseVendor {
   event: string;
@@ -158,5 +167,3 @@ export interface BaseVendor {
   numberOfGuests: number;
   addedBy: string;
 }
-
-

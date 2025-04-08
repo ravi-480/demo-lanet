@@ -2,7 +2,11 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
 import type { RootState } from "./store";
 import Cookies from "js-cookie";
-import { LoginResponse, StandardResponse } from "@/Interface/interface";
+import {
+  LoginResponse,
+  SignupPayload,
+  StandardResponse,
+} from "@/Interface/interface";
 import { User } from "@/Types/type";
 
 interface AuthState {
@@ -78,19 +82,17 @@ const makeAuthRequest = async (url: string, data: any) => {
 
 // Thunks
 export const loginUser = createAsyncThunk<
-  LoginResponse,
-  { email: string; password: string },
+  LoginResponse,  // response type
+  { email: string; password: string },  
   { rejectValue: string }
 >("auth/login", async (credentials, { rejectWithValue }) => {
   const result = await makeAuthRequest("login", credentials);
-
 
   if (result.success) {
     // Handle nested data structure from API
     const data = result.data.data || result.data;
     const user = data.user;
     const accessToken = data.accessToken;
-
 
     // Validate data before storing in cookies
     if (user && accessToken) {
@@ -115,11 +117,10 @@ export const loginUser = createAsyncThunk<
   return rejectWithValue(result.message);
 });
 
-// Rest of your thunks remain the same
 
 export const signupUser = createAsyncThunk<
-  StandardResponse,
-  { name: string; email: string; password: string; confirmPassword: string },
+  StandardResponse, // return type
+  SignupPayload, // arguement type we are expecting
   { rejectValue: string }
 >("auth/signup", async (userData, { rejectWithValue }) => {
   const result = await makeAuthRequest("signup", userData);
@@ -134,9 +135,6 @@ export const signupUser = createAsyncThunk<
 
   return rejectWithValue(result.message);
 });
-
-
-
 
 export const forgotPassword = createAsyncThunk<
   StandardResponse,

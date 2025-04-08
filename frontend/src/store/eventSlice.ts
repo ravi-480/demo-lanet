@@ -98,8 +98,45 @@ export const updateEvent = createAsyncThunk(
   "event/updateEvent",
   async (data: FormData, { rejectWithValue }) => {
     try {
-      console.log(data);
-    } catch (error) {}
+      let formData = Object.fromEntries(data.entries());
+
+      const response = await axios.put(
+        `http://localhost:5000/api/events/updateEvent`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data", // without this file wont go in backend
+          },
+          withCredentials: true,
+        }
+      );
+      console.log("updated successfully");
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to update event"
+      );
+    }
+  }
+);
+
+// Delete Event
+
+export const deleteEvent = createAsyncThunk(
+  "event/deleteEvent",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:5000/api/events/deleteEvent/${id}`,
+        {
+          withCredentials: true,
+        }
+      );
+      console.log(response);
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to delete Event"
+      );
+    }
   }
 );
 
@@ -169,6 +206,38 @@ const eventSlice = createSlice({
           typeof action.payload == "string"
             ? action.payload
             : "Failed to fetch event by Id";
+      })
+
+      // update event
+      .addCase(updateEvent.pending, (state, action) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updateEvent.fulfilled, (state, action) => {
+        state.isLoading = false;
+      })
+      .addCase(updateEvent.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error =
+          typeof action.payload == "string"
+            ? action.payload
+            : "Failed to fetch event by id";
+      })
+
+      // delete event
+      .addCase(deleteEvent.pending, (state, action) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(deleteEvent.fulfilled, (state, action) => {
+        state.isLoading = false;
+      })
+      .addCase(deleteEvent.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error =
+          typeof action.payload == "string"
+            ? action.payload
+            : "Failed to delete Event";
       });
   },
 });

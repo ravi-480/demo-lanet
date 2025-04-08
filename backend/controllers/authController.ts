@@ -12,20 +12,10 @@ export const signup = asyncHandler(async (req: Request, res: Response) => {
   const userData: ISignupRequest = req.body;
   const result = await authService.signup(userData);
 
-  // Store refresh token in HttpOnly cookie
-  res.cookie("refreshToken", result.refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    path: "/",
-  });
-
   res.status(201).json({
     success: true,
     message: "Signup successful",
     data: {
-      accessToken: result.accessToken,
       user: result.user,
     },
   });

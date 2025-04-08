@@ -26,7 +26,7 @@ const Budget = () => {
           <TableRow className="hover:bg-transparent">
             <TableHead className="text-white">Date</TableHead>
             <TableHead className="text-white">Name</TableHead>
-              <TableHead className="text-white">Category</TableHead>
+            <TableHead className="text-white">Category</TableHead>
             <TableHead className="text-white">Amount</TableHead>
           </TableRow>
         </TableHeader>

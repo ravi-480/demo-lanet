@@ -44,7 +44,6 @@ const Testimonials: React.FC = () => {
           </div>
         </div>
 
-        {/* Pagination Dots */}
         <div className="flex justify-center mt-4 space-x-2">
           {testimonials2.map((_, index) => (
             <button
