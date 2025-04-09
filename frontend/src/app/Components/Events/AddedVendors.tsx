@@ -13,10 +13,20 @@ import {
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { VendorType } from "@/Interface/interface";
-import { addVendorToSplit } from "@/store/splitSlice";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { addToSplitVendors } from "@/store/splitSlice";
+import { fetchById, singleEvent } from "@/store/eventSlice";
 
 const AddedVendorsList = ({ eventId }: { eventId: string }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const event = useSelector(singleEvent);
+
+  useEffect(() => {
+    dispatch(fetchById(eventId));
+  }, [dispatch, eventId]);
+
+  console.log(event);
 
   const { items: vendors, status } = useSelector(
     (state: RootState): { items: VendorType[]; status: string } => state.vendors
@@ -29,6 +39,17 @@ const AddedVendorsList = ({ eventId }: { eventId: string }) => {
   const [addToSplit, setAddToSplit] = useState<{ [vendorId: string]: boolean }>(
     {}
   );
+
+  // check if vendors in db than checkbox must be tick
+  useEffect(() => {
+    if (Array.isArray(event?.vendorsInSplit)) {
+      const initialState: { [vendorId: string]: boolean } = {};
+      event.vendorsInSplit.forEach((v: { vendorId: string }) => {
+        initialState[v.vendorId] = true;
+      });
+      setAddToSplit(initialState);
+    }
+  }, [event]);
 
   if (status === "loading")
     return <p className="text-white">Loading vendors...</p>;
@@ -45,13 +66,30 @@ const AddedVendorsList = ({ eventId }: { eventId: string }) => {
   };
 
   const handleSaveSplit = () => {
-    const selected = vendors.filter((vendor) => addToSplit[vendor._id!]);
-    dispatch(addVendorToSplit({ selected, eventId: selected[0].addedBy }));
+    const selected = vendors
+      .filter((vendor) => addToSplit[vendor._id!])
+      .map((vendor) => ({
+        vendorId: vendor._id!,
+        price: vendor.price!,
+        title: vendor.title,
+        includedAt: new Date().toISOString(),
+      }));
+
+    if (selected.length > 0) {
+      dispatch(addToSplitVendors({ selected, eventId }));
+    }
   };
 
   return (
     <div className="bg-gray-900 p-4 rounded-xl">
-      <h2 className="text-xl font-bold text-white mb-4">Added Vendors</h2>
+      <div className="flex  justify-between">
+        <h2 className="text-xl  font-bold text-white mb-4">Added Vendors</h2>
+        <Link href="vendor-cart/splitted-vendors">
+          <Button className="bg-cyan-400 hover:bg-cyan-500 cursor-pointer">
+            Go to split <ArrowRight />
+          </Button>
+        </Link>
+      </div>
       <div className="overflow-x-auto">
         <Table className="min-w-full text-sm text-left text-gray-200">
           <TableHeader>
@@ -99,7 +137,7 @@ const AddedVendorsList = ({ eventId }: { eventId: string }) => {
           onClick={handleSaveSplit}
           className="bg-green-600 text-white cursor-pointer hover:bg-green-700"
         >
-          Add to Split
+          Save & Add Split
         </Button>
       </div>
     </div>

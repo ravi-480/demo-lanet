@@ -37,7 +37,8 @@ export const buildEventData = (
     ...(userId && {
       creator: new mongoose.Types.ObjectId(userId),
       status: "upcoming",
-      attendees: [],
+      vendorsInSplit: [],
+      includedInSplit: [],
     }),
   };
 };

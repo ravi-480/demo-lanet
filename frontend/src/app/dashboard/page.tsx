@@ -191,7 +191,7 @@ const Dashboard = () => {
           </div>
 
           {/* Testimonials Section */}
-          <Testimonials />
+          {/* <Testimonials /> */}
 
           {/* Bottom Section */}
         </div>

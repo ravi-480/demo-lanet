@@ -6,13 +6,12 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import EventOverView from "./EventOverView";
 import SearchVendor from "./SearchVendor";
 import { eventVendorMapping } from "@/StaticData/Static";
-import VendorsDetail from "./VendorDetail";
 import { RootState } from "@/store/store";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
-export default function EventTabComponent() {
+export default function EventTabComponent({ id }: { id: string }) {
   const [activeTab, setActiveTab] = useState("overview");
   const event = useSelector((state: RootState) => state.event.singleEvent);
 
@@ -56,7 +55,7 @@ export default function EventTabComponent() {
               </TabsTrigger>
             ))}
           </TabsList>
-          <Link href="/vendors">
+          <Link href={`${id}/vendor-cart`}>
             <Button className="bg-transparent hover:bg-transparent cursor-pointer underline-offset-4  hover:underline">
               Vendors
               <ArrowRight />

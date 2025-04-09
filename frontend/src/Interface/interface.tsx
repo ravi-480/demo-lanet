@@ -18,8 +18,19 @@ export interface IEvent {
     confirmed: number;
     total: number;
   };
+  includedInSplit: {
+    userId: string;
+    name: string;
+    email: string;
+    joinedAt?: Date;
+  };
+  vendorsInSplit: {
+    vendorId: string;
+    title: string;
+    price: string;
+    includedAt?: Date;
+  };
   creator: string;
-  attendees: string[];
   eventType: EventType;
   durationInDays: number;
   createdAt: string | Date;
@@ -200,5 +211,11 @@ export interface SplitVendor {
 
 export interface SplitState {
   eventId: string | null;
-  vendors: SplitVendor[];
+  splitVendors: SplitVendor[];
+}
+
+export interface SplitUser {
+  name: string;
+  email: string;
+  status: "pending" | "confirmed";
 }

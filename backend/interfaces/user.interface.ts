@@ -56,8 +56,6 @@ export interface User {
   user?: string;
 }
 
-// File: /Interface/interface.ts
-
 export interface IEvent {
   name: string;
   date: Date;
@@ -73,12 +71,21 @@ export interface IEvent {
     total: number;
     confirmed: number;
   };
-  creator: string;
-  attendees: Array<{
+  includedInSplit: {
     userId: string;
-    status: "pending" | "confirmed" | "declined";
-    responseDate: Date;
-  }>;
+    name: string;
+    email: string;
+    joinedAt?: Date;
+  }[];
+
+  vendorsInSplit: {
+    // vendorId: string;
+    title: string;
+    price: string;
+    includedAt?: Date;
+  }[];
+  creator: string;
+
   createdAt?: Date;
   updatedAt?: Date;
 }

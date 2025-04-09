@@ -1,22 +1,64 @@
-import { SplitState } from "@/Interface/interface";
-import { Action, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { RootState } from "./store";
+import axios from "axios";
 
-const initialState: SplitState = {
-  eventId: null,
-  vendors: [],
+const initialState = {
+  eventId: "",
+  splittedVendors: [],
+  personInSplit: [],
+  status: "idle",
 };
+
+export const addToSplitVendors = createAsyncThunk(
+  "vendorSplit/addToSplit",
+  async (vendorData: {}, { rejectWithValue }) => {
+    console.log(vendorData);
+
+    const response = axios.post(
+      "http://localhost:5000/api/vendors/addToSplit",
+      vendorData,
+      { withCredentials: true }
+    );
+
+    console.log(response);
+  }
+);
+interface AddUserPayload {
+  user: { name: string; email: string };
+  id: string;
+}
+
+export const addUserInSplit = createAsyncThunk(
+  "addUser/addToSplit",
+  async (userData: AddUserPayload, { rejectWithValue }) => {
+    const response = await axios.post(
+      "http://localhost:5000/api/vendors/addUserToSplit",
+      userData,
+      { withCredentials: true }
+    );
+  }
+);
+
+
 
 const splitVendorPrice = createSlice({
   name: "split",
   initialState,
-  reducers: {
-    addVendorToSplit: (state, action) => {
-      (state.eventId = action.payload.eventId),
-        (state.vendors = action.payload.selected);
-    },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(addToSplitVendors.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(addToSplitVendors.fulfilled, (state) => {
+        state.status = "success";
+      })
+      .addCase(addToSplitVendors.rejected, (state) => {
+        state.status = "failed";
+      });
   },
 });
 
-export const { addVendorToSplit } = splitVendorPrice.actions;
-
+export const {} = splitVendorPrice.actions;
+export const spliitedVendors = (state: RootState) => state.splitPrice;
 export default splitVendorPrice.reducer;

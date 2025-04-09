@@ -99,3 +99,44 @@ export const getByUser = asyncHandler(async (req: Request, res: Response) => {
   });
   return res.status(200).json(vendors);
 });
+
+// add vendor in split
+
+export const addVendorInSplit = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { eventId, selected } = req.body;
+
+    const event = await Event.findById(eventId);
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    if (!Array.isArray(event.vendorsInSplit)) {
+      event.vendorsInSplit = [];
+    }
+
+    event.vendorsInSplit = [...selected];
+    await event.save();
+    res
+      .status(200)
+      .json({ status: "success", message: "Vendor added successfully" });
+  }
+);
+
+// add user in split
+
+export const addUserInSplit = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id, user } = req.body;
+
+    const event = await Event.findById(id);
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    if (!Array.isArray(event.includedInSplit)) {
+      event.includedInSplit = [];
+    }
+
+
+     event.includedInSplit = [...event.includedInSplit, user];
+     await event.save()
+     
+  }
+);

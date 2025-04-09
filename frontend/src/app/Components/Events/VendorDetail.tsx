@@ -1,20 +1,18 @@
 "use client";
 
 import React from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store/store";
 import AddedVendorsList from "./AddedVendors";
 
-const VendorsDetail = () => {
-  const event = useSelector((state: RootState) => state.event.singleEvent);
+const VendorsDetail = ({ eventId }: { eventId: string }) => {
+  console.log(eventId);
 
-  if (!event) {
+  if (!eventId) {
     return <p className="text-white">No event selected.</p>;
   }
 
   return (
     <>
-      <AddedVendorsList eventId={event._id} />
+      <AddedVendorsList eventId={eventId} />
     </>
   );
 };

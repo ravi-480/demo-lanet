@@ -84,6 +84,31 @@ const eventSchema = new mongoose.Schema(
         { _id: false }
       ),
     },
+
+    includedInSplit: {
+      type: [
+        {
+          // userId: { type: Schema.Types.ObjectId, ref: "User" },
+
+          name: String,
+          email: String,
+          joinedAt: { type: Date, default: Date.now },
+        },
+      ],
+      default: [],
+    },
+    vendorsInSplit: {
+      type: [
+        {
+          vendorId: { type: Schema.Types.ObjectId, ref: "Vendor" },
+          title: String,
+          price: Number,
+          includedAt: { type: Date, default: Date.now },
+        },
+      ],
+      default: [],
+    },
+
     creator: {
       type: Schema.Types.ObjectId,
       ref: "User",
@@ -99,33 +124,10 @@ const eventSchema = new mongoose.Schema(
       required: [true, "Duration in days is required"],
       min: [1, "Duration must be at least 1 day"],
     },
-    attendees: [
-      {
-        type: new mongoose.Schema(
-          {
-            userId: {
-              type: Schema.Types.ObjectId,
-              ref: "User",
-            },
-            status: {
-              type: String,
-              enum: ["pending", "confirmed", "declined"],
-              default: "pending",
-            },
-            responseDate: {
-              type: Date,
-              default: Date.now,
-            },
-          },
-          { _id: false }
-        ),
-      },
-    ],
   },
   { timestamps: true }
 );
 
-// Transform the budget field from the form to the structured format
 eventSchema.pre("save", function (next) {
   // Handle the case where budget might come in as a plain number
   if (this.isNew && typeof this.budget === "number") {
@@ -152,7 +154,6 @@ eventSchema.pre("save", function (next) {
 eventSchema.index({ creator: 1 });
 eventSchema.index({ date: 1 });
 eventSchema.index({ status: 1 });
-eventSchema.index({ "attendees.userId": 1 });
 
 const Event = mongoose.model<EventDocument>("Event", eventSchema);
 export default Event;
