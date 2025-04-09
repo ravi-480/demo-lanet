@@ -73,13 +73,14 @@ export interface IEvent {
   };
   includedInSplit: {
     userId: string;
+    status: string;
     name: string;
     email: string;
     joinedAt?: Date;
   }[];
 
   vendorsInSplit: {
-    // vendorId: string;
+    vendorId: string;
     title: string;
     price: string;
     includedAt?: Date;

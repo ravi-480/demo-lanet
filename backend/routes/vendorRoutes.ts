@@ -8,6 +8,7 @@ import {
   getByUser,
   getVendor,
   getVendorsByEvent,
+  sendMailToUser
 } from "../controllers/vendorController";
 
 const router = Router();
@@ -20,5 +21,9 @@ router.get("/getByUser", authenticate, getByUser);
 // add to split
 router.post("/addToSplit", addVendorInSplit);
 router.post("/addUserToSplit",addUserInSplit)
+
+// send mail rout
+
+router.post("/send-mail",sendMailToUser)
 
 export default router;

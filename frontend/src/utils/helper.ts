@@ -1,3 +1,5 @@
+import axios from "axios";
+
 export function getFilteredVendors(
   vendors: any[],
   searchTerm: string,
@@ -30,5 +32,30 @@ export const getEventStatus = (date?: string | Date): string => {
     return eventDate > now ? "upcoming" : "past";
   } catch {
     return "unknown";
+  }
+};
+
+export const handleSendRequest = async (users: any, totalCost: number) => {
+  const recipients = users.map((user: any) => user.email);
+  const subject = "Split Expense Request";
+  const body = `
+    <h3>Hello from Split App</h3>
+    <p>The total expense is ₹${totalCost}. Please confirm your contribution.</p>
+  `;
+
+  try {
+    const res = await axios.post(
+      "http://localhost:5000/api/vendors/send-mail",
+      {
+        recipients,
+        subject,
+        body,
+      }
+    );
+    console.log("Success:", res.data.message);
+    alert("Emails sent!");
+  } catch (err: any) {
+    console.error("Failed to send email", err);
+    alert("Something went wrong.");
   }
 };

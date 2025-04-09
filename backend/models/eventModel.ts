@@ -89,7 +89,10 @@ const eventSchema = new mongoose.Schema(
       type: [
         {
           // userId: { type: Schema.Types.ObjectId, ref: "User" },
-
+          status: {
+            type: String,
+            default: "pending",
+          },
           name: String,
           email: String,
           joinedAt: { type: Date, default: Date.now },

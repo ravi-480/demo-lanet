@@ -2,6 +2,7 @@ import Vendor, { VendorDocument } from "../models/vendorModel";
 import Event, { EventDocument } from "../models/eventModel";
 import { asyncHandler } from "../utils/asyncHandler";
 import { Request, Response } from "express";
+import { sendEmail } from "../utils/emailService";
 const axios = require("axios");
 
 interface AuthenticatedRequest extends Request {
@@ -134,9 +135,29 @@ export const addUserInSplit = asyncHandler(
       event.includedInSplit = [];
     }
 
-
-     event.includedInSplit = [...event.includedInSplit, user];
-     await event.save()
-     
+    event.includedInSplit = [...event.includedInSplit, user];
+    await event.save();
   }
 );
+
+// send mail to users
+
+export const sendMailToUser = asyncHandler(async (req, res) => {
+  const { recipients, subject, body } = req.body;
+
+  try {
+    for (const email of recipients) {
+      await sendEmail({
+        to: email,
+        subject,
+        text: "",
+        html: body,
+      });
+    }
+
+    res.status(200).json({ message: "Emails sent successfully!" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to send emails." });
+  }
+});

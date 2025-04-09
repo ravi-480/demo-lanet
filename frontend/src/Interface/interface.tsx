@@ -219,3 +219,22 @@ export interface SplitUser {
   email: string;
   status: "pending" | "confirmed";
 }
+
+
+export interface SplitUser {
+  userId: string;
+  name: string;
+  status: "pending" | "confirmed";
+  email: string;
+  joinedAt?: Date | undefined;
+}
+
+export interface Vendor {
+  title: string;
+  price: number;
+}
+
+export interface Props {
+  users: SplitUser[];
+  vendors: Vendor[];
+}
