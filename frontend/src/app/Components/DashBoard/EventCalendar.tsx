@@ -26,7 +26,7 @@ const EventCalendar = () => {
       modifiersClassNames={{
         darken: "text-gray-500 bg-gray-950 rounded-full",
       }}
-      className="rounded-lg border p-7"
+      className="rounded-lg border "
     />
   );
 };

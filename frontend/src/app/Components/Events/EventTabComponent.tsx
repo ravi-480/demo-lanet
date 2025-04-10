@@ -36,7 +36,7 @@ export default function EventTabComponent({ id }: { id: string }) {
   ];
 
   return (
-    <div className="w-[95%] bg-blue-950 mt-4 border-b rounded-2xl p-5 mx-auto">
+    <div className="w-[95%] bg-gray-900 border mt-4 border-b rounded-2xl p-5 mx-auto">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div className="flex justify-between">
           <TabsList className="flex gap-6 border-b-2 border-gray-300">

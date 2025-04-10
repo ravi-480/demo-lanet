@@ -35,7 +35,7 @@ const EventHeader = ({ event }: { event: IEvent }) => {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="flex px-17 py-5 bg-blue-950 mx-auto w-[95%] justify-between rounded-lg">
+    <div className="flex px-17 py-5 bg-gray-900 border mx-auto w-[95%] justify-between rounded-lg">
       <div className="">
         <div className="flex gap-3 items-center mb-3">
           <h1 className="text-2xl text-white font-bold">{event.name}</h1>

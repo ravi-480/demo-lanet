@@ -120,7 +120,6 @@ export const logout = async (userId: string): Promise<void> => {
   await User.findByIdAndUpdate(userId, { refreshToken: null });
 };
 
-// ... (your existing service functions) ...
 
 export const forgotPassword = async (email: string): Promise<void> => {
   // Find user by email

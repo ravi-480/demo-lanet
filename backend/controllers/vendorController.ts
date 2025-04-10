@@ -161,3 +161,20 @@ export const sendMailToUser = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Failed to send emails." });
   }
 });
+
+// remove added vendors
+
+export const removeAddedVendor = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    if (!id) return res.status(404).json({ message: "Id not found" });
+
+    const vendor = await Vendor.findByIdAndDelete(id);
+    if (!vendor)
+      return res
+        .status(404)
+        .json({ success: "failed", msg: "Vendor not found" });
+
+    res.status(200).json({ message: "Vendor remove successfully!" });
+  }
+);

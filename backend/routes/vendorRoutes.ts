@@ -8,7 +8,8 @@ import {
   getByUser,
   getVendor,
   getVendorsByEvent,
-  sendMailToUser
+  removeAddedVendor,
+  sendMailToUser,
 } from "../controllers/vendorController";
 
 const router = Router();
@@ -20,10 +21,13 @@ router.get("/getByUser", authenticate, getByUser);
 
 // add to split
 router.post("/addToSplit", addVendorInSplit);
-router.post("/addUserToSplit",addUserInSplit)
+router.post("/addUserToSplit", addUserInSplit);
+
+// remove vendor
+router.delete("/remove-vendor/:id",removeAddedVendor);
 
 // send mail rout
 
-router.post("/send-mail",sendMailToUser)
+router.post("/send-mail", sendMailToUser);
 
 export default router;

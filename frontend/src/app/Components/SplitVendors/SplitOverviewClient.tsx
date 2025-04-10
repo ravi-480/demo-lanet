@@ -31,6 +31,7 @@ import { addUserInSplit } from "@/store/splitSlice";
 import { AppDispatch } from "@/store/store";
 import { SplitUser } from "@/Interface/interface";
 import SplitTabsDialog from "../SplitModal/SplitModalDialog";
+import { Divide } from "lucide-react";
 
 const SplitOverviewClient = () => {
   const { id } = useParams();
@@ -69,7 +70,9 @@ const SplitOverviewClient = () => {
         <h2 className="text-2xl font-bold">Split Overview</h2>
         <Dialog>
           <DialogTrigger asChild>
-            <Button>Add User</Button>
+            <Button className="bg-cyan-500 hover:bg-cyan-600 cursor-pointer"                              >
+              Add User
+            </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px] text-black">
             <DialogHeader>
@@ -127,48 +130,58 @@ const SplitOverviewClient = () => {
         </Dialog>
       </div>
 
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="text-white">Name</TableHead>
-              <TableHead className="text-white">Email</TableHead>
-              <TableHead className="text-white">Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {event?.includedInSplit?.map((user: any, idx: any) => (
-              <TableRow className="hover:bg-transparent" key={idx}>
-                <TableCell>{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>
-                  <span
-                    className={`rounded-2xl py-1 px-2 text-xs font-medium ${
-                      user.status === "confirmed"
-                        ? "bg-green-600"
-                        : "bg-yellow-500"
-                    }`}
-                  >
-                    {user.status}
-                  </span>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      {event?.includedInSplit.length > 0 ? (
+        <>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="text-white">Name</TableHead>
+                  <TableHead className="text-white">Email</TableHead>
+                  <TableHead className="text-white">Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {event?.includedInSplit?.map((user: any, idx: any) => (
+                  <TableRow className="hover:bg-transparent" key={idx}>
+                    <TableCell>{user.name}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      <span
+                        className={`rounded-2xl py-1 px-2 text-xs font-medium ${
+                          user.status === "confirmed"
+                            ? "bg-green-600"
+                            : "bg-yellow-500"
+                        }`}
+                      >
+                        {user.status}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button className="bg-cyan-600 hover:bg-cyan-700">Make Split</Button>
-        </DialogTrigger>
-        <DialogContent className="bg-gray-950">
-          <SplitTabsDialog
-            users={event?.includedInSplit}
-            vendors={event?.vendorsInSplit}
-          />
-        </DialogContent>
-      </Dialog>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="bg-cyan-600 hover:bg-cyan-700">
+                Make Split
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-gray-950">
+              <SplitTabsDialog
+                users={event?.includedInSplit}
+                vendors={event?.vendorsInSplit}
+              />
+            </DialogContent>
+          </Dialog>
+        </>
+      ) : (
+        <div>
+          <h1>No friends added yet</h1>
+        </div>
+      )}
     </div>
   );
 };

@@ -12,7 +12,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Props } from "@/Interface/interface";
 import { handleSendRequest } from "@/utils/helper";
-import axios from "axios";
 import React, { useState } from "react";
 
 const SplitTabsDialog = ({ users, vendors }: Props) => {

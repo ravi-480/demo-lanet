@@ -59,3 +59,18 @@ export const handleSendRequest = async (users: any, totalCost: number) => {
     alert("Something went wrong.");
   }
 };
+
+// calculate the no of upcoming events
+
+export const getNoOfUpcomingEvent = (events: any) => {
+  const now = Date.now();
+  let count = 0;
+  events.filter((event: any) => {
+    const eventDate = new Date(event.date).getTime();
+    if (eventDate > now) {
+      count++;
+    }
+    return count;
+  }, 0);
+  return count;
+};

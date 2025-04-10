@@ -16,7 +16,7 @@ const Header = () => {
   };
   const isAuthenticated = !!user;
   return (
-    <header className="w-full sticky top-0 h-16 z-30 shadow-sm bg-black text-amber-50">
+    <header className="w-full sticky top-0 h-16 z-30 shadow-sm bg-[#040a1b] ">
       <div className="container mx-auto px-4 md:px-6 lg:px-8 h-full flex items-center justify-between">
         <Link href="/" className="flex items-center">
           <Calendar className="h-6 w-6 text-primary-500 mr-2" />
@@ -26,13 +26,13 @@ const Header = () => {
         <nav className="hidden md:flex md:space-x-8">
           <Link
             href="/dashboard"
-            className="hover:text-primary-600 hover:text-amber-500 px-1 py-5 text-sm font-medium"
+            className="hover:text-primary-600 hover:text-amber-200 px-1 py-5 text-sm font-medium"
           >
             Dashboard
           </Link>
           <Link
             href="/events"
-            className="hover:text-primary-600 hover:text-amber-500 px-1 py-5 text-sm font-medium"
+            className="hover:text-primary-600 hover:text-amber-200 px-1 py-5 text-sm font-medium"
           >
             Events
           </Link>

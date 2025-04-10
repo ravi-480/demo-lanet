@@ -84,6 +84,21 @@ export const getVendorByUser = createAsyncThunk<
   }
 });
 
+// remove added vendors from list
+
+export const removeAddedVendor = createAsyncThunk(
+  "vendor/removeVendor",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const response = axios.delete(
+        `http://localhost:5000/api/vendors/remove-vendor/${id}`
+      );
+    } catch (error: any) {
+      rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
 const vendorSlice = createSlice({
   name: "vendors",
   initialState,

@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
-import { getVendorsByEvent } from "@/store/vendorSlice";
+import { getVendorsByEvent, removeAddedVendor } from "@/store/vendorSlice";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -24,23 +24,18 @@ const AddedVendorsList = ({ eventId }: { eventId: string }) => {
 
   useEffect(() => {
     dispatch(fetchById(eventId));
+    dispatch(getVendorsByEvent(eventId));
   }, [dispatch, eventId]);
-
-  console.log(event);
 
   const { items: vendors, status } = useSelector(
     (state: RootState): { items: VendorType[]; status: string } => state.vendors
   );
 
-  useEffect(() => {
-    dispatch(getVendorsByEvent(eventId));
-  }, [eventId, dispatch]);
-
   const [addToSplit, setAddToSplit] = useState<{ [vendorId: string]: boolean }>(
     {}
   );
 
-  // check if vendors in db than checkbox must be tick
+  //  if vendors is in db than checkbox must be tick
   useEffect(() => {
     if (Array.isArray(event?.vendorsInSplit)) {
       const initialState: { [vendorId: string]: boolean } = {};
@@ -51,34 +46,40 @@ const AddedVendorsList = ({ eventId }: { eventId: string }) => {
     }
   }, [event]);
 
-  if (status === "loading")
-    return <p className="text-white">Loading vendors...</p>;
-  if (!vendors.length)
-    return <p className="text-white">No vendors added yet.</p>;
-
-  // adding split
-
-  const toggleSplit = (vendorId: string) => {
+  // adding into split
+  const toggleVendorSplit = (vendorId: string) => {
     setAddToSplit((prev) => ({
       ...prev,
       [vendorId]: !prev[vendorId],
     }));
   };
 
-  const handleSaveSplit = () => {
-    const selected = vendors
-      .filter((vendor) => addToSplit[vendor._id!])
-      .map((vendor) => ({
-        vendorId: vendor._id!,
-        price: vendor.price!,
-        title: vendor.title,
+  const selectedVendors = useMemo(() => {
+    return vendors
+      .filter((v) => addToSplit[v._id!])
+      .map((v) => ({
+        vendorId: v._id!,
+        price: v.price!,
+        title: v.title,
         includedAt: new Date().toISOString(),
       }));
+  }, [vendors, addToSplit]);
 
-    if (selected.length > 0) {
-      dispatch(addToSplitVendors({ selected, eventId }));
+  const handleSaveSplit = () => {
+    if (selectedVendors.length) {
+      dispatch(addToSplitVendors({ selected: selectedVendors, eventId }));
     }
   };
+
+  // Remove added vendor
+  const handleRemoveVendor = (vendorID: any) => {
+    dispatch(removeAddedVendor(vendorID));
+  };
+
+  if (status === "loading")
+    return <p className="text-white">Loading vendors...</p>;
+  if (!vendors.length)
+    return <p className="text-white">No vendors added yet.</p>;
 
   return (
     <div className="bg-gray-900 p-4 rounded-xl">
@@ -115,12 +116,13 @@ const AddedVendorsList = ({ eventId }: { eventId: string }) => {
                 <TableCell>
                   <Checkbox
                     checked={addToSplit[vendor._id!] || false}
-                    onCheckedChange={() => toggleSplit(vendor._id!)}
+                    onCheckedChange={() => toggleVendorSplit(vendor._id!)}
                   />
                 </TableCell>
                 <TableCell>
                   <Button
                     size="sm"
+                    onClick={() => handleRemoveVendor(vendor._id)}
                     variant="outline"
                     className="text-red-400 border-red-400"
                   >

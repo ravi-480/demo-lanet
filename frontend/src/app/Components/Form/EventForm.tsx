@@ -95,14 +95,14 @@ const EventForm: React.FC<EventFormProps> = ({
   
 
   return (
-    <div className="bg-blue-950 max-w-2xl p-6 mx-auto mt-4 rounded-lg">
+    <div className="bg-gray-900 border  max-w-2xl mx-auto p-6 m-4 rounded-lg">
       <h1 className="text-center font-bold mb-6 text-white">
         {isEditing ? "Edit Event" : "Create New Event"}
       </h1>
 
       <form onSubmit={handleSubmit(submitHandler)}>
         <div className="mt-4">
-          <Label htmlFor="name">Event Name</Label>
+          <Label className="mb-2" htmlFor="name">Event Name</Label>
           <Input {...register("name")} id="name" />
           {errors.name && (
             <p className="text-red-500 text-sm">{errors.name.message}</p>
@@ -110,7 +110,7 @@ const EventForm: React.FC<EventFormProps> = ({
         </div>
 
         <div className="mt-4">
-          <Label htmlFor="date">Event Date</Label>
+          <Label className="mb-2" htmlFor="date">Event Date</Label>
           <Input {...register("date")} id="date" type="datetime-local" />
           {errors.date && (
             <p className="text-red-500 text-sm">{errors.date.message}</p>
@@ -118,7 +118,7 @@ const EventForm: React.FC<EventFormProps> = ({
         </div>
 
         <div className="mt-4">
-          <Label htmlFor="location">Location</Label>
+          <Label className="mb-2" htmlFor="location">Location</Label>
           <Input {...register("location")} id="location" />
           {errors.location && (
             <p className="text-red-500 text-sm">{errors.location.message}</p>
@@ -126,7 +126,7 @@ const EventForm: React.FC<EventFormProps> = ({
         </div>
 
         <div className="mt-4">
-          <Label htmlFor="image">Upload Image</Label>
+          <Label className="mb-2" htmlFor="image">Upload Image</Label>
           <Input type="file" accept="image/*" onChange={handleImageChange} />
           {imagePreview && (
             <div className="mt-2">
@@ -140,7 +140,7 @@ const EventForm: React.FC<EventFormProps> = ({
         </div>
 
         <div className="mt-4">
-          <Label htmlFor="description">Description</Label>
+          <Label className="mb-2" htmlFor="description">Description</Label>
           <Textarea {...register("description")} id="description" />
           {errors.description && (
             <p className="text-red-500 text-sm">{errors.description.message}</p>
@@ -148,7 +148,7 @@ const EventForm: React.FC<EventFormProps> = ({
         </div>
 
         <div className="mt-4">
-          <Label htmlFor="budget">Budget</Label>
+          <Label className="mb-2" htmlFor="budget">Budget</Label>
           <Input {...register("budget")} id="budget" type="number" />
           {errors.budget && (
             <p className="text-red-500 text-sm">{errors.budget.message}</p>
@@ -156,7 +156,7 @@ const EventForm: React.FC<EventFormProps> = ({
         </div>
 
         <div className="mt-4">
-          <Label htmlFor="guestLimit">Guest Limit</Label>
+          <Label className="mb-2" htmlFor="guestLimit">Guest Limit</Label>
           <Input {...register("guestLimit")} id="guestLimit" type="number" />
           {errors.guestLimit && (
             <p className="text-red-500 text-sm">{errors.guestLimit.message}</p>
@@ -164,7 +164,7 @@ const EventForm: React.FC<EventFormProps> = ({
         </div>
 
         <div className="mt-4">
-          <Label htmlFor="eventType">Event Type</Label>
+          <Label className="mb-2" htmlFor="eventType">Event Type</Label>
           <Select
             onValueChange={(value) => setValue("eventType", value)}
             defaultValue={initialData?.eventType || ""}
@@ -187,7 +187,7 @@ const EventForm: React.FC<EventFormProps> = ({
         </div>
 
         <div className="mt-4">
-          <Label htmlFor="durationInDays">Duration (in Days)</Label>
+          <Label className="mb-2" htmlFor="durationInDays">Duration (in Days)</Label>
           <Input
             {...register("durationInDays")}
             id="durationInDays"
@@ -200,7 +200,7 @@ const EventForm: React.FC<EventFormProps> = ({
           )}
         </div>
 
-        <Button type="submit" className="w-full mt-6" disabled={isLoading}>
+        <Button type="submit" className="w-full mt-6 bg-amber-100 text-black hover:bg-amber-200" disabled={isLoading}>
           {isLoading
             ? "Submitting..."
             : isEditing

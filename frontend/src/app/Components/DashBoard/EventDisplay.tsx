@@ -33,31 +33,21 @@ const EventDisplay: React.FC = () => {
         setIsInitialized(true);
       }
     };
-
     loadEvents();
   }, [dispatch]);
 
   const now = new Date().getTime();
 
   const filteredEvents =
-    events?.filter((event: { date: string | number | Date; status: string; }) => {
-      if (activeTab === "all") return true;
-      if (activeTab === "upcoming") {
+    events?.filter(
+      (event: { date: string | number | Date; status: string }) => {
+        if (activeTab === "all") return true;
         const eventDate = new Date(event.date).getTime();
-        return eventDate > now;
+        if (activeTab === "upcoming") return eventDate > now;
+        if (activeTab === "past") return eventDate <= now;
+        return event.status === activeTab;
       }
-      if (activeTab === "past") {
-        const eventDate = new Date(event.date).getTime();
-        return eventDate <= now;
-      }
-      return event.status === activeTab;
-    }) || [];
-
-  const getBudgetStatusColor = (allocated: number, spent: number): string => {
-    if (spent > allocated) return "text-red-400";
-    if (spent / allocated > 0.8) return "text-yellow-400";
-    return "text-green-400";
-  };
+    ) || [];
 
   const formatDate = (dateValue?: string | Date): string => {
     if (!dateValue) return "No date";
@@ -68,21 +58,19 @@ const EventDisplay: React.FC = () => {
     }
   };
 
-
-
   if (isLoading || !isInitialized) {
     return (
-      <div className="bg-blue-950 text-white rounded-lg shadow-sm p-6 mb-6">
+      <div className="bg-gray-900 text-white rounded-lg shadow-sm p-6 mb-6 w-full">
         <div className="border-b border-gray-500 pb-4 mb-4">
-          <div className="flex space-x-4">
+          <div className="flex flex-wrap gap-2">
             {tabs.map((tab) => (
               <Button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3  py-2 rounded-md ${
+                className={`px-3 py-2 rounded-md ${
                   activeTab === tab.id
                     ? "bg-blue-100 text-blue-800"
-                    : "text-gray-300 hover:bg-gray-100  hover:text-blue-800"
+                    : "text-gray-300 hover:bg-gray-100 hover:text-blue-800"
                 }`}
               >
                 {tab.label}
@@ -106,9 +94,9 @@ const EventDisplay: React.FC = () => {
   }
 
   return (
-    <div className="bg-blue-950 text-white rounded-lg shadow-sm p-6 mb-6">
+    <div className="bg-gray-900 border text-white rounded-lg shadow-sm p-4 sm:p-6 mb-6 w-full">
       <div className="border-b border-gray-500 pb-4 mb-4">
-        <div className="flex space-x-4">
+        <div className="flex flex-wrap gap-2">
           {tabs.map((tab) => (
             <Button
               key={tab.id}
@@ -133,67 +121,57 @@ const EventDisplay: React.FC = () => {
           <p className="text-gray-300 mt-2 mb-4">Click 'Create New Event'</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredEvents.map((event) => (
             <div
               key={event._id}
-              className="border border-gray-700 rounded-lg overflow-hidden"
+              className=" rounded-lg sm:w-full md:w-60 overflow-hidden bg-gray-900 border  flex flex-col"
             >
               <Image
                 src={event.image || "/api/placeholder/400/200"}
                 alt={event.name || "Event"}
-                className="w-full h-40 object-cover"
-                width={100}
-                height={100}
+                className="w-full   sm:h-32 object-cover"
+                width={400}
+                height={160}
               />
-              <div className="p-4">
-                <div className="flex justify-between items-start">
-                  <h3 className="font-medium text-lg text-white">
-                    {event.name || "Unnamed Event"}
-                  </h3>
-                  {RenderEventStatusBadge(getEventStatus(event.date))}
-                </div>
-
-                <div className="mt-3 space-y-2">
-                  <div className="flex items-center text-gray-300">
-                    <Clock size={16} className="mr-2" />
-                    <span>
-                      {formatDate(event.date)} • {event.time || "No time set"}
-                    </span>
-                  </div>
-                  <div className="flex items-center text-gray-300">
-                    <MapPin size={16} className="mr-2" />
-                    <span>{event.location || "No location set"}</span>
+              <div className="px-3 py-2 flex-1 flex flex-col justify-between">
+                <div>
+                  <div className="flex justify-between items-start">
+                    <h3 className="font-medium text-sm sm:text-base md:text-lg text-white">
+                      {event.name || "Unnamed Event"}
+                    </h3>
+                    {RenderEventStatusBadge(getEventStatus(event.date))}
                   </div>
 
-                  <div className="flex items-center text-gray-300">
-                    <IndianRupee size={16} className="mr-2" />
-                    <span>
-                      Budget: ₹{event.budget?.allocated || 0}
-                      {event.budget?.spent !== undefined && (
-                        <span
-                          className={getBudgetStatusColor(
-                            event.budget?.allocated || 0,
-                            event.budget?.spent || 0
-                          )}
-                        >
-                          ({event.budget?.spent || 0} spent)
+                  <div className="mt-2 space-y-2 text-xs text-gray-300">
+                    <div className="flex justify-between gap-2">
+                      <div className="flex items-center">
+                        <Clock size={12} className="mr-2" />
+                        <span>{formatDate(event.date)}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <MapPin size={12} className="mr-2" />
+                        <span className="truncate max-w-[100px]">
+                          {event.location || "No location"}
                         </span>
-                      )}
-                    </span>
-                  </div>
+                      </div>
+                    </div>
 
-                  <div className="flex items-center text-gray-300">
-                    <Users size={16} className="mr-2" />
-                    <span>
-                      RSVPs: {event.rsvp?.confirmed || 0} confirmed
-                      {event.rsvp?.total !== undefined &&
-                        ` / ${event.rsvp.total} invited`}
-                    </span>
+                    <div className="flex items-center">
+                      <Users size={14} className="mr-2" />
+                      <span>
+                        RSVPs: {event.rsvp?.confirmed || 0} confirmed
+                        {event.rsvp?.total !== undefined &&
+                          ` / ${event.rsvp.total} invited`}
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <Link href={`/events/${event._id}`}>
-                  <Button className="mt-3 cursor-pointer">View more</Button>
+
+                <Link href={`/events/${event._id}`} className="mt-3">
+                  <Button className="w-full bg-amber-100 cu text-gray-900 cursor-pointer hover:bg-amber-200">
+                    View more
+                  </Button>
                 </Link>
               </div>
             </div>

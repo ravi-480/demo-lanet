@@ -14,7 +14,7 @@ const RenderEventStatusBadge = (status?: string) => {
 
   return (
     <span
-      className={`px-2 py-1 rounded-full text-xs font-medium ${
+      className={`px-1 py-0 rounded-full text-xs font-medium ${
         statusClasses[status] || "bg-gray-100 text-gray-800"
       }`}
     >
