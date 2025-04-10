@@ -31,7 +31,6 @@ import { addUserInSplit } from "@/store/splitSlice";
 import { AppDispatch } from "@/store/store";
 import { SplitUser } from "@/Interface/interface";
 import SplitTabsDialog from "../SplitModal/SplitModalDialog";
-import { Divide } from "lucide-react";
 
 const SplitOverviewClient = () => {
   const { id } = useParams();

@@ -9,7 +9,6 @@ import EventTabs from "../../Components/Events/EventTabComponent";
 const EventDetailClient = ({ id }: { id: string }) => {
   const dispatch = useDispatch<AppDispatch>();
   const event = useSelector(singleEvent);
-  console.log(event);
 
   useEffect(() => {
     dispatch(fetchById(id));
@@ -18,7 +17,7 @@ const EventDetailClient = ({ id }: { id: string }) => {
   if (!event) return <h1>Loading...</h1>;
 
   return (
-    <div className="p-5">
+    <div className="p-5 ">
       <EventHeader event={event} />
       <EventTabs id={id} />
     </div>

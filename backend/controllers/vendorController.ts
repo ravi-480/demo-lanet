@@ -143,15 +143,18 @@ export const addUserInSplit = asyncHandler(
 // send mail to users
 
 export const sendMailToUser = asyncHandler(async (req, res) => {
-  const { recipients, subject, body } = req.body;
+  const { recipients, amounts } = req.body;
 
   try {
-    for (const email of recipients) {
+    for (let i = 0; i < recipients.length; i++) {
       await sendEmail({
-        to: email,
-        subject,
+        to: recipients[i],
+        subject: "Split Expense Request",
         text: "",
-        html: body,
+        html: `
+    <h3>Hello from Split App</h3>
+    <p>The total expense is ₹${amounts[i]}. Please confirm your contribution.</p>
+  `,
       });
     }
 

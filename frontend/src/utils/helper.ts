@@ -35,21 +35,20 @@ export const getEventStatus = (date?: string | Date): string => {
   }
 };
 
-export const handleSendRequest = async (users: any, totalCost: number) => {
-  const recipients = users.map((user: any) => user.email);
-  const subject = "Split Expense Request";
-  const body = `
-    <h3>Hello from Split App</h3>
-    <p>The total expense is ₹${totalCost}. Please confirm your contribution.</p>
-  `;
+export const handleSendRequest = async (
+  usersWithCost: { name: string; email: string; amount: number }[]
+) => {
+  console.log(usersWithCost);
+
+  const recipients = usersWithCost.map((user: any) => user.email);
+  const amounts = usersWithCost.map((user: any) => user.amount);
 
   try {
     const res = await axios.post(
       "http://localhost:5000/api/vendors/send-mail",
       {
         recipients,
-        subject,
-        body,
+        amounts
       }
     );
     console.log("Success:", res.data.message);

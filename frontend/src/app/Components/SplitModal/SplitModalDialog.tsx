@@ -34,6 +34,14 @@ const SplitTabsDialog = ({ users, vendors }: Props) => {
     setCustomSplit(updated);
   };
 
+  const usersWithCost = users.map((user, index) => ({
+    ...user,
+    amount:
+      mode == "equal"
+        ? Math.round(totalCost / users.length)
+        : parseFloat(customSplit[index]) || 0,
+  }));
+
   return (
     <Tabs defaultValue="account" className="w-[400px] mx-auto ">
       <TabsList className="bg-gray-900 w-full justify-start border border-gray-700">
@@ -113,7 +121,7 @@ const SplitTabsDialog = ({ users, vendors }: Props) => {
         </div>
 
         <p className="text-sm text-gray-300 mt-2">
-          <strong>Total Cost:</strong>{" "}
+          <strong>Total Cost:</strong>
           <span className="text-cyan-400">₹{totalCost}</span>
         </p>
       </TabsContent>
@@ -124,9 +132,9 @@ const SplitTabsDialog = ({ users, vendors }: Props) => {
         </p>
       )}
       <Button
-        onClick={() => handleSendRequest(users, totalCost)}
+        onClick={() => handleSendRequest(usersWithCost)}
         disabled={isCustomInvalid}
-        className="bg-cyan-500 mt-3 hover:bg-cyan-600 cursor-pointer"
+        className="bg-cyan-500 mt-3 hover:bg-cyan-600 cursor-pointer "
       >
         Send Request
       </Button>

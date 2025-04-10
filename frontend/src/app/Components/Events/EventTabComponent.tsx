@@ -37,15 +37,15 @@ export default function EventTabComponent({ id }: { id: string }) {
 
   return (
     <div className="w-[95%] bg-gray-900 border mt-4 border-b rounded-2xl p-5 mx-auto">
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="flex justify-between">
+      <Tabs className="" value={activeTab} onValueChange={setActiveTab}>
+        <div className="flex justify-between ">
           <TabsList className="flex gap-6 border-b-2 border-gray-300">
             {tabs.map(({ value, label }) => (
               <TabsTrigger
                 key={value}
                 value={value}
                 className={`relative px-4 py-2 text-lg transition-all
-                ${activeTab === value ? "text-blue-600" : "text-gray-500"}
+                ${activeTab === value ? "text-cyan-400" : "text-gray-500"}
                 after:absolute after:bottom-[-2px] after:left-0 after:w-full after:h-[3px]
                 after:bg-blue-600 after:transition-transform
                 ${activeTab === value ? "after:scale-x-100" : "after:scale-x-0"}
