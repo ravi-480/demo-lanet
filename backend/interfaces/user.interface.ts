@@ -72,6 +72,7 @@ export interface IEvent {
     confirmed: number;
   };
   includedInSplit: {
+    _id?:string
     userId: string;
     status: string;
     name: string;

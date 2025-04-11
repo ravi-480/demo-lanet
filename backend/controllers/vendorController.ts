@@ -156,7 +156,7 @@ export const sendMailToUser = asyncHandler(async (req, res) => {
       <h3>Hello from Split App</h3>
       <p>You’ve been asked to confirm a split expense of <strong>₹${amounts[i]}</strong>.</p>
       <p>
-<a href="http://localhost:3000/split/confirm?eventId=${eventId[i]}&userId=${userId[i]}"
+    <a href="http://localhost:3000/split/confirm?eventId=${eventId[i]}&userId=${userId[i]}"
        style="background-color:#0ea5e9;padding:10px 20px;color:white;text-decoration:none;border-radius:5px;">
       Confirm Your Share
     </a>
@@ -187,5 +187,52 @@ export const removeAddedVendor = asyncHandler(
         .json({ success: "failed", msg: "Vendor not found" });
 
     res.status(200).json({ message: "Vendor remove successfully!" });
+  }
+);
+
+// confirm payment request
+
+export const confirmPayment = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { eventId, userId } = req.body;
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Event not found" });
+    }
+    const user = event?.includedInSplit.find(
+      (item: any) => item._id?.toString() == userId
+    );
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: "failed", message: "Invalid User Id" });
+    }
+
+    user.status = "Paid";
+    await event.save();
+    return res
+      .status(200)
+      .json({ status: "Succcess", message: "User Paid Successfully" });
+  }
+);
+
+// check payment status
+
+export const checkPaymentStatus = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { eventId, userId } = req.query;
+    const event = await Event.findById(eventId);
+    if (!event) return res.status(404).json({ message: "Event not found" });
+    const user = event?.includedInSplit.find(
+      (item: any) => item._id?.toString() == userId
+    );
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: "failed", message: "Invalid User Id" });
+    }
+    return res.status(200).json({ status: user.status });
   }
 );

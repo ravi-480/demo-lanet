@@ -10,6 +10,8 @@ import {
   getVendorsByEvent,
   removeAddedVendor,
   sendMailToUser,
+  confirmPayment,
+  checkPaymentStatus
 } from "../controllers/vendorController";
 
 const router = Router();
@@ -32,6 +34,10 @@ router.post("/send-mail", sendMailToUser);
 
 // confirm payment request
 
-// router.post("/split/confirm/:splitId/:userId",confirmPayment)
+router.post("/confirm-payment",confirmPayment)
+
+// confirm status
+
+router.get("/payment-status",checkPaymentStatus)
 
 export default router;

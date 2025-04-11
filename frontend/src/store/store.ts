@@ -3,12 +3,14 @@ import authReducer from "./authSlice"; // Import your reducers
 import eventReducer from "./eventSlice";
 import vendorReducer from "./vendorSlice";
 import splitVendorPrice from "./splitSlice";
+import paymentReducers from "./paymentSlice";
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     event: eventReducer,
     vendors: vendorReducer,
     splitPrice: splitVendorPrice,
+    payment: paymentReducers,
   },
 });
 
