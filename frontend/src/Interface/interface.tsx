@@ -220,7 +220,6 @@ export interface SplitUser {
   status: "pending" | "confirmed";
 }
 
-
 export interface SplitUser {
   userId: string;
   name: string;
@@ -235,6 +234,7 @@ export interface Vendor {
 }
 
 export interface Props {
+  eventId: number;
   users: SplitUser[];
   vendors: Vendor[];
 }

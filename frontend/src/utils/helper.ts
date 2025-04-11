@@ -36,19 +36,27 @@ export const getEventStatus = (date?: string | Date): string => {
 };
 
 export const handleSendRequest = async (
-  usersWithCost: { name: string; email: string; amount: number }[]
+  usersWithCost: {
+    name: string;
+    email: string;
+    amount: number;
+    eventId: number;
+  }[]
 ) => {
   console.log(usersWithCost);
 
   const recipients = usersWithCost.map((user: any) => user.email);
   const amounts = usersWithCost.map((user: any) => user.amount);
-
+  const eventId = usersWithCost.map((user: any) => user.eventId);
+  const userId = usersWithCost.map((user: any) => user._id);
   try {
     const res = await axios.post(
       "http://localhost:5000/api/vendors/send-mail",
       {
         recipients,
-        amounts
+        amounts,
+        eventId,
+        userId,
       }
     );
     console.log("Success:", res.data.message);

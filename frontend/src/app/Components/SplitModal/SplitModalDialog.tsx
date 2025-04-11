@@ -14,7 +14,7 @@ import { Props } from "@/Interface/interface";
 import { handleSendRequest } from "@/utils/helper";
 import React, { useState } from "react";
 
-const SplitTabsDialog = ({ users, vendors }: Props) => {
+const SplitTabsDialog = ({ users, vendors, eventId }: Props) => {
   const [mode, setMode] = useState<"equal" | "custom">("equal");
 
   const [customSplit, setCustomSplit] = useState<string[]>(
@@ -36,6 +36,7 @@ const SplitTabsDialog = ({ users, vendors }: Props) => {
 
   const usersWithCost = users.map((user, index) => ({
     ...user,
+    eventId,
     amount:
       mode == "equal"
         ? Math.round(totalCost / users.length)

@@ -143,7 +143,8 @@ export const addUserInSplit = asyncHandler(
 // send mail to users
 
 export const sendMailToUser = asyncHandler(async (req, res) => {
-  const { recipients, amounts } = req.body;
+  const { recipients, amounts, eventId, userId } = req.body;
+  console.log(eventId, userId);
 
   try {
     for (let i = 0; i < recipients.length; i++) {
@@ -152,9 +153,16 @@ export const sendMailToUser = asyncHandler(async (req, res) => {
         subject: "Split Expense Request",
         text: "",
         html: `
-    <h3>Hello from Split App</h3>
-    <p>The total expense is ₹${amounts[i]}. Please confirm your contribution.</p>
-  `,
+      <h3>Hello from Split App</h3>
+      <p>You’ve been asked to confirm a split expense of <strong>₹${amounts[i]}</strong>.</p>
+      <p>
+<a href="http://localhost:3000/split/confirm?eventId=${eventId[i]}&userId=${userId[i]}"
+       style="background-color:#0ea5e9;padding:10px 20px;color:white;text-decoration:none;border-radius:5px;">
+      Confirm Your Share
+    </a>
+        </a>
+      </p>
+    `,
       });
     }
 

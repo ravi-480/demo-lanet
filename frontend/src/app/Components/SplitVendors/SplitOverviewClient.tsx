@@ -69,7 +69,7 @@ const SplitOverviewClient = () => {
         <h2 className="text-2xl font-bold">Split Overview</h2>
         <Dialog>
           <DialogTrigger asChild>
-            <Button className="bg-cyan-500 hover:bg-cyan-600 cursor-pointer"                              >
+            <Button className="bg-cyan-500 hover:bg-cyan-600 cursor-pointer">
               Add User
             </Button>
           </DialogTrigger>
@@ -170,6 +170,7 @@ const SplitOverviewClient = () => {
             </DialogTrigger>
             <DialogContent className="bg-gray-950">
               <SplitTabsDialog
+                eventId={event?._id}
                 users={event?.includedInSplit}
                 vendors={event?.vendorsInSplit}
               />

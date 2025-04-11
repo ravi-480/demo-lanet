@@ -30,4 +30,8 @@ router.delete("/remove-vendor/:id",removeAddedVendor);
 
 router.post("/send-mail", sendMailToUser);
 
+// confirm payment request
+
+// router.post("/split/confirm/:splitId/:userId",confirmPayment)
+
 export default router;
