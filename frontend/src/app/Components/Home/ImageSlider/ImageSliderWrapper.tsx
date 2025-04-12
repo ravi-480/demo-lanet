@@ -1,4 +1,3 @@
-// File: components/ImageSliderWrapper.tsx
 import images from "@/StaticData/Static";
 import ImageSlider from "./ImageSlider";
 

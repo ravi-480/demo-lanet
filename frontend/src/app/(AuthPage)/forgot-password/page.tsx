@@ -1,4 +1,3 @@
-// app/forgot-password/page.tsx
 "use client";
 
 import ForgotPasswordForm from "@/app/Components/Home/Login/ForgetPasswordForm";

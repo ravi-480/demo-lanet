@@ -1,4 +1,3 @@
-// File: types/index.ts
 export interface SliderImage {
   id: string;
   src: string;
@@ -53,3 +52,15 @@ export const eventTypeOptions = Object.entries(EventType).map(([key, value]) => 
 }));
 
 
+
+
+export interface INotification {
+  _id: string;
+  userId: string;
+  eventId: string;
+  message: string;
+  type: "response" | "payment" | "reminder" | "message";
+  status: "read" | "unread";
+  metadata: Record<string, any>;
+  createdAt: Date;
+}

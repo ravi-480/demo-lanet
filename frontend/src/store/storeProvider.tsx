@@ -1,4 +1,4 @@
-"use client"; // Only this file is marked as a client component
+"use client";
 
 import { Provider } from "react-redux";
 import { store } from "./store";
@@ -8,7 +8,11 @@ interface ReduxProviderProps {
 }
 
 const ReduxProvider: React.FC<ReduxProviderProps> = ({ children }) => {
-  return <Provider store={store}>{children}</Provider>;
+  return (
+    <Provider store={store}>
+      {children}
+    </Provider>
+  );
 };
 
 export default ReduxProvider;

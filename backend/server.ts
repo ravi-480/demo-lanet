@@ -1,23 +1,28 @@
+// server.ts
 import dotenv from "dotenv";
 dotenv.config();
 
+import http from "http";
 import app from "./app";
 import connectDB from "./config/db";
+import { initializeSocketIP } from "./utils/socketUtils";
 
 // Connect to MongoDB
 connectDB();
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+// Create HTTP server and attach Socket.IO
+const server = http.createServer(app);
+initializeSocketIP(server);
+
+// Start server
+server.listen(PORT, () => {
   console.log(
-    `Server running in ${
-      process.env.NODE_ENV || "development"
-    } mode on port ${PORT}`
+    `Server running in ${process.env.NODE_ENV || "development"} mode on port ${PORT}`
   );
 });
 
-// To handle unhandled promise rejections
 process.on("unhandledRejection", (err: Error) => {
   console.log("UNHANDLED REJECTION! 💥 Shutting down...");
   console.log(err.name, err.message);

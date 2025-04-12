@@ -1,3 +1,4 @@
+// app.ts
 import express, { Request, Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -6,28 +7,31 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes";
 import eventRoutes from "./routes/eventRoute";
 import vendorRoutes from "./routes/vendorRoutes";
+import notificationRoute from "./routes/notificationRoute";
 import { errorConverter, errorHandler } from "./middleware/errorHandler";
 
 const app = express();
 
 // Middleware
-app.use(helmet()); // Security headers
-app.use(express.json()); // Parse JSON bodies
-app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+app.use(helmet());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "http://localhost:3000", // frontend
     credentials: true,
   })
-); // Enable CORS
-app.use(morgan("dev")); // HTTP request logger
+);
+app.use(morgan("dev"));
 
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/vendors", vendorRoutes);
+app.use("/api/notifications", notificationRoute);
 
+// 404 Handler
 app.use("*", (req: Request, res: Response) => {
   res.status(404).json({
     status: "error",
@@ -35,6 +39,7 @@ app.use("*", (req: Request, res: Response) => {
   });
 });
 
+// Error handling middleware
 app.use(errorConverter);
 app.use(errorHandler);
 
