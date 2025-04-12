@@ -11,7 +11,8 @@ import {
   removeAddedVendor,
   sendMailToUser,
   confirmPayment,
-  checkPaymentStatus
+  checkPaymentStatus,
+  removeFromSplit
 } from "../controllers/vendorController";
 
 const router = Router();
@@ -39,5 +40,9 @@ router.post("/confirm-payment",confirmPayment)
 // confirm status
 
 router.get("/payment-status",checkPaymentStatus)
+
+// remove added user for split 
+ router.delete("/delete/addedInSplit",removeFromSplit)
+
 
 export default router;

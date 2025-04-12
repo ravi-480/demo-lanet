@@ -3,6 +3,7 @@ import Event, { EventDocument } from "../models/eventModel";
 import { asyncHandler } from "../utils/asyncHandler";
 import { Request, Response } from "express";
 import { sendEmail } from "../utils/emailService";
+import { log } from "console";
 const axios = require("axios");
 
 interface AuthenticatedRequest extends Request {
@@ -234,5 +235,26 @@ export const checkPaymentStatus = asyncHandler(
         .json({ success: "failed", message: "Invalid User Id" });
     }
     return res.status(200).json({ status: user.status });
+  }
+);
+
+// delete added user in split
+
+export const removeFromSplit = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { userId, id } = req.body;
+
+    const event = await Event.findById(id);
+    if (!event) return res.status(404).json({ message: "Event not found" });
+    console.log(userId);
+
+    event.includedInSplit = event?.includedInSplit.filter(
+      (person: any) => person._id.toString() !== userId
+    );
+    await event.save();
+    return res.status(200).json({
+      status: "success",
+      message: "User deleted successfully from split",
+    });
   }
 );

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { Plus, Users, DollarSign, Mail } from "lucide-react";
+import { Plus, Users, DollarSign, Mail, Edit, Trash } from "lucide-react";
 
 import {
   Dialog,
@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/table";
 
 import { fetchById, singleEvent } from "@/store/eventSlice";
-import { addUserInSplit } from "@/store/splitSlice";
+import { addUserInSplit, deleteUserFromSplit } from "@/store/splitSlice";
 import { AppDispatch } from "@/store/store";
 import { SplitUser } from "@/Interface/interface";
 import SplitTabsDialog from "../SplitModal/SplitModalDialog";
@@ -72,6 +72,10 @@ const SplitOverviewClient = () => {
     );
     reset();
     setIsAddUserOpen(false);
+  };
+
+  const removeUser = async (userData: any) => {
+    dispatch(deleteUserFromSplit({ id: id as string, userId: userData._id }));
   };
 
   return (
@@ -182,6 +186,9 @@ const SplitOverviewClient = () => {
                   <TableHead className="text-gray-300 font-medium py-3">
                     Status
                   </TableHead>
+                  <TableHead className="text-gray-300 font-medium py-3">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -207,6 +214,16 @@ const SplitOverviewClient = () => {
                       >
                         {user.status}
                       </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-4 ">
+                        <Edit size={14} />
+                        <Trash
+                          onClick={() => removeUser(user)}
+                          className="cursor-pointer hover:text-red-500"
+                          size={14}
+                        />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

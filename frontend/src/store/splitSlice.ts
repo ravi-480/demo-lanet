@@ -39,9 +39,24 @@ export const addUserInSplit = createAsyncThunk(
   }
 );
 
+// remove added user in split
 
-
-
+export const deleteUserFromSplit = createAsyncThunk(
+  "split/deleteFromSplit",
+  async (data: { id: string; userId: string }, { rejectWithValue }) => {
+    try {
+      const response = await axios.delete(
+        "http://localhost:5000/api/vendors/delete/addedInSplit",
+        { data, withCredentials: true }
+      );
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to delete User"
+      );
+    }
+  }
+);
 
 const splitVendorPrice = createSlice({
   name: "split",
