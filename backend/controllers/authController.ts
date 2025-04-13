@@ -56,8 +56,18 @@ export const refreshToken = asyncHandler(
       });
     }
 
-    // Get new access token
-    const accessToken = await authService.refreshAccessToken(refreshToken);
+    // Get new tokens
+    const { accessToken, refreshToken: newRefreshToken } =
+      await authService.refreshAccessToken(refreshToken);
+
+    // Set new refresh token in cookie
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: "/",
+    });
 
     res.status(200).json({
       success: true,

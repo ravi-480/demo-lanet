@@ -82,8 +82,8 @@ const makeAuthRequest = async (url: string, data: any) => {
 
 // Thunks
 export const loginUser = createAsyncThunk<
-  LoginResponse,  // response type
-  { email: string; password: string },  
+  LoginResponse, // response type
+  { email: string; password: string }, // arguement type
   { rejectValue: string }
 >("auth/login", async (credentials, { rejectWithValue }) => {
   const result = await makeAuthRequest("login", credentials);
@@ -116,7 +116,6 @@ export const loginUser = createAsyncThunk<
 
   return rejectWithValue(result.message);
 });
-
 
 export const signupUser = createAsyncThunk<
   StandardResponse, // return type
@@ -251,6 +250,8 @@ const authSlice = createSlice({
       .addCase(signupUser.pending, setPending)
       .addCase(signupUser.fulfilled, (state, action) => {
         state.status = "succeeded";
+        console.log(action);
+
         state.signupSuccess = action.payload.success;
         state.signupMessage = action.payload.message;
         state.error = null;

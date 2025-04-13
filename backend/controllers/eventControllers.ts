@@ -126,6 +126,8 @@ export const fetchById = async (req: Request, res: Response) => {
   }
 };
 
+// edit event
+
 export const updateEvent = asyncHandler(
   async (req: AuthenticatedRequest, res: Response) => {
     const { eventId } = req.body;

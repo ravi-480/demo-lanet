@@ -258,3 +258,48 @@ export const removeFromSplit = asyncHandler(
     });
   }
 );
+
+export const editUserInSplit = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { user, id } = req.body;
+
+    if (!user || !id) {
+      res.status(400);
+      throw new Error("Missing required fields: user details or event ID");
+    }
+
+    try {
+      const event = await Event.findById(id);
+
+      if (!event) {
+        res.status(404);
+        throw new Error("Event not found");
+      }
+
+      // Find the user in the includedInSplit array
+      const userIndex = event.includedInSplit.findIndex(
+        (u: any) => u._id.toString() === user._id
+      );
+
+      if (userIndex === -1) {
+        res.status(404);
+        throw new Error("User not found in split");
+      }
+
+      // Update the user details
+      event.includedInSplit[userIndex].name = user.name;
+      event.includedInSplit[userIndex].email = user.email;
+
+      await event.save();
+
+      res.status(200).json({
+        success: true,
+        message: "User updated successfully",
+        data: event.includedInSplit[userIndex],
+      });
+    } catch (error: any) {
+      res.status(500);
+      throw new Error(error.message || "Failed to update user");
+    }
+  }
+);

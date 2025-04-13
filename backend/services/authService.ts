@@ -53,8 +53,6 @@ export const signup = async (
     password: userData.password,
   });
 
-  await user.save();
-
   return {
     user: {
       id: user._id.toString(),
@@ -96,7 +94,9 @@ export const login = async (
   };
 };
 
-export const refreshAccessToken = async (token: string): Promise<string> => {
+export const refreshAccessToken = async (
+  token: string
+): Promise<{ accessToken: string; refreshToken: string }> => {
   try {
     // Verify refresh token
     const decoded = jwt.verify(token, JWT_REFRESH_SECRET) as { id: string };
@@ -108,8 +108,16 @@ export const refreshAccessToken = async (token: string): Promise<string> => {
       throw new ApiError(401, "Invalid refresh token");
     }
 
-    // Generate new access token
-    return generateAccessToken(user._id.toString(), user.email);
+    // Generate new tokens
+    const accessToken = generateAccessToken(user._id.toString(), user.email);
+    const refreshToken = generateRefreshToken(user._id.toString());
+
+    // Update refresh token in database
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    // Return both tokens
+    return { accessToken, refreshToken };
   } catch (error) {
     throw new ApiError(401, "Invalid refresh token");
   }
@@ -119,7 +127,6 @@ export const logout = async (userId: string): Promise<void> => {
   // Clear refresh token in database
   await User.findByIdAndUpdate(userId, { refreshToken: null });
 };
-
 
 export const forgotPassword = async (email: string): Promise<void> => {
   // Find user by email

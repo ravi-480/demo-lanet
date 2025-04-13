@@ -12,7 +12,8 @@ import {
   sendMailToUser,
   confirmPayment,
   checkPaymentStatus,
-  removeFromSplit
+  removeFromSplit,
+  editUserInSplit
 } from "../controllers/vendorController";
 
 const router = Router();
@@ -27,7 +28,7 @@ router.post("/addToSplit", addVendorInSplit);
 router.post("/addUserToSplit", addUserInSplit);
 
 // remove vendor
-router.delete("/remove-vendor/:id",removeAddedVendor);
+router.delete("/remove-vendor/:id", removeAddedVendor);
 
 // send mail rout
 
@@ -35,14 +36,17 @@ router.post("/send-mail", sendMailToUser);
 
 // confirm payment request
 
-router.post("/confirm-payment",confirmPayment)
+router.post("/confirm-payment", confirmPayment);
 
 // confirm status
 
-router.get("/payment-status",checkPaymentStatus)
+router.get("/payment-status", checkPaymentStatus);
 
-// remove added user for split 
- router.delete("/delete/addedInSplit",removeFromSplit)
+// remove added user for split
+router.delete("/delete/addedInSplit", removeFromSplit);
 
+// edit user from split
+
+router.patch("/split/users/edituser",editUserInSplit);
 
 export default router;

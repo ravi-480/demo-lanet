@@ -29,9 +29,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginformSchema } from "@/schemas/ValidationSchema";
 
 // Configure axios
-axios.defaults.withCredentials = true;
-
-// Form schema for validation
 
 export default function LoginForm() {
   const dispatch = useDispatch<AppDispatch>();
