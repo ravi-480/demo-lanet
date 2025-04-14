@@ -21,13 +21,13 @@ const Budget = () => {
   return (
     <>
       <h1>Recent Expenses</h1>
-      <Table>
+      <Table className="table-fixed w-full">
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             <TableHead className="text-white">Date</TableHead>
-            <TableHead className="text-white">Name</TableHead>
-            <TableHead className="text-white">Category</TableHead>
-            <TableHead className="text-white">Amount</TableHead>
+            <TableHead className="text-white w-1/3 ">Name</TableHead>
+            <TableHead className="text-white w-1/6 ">Category</TableHead>
+            <TableHead className="text-white w-1/6 ">Amount</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -36,9 +36,11 @@ const Budget = () => {
               <TableCell>
                 {new Date(vendor.createdAt!).toLocaleDateString()}
               </TableCell>
-              <TableCell>{vendor.title}</TableCell>
-              <TableCell>{vendor.category}</TableCell>
-              <TableCell>₹ {vendor.price}</TableCell>
+              <TableCell className=" w-1/3 overflow-hidden text-ellipsis ">
+                {vendor.title}
+              </TableCell>
+              <TableCell className="w-1/6">{vendor.category}</TableCell>
+              <TableCell className="w-1/6">₹ {vendor.price}</TableCell>
             </TableRow>
           ))}
         </TableBody>

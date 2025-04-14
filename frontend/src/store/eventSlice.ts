@@ -98,11 +98,9 @@ export const updateEvent = createAsyncThunk(
   "event/updateEvent",
   async (data: FormData, { rejectWithValue }) => {
     try {
-      let formData = Object.fromEntries(data.entries());
-
       const response = await axios.put(
         `http://localhost:5000/api/events/updateEvent`,
-        formData,
+        data,
         {
           headers: {
             "Content-Type": "multipart/form-data", // without this file wont go in backend

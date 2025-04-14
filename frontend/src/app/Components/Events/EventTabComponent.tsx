@@ -32,7 +32,6 @@ export default function EventTabComponent({ id }: { id: string }) {
     { value: "overview", label: "Overview" },
     { value: "vendors", label: "Vendors" },
     { value: "guests", label: "Guests" },
-    { value: "budget", label: "Budget" },
   ];
 
   return (

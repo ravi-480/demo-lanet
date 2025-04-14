@@ -3,8 +3,8 @@ import EventCalendar from "./EventCalendar";
 
 const SideBar = () => {
   return (
-    <div className="space-y-4 ">
-      <div className="bg-gray-900 flex flex-col justify-center items-center rounded-lg shadow-sm p-6">
+    <div className="space-y-10 ">
+      <div className="bg-gray-900 flex flex-col justify-center items-center rounded-lg shadow-sm ">
         <div className="flex items-center  flex-row justify-center w-full mb-2">
           <h2 className="text-lg font-medium  text-gray-300">Calendar</h2>
         </div>

@@ -1,7 +1,6 @@
 import { Calendar } from "@/components/ui/calendar";
 import { selectEvents } from "@/store/eventSlice";
 import { isSameDay, parseISO, isFuture } from "date-fns";
-import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 
 const EventCalendar = () => {
