@@ -3,7 +3,6 @@ import Event, { EventDocument } from "../models/eventModel";
 import { asyncHandler } from "../utils/asyncHandler";
 import { Request, Response } from "express";
 import { sendEmail } from "../utils/emailService";
-import { log } from "console";
 const axios = require("axios");
 
 interface AuthenticatedRequest extends Request {
@@ -55,7 +54,7 @@ export const addVendors = async (req: Request, res: Response) => {
     // Prevent duplicate vendors by placeId
     const existing = await Vendor.findOne({ placeId: vendorData.placeId });
     if (existing) {
-      res.status(400).json({ success: true, message: "Vendor already added" });
+      res.status(400).json({ success: false, message: "Vendor already added" });
       return;
     }
 
@@ -68,7 +67,7 @@ export const addVendors = async (req: Request, res: Response) => {
     if (!event) {
       res
         .status(404)
-        .json({ success: true, message: "Associated event not found" });
+        .json({ success: false, message: "Associated event not found" });
       return;
     }
 
@@ -76,7 +75,9 @@ export const addVendors = async (req: Request, res: Response) => {
     event.budget.spent += vendor.price;
     await event.save();
 
-    res.status(201).json(vendor);
+    res
+      .status(201)
+      .json({ sucess: true, message: "Vendor added successfully", vendor });
   } catch (err: any) {
     console.error("Vendor creation failed:", err);
     res.status(500).json({

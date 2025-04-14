@@ -132,7 +132,6 @@ const SearchVendor = ({
         <Button onClick={() => handleSearch()}>Search</Button>
       </div>
 
-      {/* Sort options */}
       {vendors.length > 0 && (
         <div className="flex items-center gap-4">
           <span className="text-sm text-muted-foreground">Sort by:</span>
@@ -180,7 +179,6 @@ const SearchVendor = ({
             ))}
           </div>
 
-          {/* Pagination */}
           <div className="flex justify-center items-center gap-4 mt-4">
             <button
               onClick={() => handleSearch(page - 1)}

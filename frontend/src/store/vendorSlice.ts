@@ -8,7 +8,7 @@ type StatusType = "idle" | "loading" | "succeeded" | "failed";
 interface VendorState {
   items: VendorType[];
   status: StatusType;
-  error: string | null;
+  error: string | { message: string } | null;
 }
 
 const initialState: VendorState = {
@@ -21,16 +21,21 @@ const initialState: VendorState = {
 export const createVendor = createAsyncThunk<
   VendorType,
   VendorType,
-  { rejectValue: string }
+  { rejectValue: { message: string } } // Change to object with message property
 >("vendors/createVendor", async (vendorData, { rejectWithValue }) => {
   try {
     const response = await axios.post(
       "http://localhost:5000/api/vendors/add",
       vendorData
     );
-    return response.data as VendorType;
+    return response.data;
   } catch (error: any) {
-    return rejectWithValue(error.response?.data || error.message);
+    const errorMsg =
+      typeof error.response?.data === "object" && error.response?.data.message
+        ? error.response.data.message
+        : error.response?.data || error.message;
+
+    return rejectWithValue(errorMsg);
   }
 });
 

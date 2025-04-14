@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { useDispatch } from "react-redux";
 import { createVendor } from "@/store/vendorSlice";
 import { AppDispatch } from "@/store/store";
+import { toast } from "sonner";
 
 type VendorCardProps = {
   vendor: any;
@@ -71,7 +72,7 @@ const VendorCard = ({
 
   const dispatch = useDispatch<AppDispatch>();
 
-  const handleConfirmAdd = () => {
+  const handleConfirmAdd = async () => {
     if (!eventId || !addedBy) return;
 
     const adjustedPrice =
@@ -101,8 +102,14 @@ const VendorCard = ({
       addedBy,
     };
 
-    dispatch(createVendor(vendorData));
-    setShowDialog(false);
+    const data = await dispatch(createVendor(vendorData));
+
+    if (createVendor.fulfilled.match(data)) {
+      toast.success("Vendor added successfully!");
+      setShowDialog(false);
+    } else if (createVendor.rejected.match(data)) {
+      toast.error(`Error: ${data.payload}`);
+    }
   };
 
   return (
