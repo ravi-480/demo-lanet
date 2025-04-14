@@ -78,10 +78,6 @@ export default function EventTabComponent({ id }: { id: string }) {
         </TabsContent>
 
         <TabsContent value="guests" className="p-4"></TabsContent>
-
-        <TabsContent value="budget" className="p-4">
-          Budget Page
-        </TabsContent>
       </Tabs>
     </div>
   );

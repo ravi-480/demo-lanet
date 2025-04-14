@@ -35,8 +35,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { fetchById, singleEvent } from "@/store/eventSlice";
-import { addUserInSplit, deleteUserFromSplit } from "@/store/splitSlice";
+import { fetchById, fetchEvents, singleEvent } from "@/store/eventSlice";
+import {
+  addUserInSplit,
+  deleteUserFromSplit,
+  editUserInSplit,
+} from "@/store/splitSlice";
 import { AppDispatch } from "@/store/store";
 import { SplitUser } from "@/Interface/interface";
 import SplitTabsDialog from "../SplitModal/SplitModalDialog";
@@ -46,37 +50,124 @@ const SplitOverviewClient = () => {
   const event = useSelector(singleEvent);
   const dispatch = useDispatch<AppDispatch>();
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+  const [isEditUserOpen, setIsEditUserOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<SplitUser | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
+    register: addRegister,
+    handleSubmit: handleAddSubmit,
+    reset: addReset,
+    formState: { errors: addErrors },
   } = useForm<SplitUser>();
 
-  useEffect(() => {
-    if (id) {
-      dispatch(fetchById(id as string));
-    }
-  }, [dispatch, id]);
+  const {
+    register: editRegister,
+    handleSubmit: handleEditSubmit,
+    reset: editReset,
+    formState: { errors: editErrors },
+    setValue,
+  } = useForm<SplitUser>();
 
-  const onSubmit = (data: SplitUser) => {
-    dispatch(
-      addUserInSplit({
-        user: {
-          name: data.name,
-          email: data.email,
-        },
-        id: id as string,
-      })
-    );
-    reset();
-    setIsAddUserOpen(false);
+  // Function to refresh event data
+  const refreshEventData = async () => {
+    if (id) {
+      setIsLoading(true);
+      try {
+        await dispatch(fetchById(id as string)).unwrap();
+      } catch (error) {
+        console.error("Failed to refresh event data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const onAddSubmit = async (data: SplitUser) => {
+    setIsLoading(true);
+    try {
+      await dispatch(
+        addUserInSplit({
+          user: {
+            name: data.name,
+            email: data.email,
+          },
+          id: id as string,
+        })
+      ).unwrap();
+
+      // Refresh event data after adding user
+      await refreshEventData();
+    } catch (error) {
+      console.error("Failed to add user:", error);
+    } finally {
+      setIsLoading(false);
+      addReset();
+      setIsAddUserOpen(false);
+    }
+  };
+
+  const onEditSubmit = async (data: SplitUser) => {
+    if (currentUser) {
+      setIsLoading(true);
+      try {
+        await dispatch(
+          editUserInSplit({
+            user: {
+              ...currentUser,
+              name: data.name,
+              email: data.email,
+            },
+            id: id as string,
+          })
+        ).unwrap();
+
+        // Refresh event data after editing user
+        await refreshEventData();
+      } catch (error) {
+        console.error("Failed to edit user:", error);
+      } finally {
+        setIsLoading(false);
+        editReset();
+        setCurrentUser(null);
+        setIsEditUserOpen(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (currentUser) {
+      setValue("name", currentUser.name);
+      setValue("email", currentUser.email);
+    }
+  }, [currentUser, setValue]);
+
+  const openEditDialog = (user: any) => {
+    setCurrentUser(user);
+    setIsEditUserOpen(true);
   };
 
   const removeUser = async (userData: any) => {
-    dispatch(deleteUserFromSplit({ id: id as string, userId: userData._id }));
+    setIsLoading(true);
+    try {
+      await dispatch(
+        deleteUserFromSplit({ id: id as string, userId: userData._id })
+      ).unwrap();
+
+      // Refresh event data after removing user
+      await refreshEventData();
+    } catch (error) {
+      console.error("Failed to remove user:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  useEffect(() => {
+    if (id) {
+      refreshEventData();
+    }
+  }, [dispatch, id]);
 
   return (
     <Card className="border-0 shadow-lg bg-gradient-to-br from-gray-900 to-gray-800 text-white">
@@ -90,7 +181,10 @@ const SplitOverviewClient = () => {
           </div>
           <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-cyan-600 hover:bg-cyan-700 gap-2 transition-all duration-300 shadow-md">
+              <Button
+                className="bg-cyan-600 hover:bg-cyan-700 gap-2 transition-all duration-300 shadow-md"
+                disabled={isLoading}
+              >
                 <Plus size={16} /> Add User
               </Button>
             </DialogTrigger>
@@ -105,7 +199,7 @@ const SplitOverviewClient = () => {
               </DialogHeader>
 
               <form
-                onSubmit={handleSubmit(onSubmit)}
+                onSubmit={handleAddSubmit(onAddSubmit)}
                 className="space-y-4 py-2"
               >
                 <div className="space-y-1">
@@ -116,11 +210,11 @@ const SplitOverviewClient = () => {
                     id="name"
                     placeholder="Enter full name"
                     className="border-gray-300 focus:border-cyan-500 focus:ring-cyan-500"
-                    {...register("name", { required: "Name is required" })}
+                    {...addRegister("name", { required: "Name is required" })}
                   />
-                  {errors.name && (
+                  {addErrors.name && (
                     <p className="text-sm text-red-500 mt-1">
-                      {errors.name.message}
+                      {addErrors.name.message}
                     </p>
                   )}
                 </div>
@@ -134,7 +228,7 @@ const SplitOverviewClient = () => {
                     type="email"
                     placeholder="email@example.com"
                     className="border-gray-300 focus:border-cyan-500 focus:ring-cyan-500"
-                    {...register("email", {
+                    {...addRegister("email", {
                       required: "Email is required",
                       pattern: {
                         value: /^\S+@\S+$/i,
@@ -142,9 +236,9 @@ const SplitOverviewClient = () => {
                       },
                     })}
                   />
-                  {errors.email && (
+                  {addErrors.email && (
                     <p className="text-sm text-red-500 mt-1">
-                      {errors.email.message}
+                      {addErrors.email.message}
                     </p>
                   )}
                 </div>
@@ -155,14 +249,16 @@ const SplitOverviewClient = () => {
                     variant="outline"
                     onClick={() => setIsAddUserOpen(false)}
                     className="border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+                    disabled={isLoading}
                   >
                     Cancel
                   </Button>
                   <Button
                     type="submit"
                     className="bg-cyan-600 hover:bg-cyan-700 ml-2"
+                    disabled={isLoading}
                   >
-                    Add User
+                    {isLoading ? "Adding..." : "Add User"}
                   </Button>
                 </DialogFooter>
               </form>
@@ -171,8 +267,100 @@ const SplitOverviewClient = () => {
         </div>
       </CardHeader>
 
+      {/* Edit User Dialog */}
+      <Dialog open={isEditUserOpen} onOpenChange={setIsEditUserOpen}>
+        <DialogContent className="sm:max-w-md text-gray-800 bg-white dark:bg-gray-800 dark:text-white border-0 shadow-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit size={18} /> Edit User
+            </DialogTitle>
+            <DialogDescription>
+              Update user details for the event split
+            </DialogDescription>
+          </DialogHeader>
+
+          <form
+            onSubmit={handleEditSubmit(onEditSubmit)}
+            className="space-y-4 py-2"
+          >
+            <div className="space-y-1">
+              <Label htmlFor="edit-name" className="text-sm font-medium">
+                Name
+              </Label>
+              <Input
+                id="edit-name"
+                placeholder="Enter full name"
+                className="border-gray-300 focus:border-cyan-500 focus:ring-cyan-500"
+                {...editRegister("name", { required: "Name is required" })}
+              />
+              {editErrors.name && (
+                <p className="text-sm text-red-500 mt-1">
+                  {editErrors.name.message}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="edit-email" className="text-sm font-medium">
+                Email
+              </Label>
+              <Input
+                id="edit-email"
+                type="email"
+                placeholder="email@example.com"
+                className="border-gray-300 focus:border-cyan-500 focus:ring-cyan-500"
+                {...editRegister("email", {
+                  required: "Email is required",
+                  pattern: {
+                    value: /^\S+@\S+$/i,
+                    message: "Invalid email format",
+                  },
+                })}
+              />
+              {editErrors.email && (
+                <p className="text-sm text-red-500 mt-1">
+                  {editErrors.email.message}
+                </p>
+              )}
+            </div>
+
+            <DialogFooter className="pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsEditUserOpen(false);
+                  setCurrentUser(null);
+                }}
+                className="border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+                disabled={isLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-cyan-600 hover:bg-cyan-700 ml-2"
+                disabled={isLoading}
+              >
+                {isLoading ? "Saving..." : "Save Changes"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
       <CardContent className="pt-4">
-        {event?.includedInSplit?.length > 0 ? (
+        {isLoading && (
+          <div className="flex justify-center mb-4">
+            <div className="h-1 w-full bg-gray-700 overflow-hidden rounded-full">
+              <div
+                className="h-full bg-cyan-500 animate-pulse rounded-full"
+                style={{ width: "100%" }}
+              ></div>
+            </div>
+          </div>
+        )}
+
+        {event?.includedInSplit && event.includedInSplit.length > 0 ? (
           <div className="rounded-lg overflow-hidden border border-gray-700 bg-gray-800/50">
             <Table>
               <TableHeader>
@@ -192,7 +380,7 @@ const SplitOverviewClient = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {event?.includedInSplit?.map((user, idx) => (
+                {event.includedInSplit.map((user, idx) => (
                   <TableRow
                     key={idx}
                     className="hover:bg-gray-800/70 border-gray-700 transition-colors"
@@ -216,11 +404,19 @@ const SplitOverviewClient = () => {
                       </span>
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-4 ">
-                        <Edit size={14} />
+                      <div className="flex gap-4">
+                        <Edit
+                          onClick={() => !isLoading && openEditDialog(user)}
+                          className={`cursor-pointer hover:text-cyan-400 transition-colors ${
+                            isLoading ? "opacity-50" : ""
+                          }`}
+                          size={14}
+                        />
                         <Trash
-                          onClick={() => removeUser(user)}
-                          className="cursor-pointer hover:text-red-500"
+                          onClick={() => !isLoading && removeUser(user)}
+                          className={`cursor-pointer hover:text-red-500 transition-colors ${
+                            isLoading ? "opacity-50" : ""
+                          }`}
                           size={14}
                         />
                       </div>
@@ -240,6 +436,7 @@ const SplitOverviewClient = () => {
             <Button
               onClick={() => setIsAddUserOpen(true)}
               className="bg-cyan-600 hover:bg-cyan-700 gap-2"
+              disabled={isLoading}
             >
               <Plus size={16} /> Add First User
             </Button>
@@ -251,7 +448,10 @@ const SplitOverviewClient = () => {
         <CardFooter className="pt-2 pb-6">
           <Dialog>
             <DialogTrigger asChild>
-              <Button className="bg-cyan-600 hover:bg-cyan-700 w-full py-6 gap-2 shadow-md">
+              <Button
+                className="bg-cyan-600 hover:bg-cyan-700 w-full py-6 gap-2 shadow-md"
+                disabled={isLoading}
+              >
                 <DollarSign size={18} />
                 <span className="font-medium">Create Split</span>
               </Button>

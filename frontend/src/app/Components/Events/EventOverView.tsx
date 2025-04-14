@@ -6,7 +6,6 @@ import { AppDispatch } from "@/store/store";
 import MyPieChart from "./EventPieChart";
 
 const EventOverView = ({ event }: { event: IEvent }) => {
-  const dispatch = useDispatch<AppDispatch>();
 
   const { budget = { allocated: 0, spent: 0 }, description, rsvp } = event;
   const remaining = budget.allocated - budget.spent;

@@ -143,6 +143,9 @@ export const addUserInSplit = asyncHandler(
 
     event.includedInSplit = [...event.includedInSplit, user];
     await event.save();
+    return res
+      .status(200)
+      .json({ success: true, message: "User added in split successfully" });
   }
 );
 
@@ -187,6 +190,8 @@ export const removeAddedVendor = asyncHandler(
     if (!id) return res.status(404).json({ message: "Id not found" });
 
     const vendor = await Vendor.findByIdAndDelete(id);
+    console.log(vendor?.event.toString());
+
     if (!vendor)
       return res
         .status(404)
@@ -299,7 +304,7 @@ export const editUserInSplit = asyncHandler(
 
       await event.save();
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: "User updated successfully",
         data: event.includedInSplit[userIndex],
