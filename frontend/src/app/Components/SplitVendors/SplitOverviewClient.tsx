@@ -36,11 +36,7 @@ import {
 } from "@/components/ui/table";
 
 import { fetchById, singleEvent } from "@/store/eventSlice";
-import {
-  addUserInSplit,
-  deleteUserFromSplit,
-  editUserInSplit,
-} from "@/store/splitSlice";
+import { addUserInSplit, deleteUserFromSplit } from "@/store/splitSlice";
 import { AppDispatch } from "@/store/store";
 import { SplitUser } from "@/Interface/interface";
 import SplitTabsDialog from "../SplitModal/SplitModalDialog";
@@ -50,22 +46,12 @@ const SplitOverviewClient = () => {
   const event = useSelector(singleEvent);
   const dispatch = useDispatch<AppDispatch>();
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
-  const [isEditUserOpen, setIsEditUserOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<SplitUser | null>(null);
 
   const {
-    register: addRegister,
-    handleSubmit: handleAddSubmit,
-    reset: addReset,
-    formState: { errors: addErrors },
-  } = useForm<SplitUser>();
-
-  const {
-    register: editRegister,
-    handleSubmit: handleEditSubmit,
-    reset: editReset,
-    formState: { errors: editErrors },
-    setValue,
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
   } = useForm<SplitUser>();
 
   useEffect(() => {
@@ -74,14 +60,7 @@ const SplitOverviewClient = () => {
     }
   }, [dispatch, id]);
 
-  useEffect(() => {
-    if (currentUser) {
-      setValue("name", currentUser.name);
-      setValue("email", currentUser.email);
-    }
-  }, [currentUser, setValue]);
-
-  const onAddSubmit = (data: SplitUser) => {
+  const onSubmit = (data: SplitUser) => {
     dispatch(
       addUserInSplit({
         user: {
@@ -91,31 +70,8 @@ const SplitOverviewClient = () => {
         id: id as string,
       })
     );
-    addReset();
+    reset();
     setIsAddUserOpen(false);
-  };
-
-  const onEditSubmit = (data: SplitUser) => {
-    if (currentUser) {
-      dispatch(
-        editUserInSplit({
-          user: {
-            ...currentUser,
-            name: data.name,
-            email: data.email,
-          },
-          id: id as string,
-        })
-      );
-      editReset();
-      setCurrentUser(null);
-      setIsEditUserOpen(false);
-    }
-  };
-
-  const openEditDialog = (user: any) => {
-    setCurrentUser(user);
-    setIsEditUserOpen(true);
   };
 
   const removeUser = async (userData: any) => {
@@ -149,7 +105,7 @@ const SplitOverviewClient = () => {
               </DialogHeader>
 
               <form
-                onSubmit={handleAddSubmit(onAddSubmit)}
+                onSubmit={handleSubmit(onSubmit)}
                 className="space-y-4 py-2"
               >
                 <div className="space-y-1">
@@ -160,11 +116,11 @@ const SplitOverviewClient = () => {
                     id="name"
                     placeholder="Enter full name"
                     className="border-gray-300 focus:border-cyan-500 focus:ring-cyan-500"
-                    {...addRegister("name", { required: "Name is required" })}
+                    {...register("name", { required: "Name is required" })}
                   />
-                  {addErrors.name && (
+                  {errors.name && (
                     <p className="text-sm text-red-500 mt-1">
-                      {addErrors.name.message}
+                      {errors.name.message}
                     </p>
                   )}
                 </div>
@@ -178,7 +134,7 @@ const SplitOverviewClient = () => {
                     type="email"
                     placeholder="email@example.com"
                     className="border-gray-300 focus:border-cyan-500 focus:ring-cyan-500"
-                    {...addRegister("email", {
+                    {...register("email", {
                       required: "Email is required",
                       pattern: {
                         value: /^\S+@\S+$/i,
@@ -186,9 +142,9 @@ const SplitOverviewClient = () => {
                       },
                     })}
                   />
-                  {addErrors.email && (
+                  {errors.email && (
                     <p className="text-sm text-red-500 mt-1">
-                      {addErrors.email.message}
+                      {errors.email.message}
                     </p>
                   )}
                 </div>
@@ -214,86 +170,6 @@ const SplitOverviewClient = () => {
           </Dialog>
         </div>
       </CardHeader>
-
-      {/* Edit User Dialog */}
-      <Dialog open={isEditUserOpen} onOpenChange={setIsEditUserOpen}>
-        <DialogContent className="sm:max-w-md text-gray-800 bg-white dark:bg-gray-800 dark:text-white border-0 shadow-xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Edit size={18} /> Edit User
-            </DialogTitle>
-            <DialogDescription>
-              Update user details for the event split
-            </DialogDescription>
-          </DialogHeader>
-
-          <form
-            onSubmit={handleEditSubmit(onEditSubmit)}
-            className="space-y-4 py-2"
-          >
-            <div className="space-y-1">
-              <Label htmlFor="edit-name" className="text-sm font-medium">
-                Name
-              </Label>
-              <Input
-                id="edit-name"
-                placeholder="Enter full name"
-                className="border-gray-300 focus:border-cyan-500 focus:ring-cyan-500"
-                {...editRegister("name", { required: "Name is required" })}
-              />
-              {editErrors.name && (
-                <p className="text-sm text-red-500 mt-1">
-                  {editErrors.name.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="edit-email" className="text-sm font-medium">
-                Email
-              </Label>
-              <Input
-                id="edit-email"
-                type="email"
-                placeholder="email@example.com"
-                className="border-gray-300 focus:border-cyan-500 focus:ring-cyan-500"
-                {...editRegister("email", {
-                  required: "Email is required",
-                  pattern: {
-                    value: /^\S+@\S+$/i,
-                    message: "Invalid email format",
-                  },
-                })}
-              />
-              {editErrors.email && (
-                <p className="text-sm text-red-500 mt-1">
-                  {editErrors.email.message}
-                </p>
-              )}
-            </div>
-
-            <DialogFooter className="pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setIsEditUserOpen(false);
-                  setCurrentUser(null);
-                }}
-                className="border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                className="bg-cyan-600 hover:bg-cyan-700 ml-2"
-              >
-                Save Changes
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
 
       <CardContent className="pt-4">
         {event?.includedInSplit?.length > 0 ? (
@@ -340,15 +216,11 @@ const SplitOverviewClient = () => {
                       </span>
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-4">
-                        <Edit
-                          onClick={() => openEditDialog(user)}
-                          className="cursor-pointer hover:text-cyan-400 transition-colors"
-                          size={14}
-                        />
+                      <div className="flex gap-4 ">
+                        <Edit size={14} />
                         <Trash
                           onClick={() => removeUser(user)}
-                          className="cursor-pointer hover:text-red-500 transition-colors"
+                          className="cursor-pointer hover:text-red-500"
                           size={14}
                         />
                       </div>

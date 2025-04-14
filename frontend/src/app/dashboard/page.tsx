@@ -12,21 +12,15 @@ const Dashboard = () => {
     <AuthGuard>
       <div className="min-h-screen bg-gray-900">
         <div className="container mx-auto px-4 py-8">
-          {/* Welcome Section */}
-
           <Welcome />
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2">
-              {/* Events Display */}
               <EventDisplay />
 
-              {/* Budget Summary Section */}
               <Budget />
             </div>
 
-            {/* Sidebar */}
             <SideBar />
           </div>
 

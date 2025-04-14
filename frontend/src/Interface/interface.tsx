@@ -9,6 +9,7 @@ export interface IEvent {
   location: string;
   description: string;
   image: string;
+  status: string;
   budget: {
     allocated: number;
     spent: number;

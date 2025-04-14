@@ -27,6 +27,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginformSchema } from "@/schemas/ValidationSchema";
+import { toast } from "sonner";
 
 // Configure axios
 
@@ -65,7 +66,13 @@ export default function LoginForm() {
   }, [user, authStatus, router]);
 
   const onSubmit = async (values: { email: string; password: string }) => {
-    await dispatch(loginUser(values));
+    const response = await dispatch(loginUser(values));
+    console.log("sdsdsdsdsd", response);
+    if (response.type === "auth/login/fulfilled") {
+      toast.success("Login successfull");
+    } else {
+      toast.error(response.payload as string);
+    }
   };
 
   return (

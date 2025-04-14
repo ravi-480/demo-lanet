@@ -1,5 +1,4 @@
 
-import React from "react";
 import VendorsDetail from "../../../Components/Events/VendorDetail";
 
 const VendorPAge = async ({ params }: any) => {

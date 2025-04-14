@@ -16,7 +16,9 @@ export const getVendor = asyncHandler(async (req: Request, res: Response) => {
   const { query, location, page = 1 } = req.query;
 
   if (!query || !location) {
-    return res.status(400).json({ error: "Missing query or location" });
+    return res
+      .status(400)
+      .json({ success: false, error: "Missing query or location" });
   }
 
   const serpRes = await axios.get("https://serpapi.com/search.json", {
@@ -53,7 +55,7 @@ export const addVendors = async (req: Request, res: Response) => {
     // Prevent duplicate vendors by placeId
     const existing = await Vendor.findOne({ placeId: vendorData.placeId });
     if (existing) {
-      res.status(400).json({ message: "Vendor already added" });
+      res.status(400).json({ success: true, message: "Vendor already added" });
       return;
     }
 
@@ -64,7 +66,9 @@ export const addVendors = async (req: Request, res: Response) => {
     const event = (await Event.findById(vendor.event)) as EventDocument | null;
 
     if (!event) {
-      res.status(404).json({ message: "Associated event not found" });
+      res
+        .status(404)
+        .json({ success: true, message: "Associated event not found" });
       return;
     }
 
@@ -76,6 +80,7 @@ export const addVendors = async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error("Vendor creation failed:", err);
     res.status(500).json({
+      success: false,
       message: "Failed to create vendor",
       error: err.message,
     });
@@ -94,7 +99,7 @@ export const getByUser = asyncHandler(async (req: Request, res: Response) => {
   const userId = reqUser.user.id;
 
   if (!userId) {
-    return res.status(401).json({ message: "unauthorized" });
+    return res.status(401).json({ success: false, message: "unauthorized" });
   }
   const vendors = await Vendor.find({ addedBy: userId }).sort({
     createdAt: -1,
@@ -187,7 +192,9 @@ export const removeAddedVendor = asyncHandler(
         .status(404)
         .json({ success: "failed", msg: "Vendor not found" });
 
-    res.status(200).json({ message: "Vendor remove successfully!" });
+    res
+      .status(200)
+      .json({ success: true, message: "Vendor remove successfully!" });
   }
 );
 
@@ -215,7 +222,7 @@ export const confirmPayment = asyncHandler(
     await event.save();
     return res
       .status(200)
-      .json({ status: "Succcess", message: "User Paid Successfully" });
+      .json({ success: true, message: "User Paid Successfully" });
   }
 );
 
@@ -232,9 +239,9 @@ export const checkPaymentStatus = asyncHandler(
     if (!user) {
       return res
         .status(404)
-        .json({ success: "failed", message: "Invalid User Id" });
+        .json({ success: false, message: "Invalid User Id" });
     }
-    return res.status(200).json({ status: user.status });
+    return res.status(200).json({ success: true, status: user.status });
   }
 );
 
@@ -253,7 +260,7 @@ export const removeFromSplit = asyncHandler(
     );
     await event.save();
     return res.status(200).json({
-      status: "success",
+      success: true,
       message: "User deleted successfully from split",
     });
   }

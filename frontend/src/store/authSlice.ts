@@ -80,7 +80,6 @@ const makeAuthRequest = async (url: string, data: any) => {
   }
 };
 
-// Thunks
 export const loginUser = createAsyncThunk<
   LoginResponse, // response type
   { email: string; password: string }, // arguement type

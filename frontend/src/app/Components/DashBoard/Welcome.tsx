@@ -17,7 +17,7 @@ const Welcome = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between items-center text-center md:text-left">
         <div>
           <h1 className="text-2xl font-bold text-white">
-            Welcome back, {user?.name}
+            Welcome back,<span className="capitalize"> {user?.name}</span>
           </h1>
           <p className="text-amber-100 mt-1">You have {val} upcoming events</p>
         </div>

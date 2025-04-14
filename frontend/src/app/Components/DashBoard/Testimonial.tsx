@@ -1,5 +1,4 @@
 import { testimonials2 } from "@/StaticData/Static";
-import { Star } from "lucide-react";
 import React, { useState } from "react";
 
 const Testimonials: React.FC = () => {

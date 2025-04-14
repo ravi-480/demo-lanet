@@ -11,10 +11,9 @@ const SideBar = () => {
           <EventCalendar />
       </div>
 
-      {/* Recent Activity */}
-      <div className="bg-blue-950 rounded-lg shadow-sm p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-medium text-gray-300">Recent Activity</h2>
+      <div className="bg-gray-900 border rounded-lg shadow-sm  p-6">
+        <div className="flex items-center border-b border-gray-600 justify-between mb-4">
+          <h2 className="text-lg font-medium text-gray-300 ">Recent Activity</h2>
           <button className="text-gray-300 text-sm">View All</button>
         </div>
 

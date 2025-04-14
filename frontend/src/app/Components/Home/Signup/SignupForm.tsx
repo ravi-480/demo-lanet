@@ -25,6 +25,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupformSchema } from "@/schemas/ValidationSchema";
 import { SignupPayload } from "@/Interface/interface";
+import { toast } from "sonner";
 
 const SignupForm = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -50,8 +51,10 @@ const SignupForm = () => {
     const resultAction = await dispatch(signupUser(values));
 
     if (signupUser.fulfilled.match(resultAction)) {
-      alert("User created successfully!");
+      toast.success(resultAction.payload.message);
       router.push("/");
+    } else {
+      toast.error(resultAction.payload);
     }
   };
 

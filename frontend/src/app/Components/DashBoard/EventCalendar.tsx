@@ -5,6 +5,8 @@ import { useSelector } from "react-redux";
 
 const EventCalendar = () => {
   const events = useSelector(selectEvents);
+  console.log("calendar", events);
+
   const dataArr = events
     .map((event) => {
       if (!event?.date) return null;

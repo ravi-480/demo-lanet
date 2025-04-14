@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "./Components/Home/Header/Header";
 import ReduxProvider from "@/store/storeProvider";
 import Footer from "./Components/Home/Footer/Footer";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,7 +24,7 @@ export default function RootLayout({
         <ReduxProvider>
           <Header />
           {children}
-          <div id="portal-root"></div>
+          <Toaster richColors />
           <Footer />
         </ReduxProvider>
       </body>

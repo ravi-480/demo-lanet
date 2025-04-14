@@ -14,9 +14,13 @@ import {
 const Budget = () => {
   const dispatch = useDispatch<AppDispatch>();
   const vendorDetail = useSelector(vendorByUser);
+  console.log(vendorDetail);
+
   useEffect(() => {
-    dispatch(getVendorByUser());
-  }, []);
+    if (vendorDetail.items.length === 0 && vendorDetail.status !== "loading") {
+      dispatch(getVendorByUser());
+    }
+  }, [vendorDetail.items.length, vendorDetail.status]);
 
   return (
     <>

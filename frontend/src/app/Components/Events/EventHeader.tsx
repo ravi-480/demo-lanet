@@ -38,7 +38,7 @@ const EventHeader = ({ event }: { event: IEvent }) => {
       <div className="">
         <div className="flex gap-3 items-center mb-3">
           <h1 className="text-2xl text-white font-bold">{event.name}</h1>
-          <p className="bg-blue-700 text-sm px-2 py-1 rounded-3xl ">
+          <p className="bg-cyan-700/50 text-sm px-2 py-1 rounded-3xl ">
             {getEventStatus(event.date)}
           </p>
         </div>
@@ -73,17 +73,17 @@ const EventHeader = ({ event }: { event: IEvent }) => {
       <AlertDialog open={open}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-gray-900">Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-700 font-semibold">
               This action cannot be undone. This will permanently delete your
-              account and remove your data from our servers.
+              Event and remove your data from our servers.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="hover:bg-none text-black cursor-pointer" onClick={() => setOpen(false)}>
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction className="cursor-pointer" onClick={handleDelete}>
+            <AlertDialogAction className="cursor-pointer bg-cyan-600 hover:bg-cyan-700" onClick={handleDelete}>
               Continue
             </AlertDialogAction>
           </AlertDialogFooter>

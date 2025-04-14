@@ -65,7 +65,6 @@ export const deleteVendor = createAsyncThunk<
 });
 
 // get vendor by user
-
 export const getVendorByUser = createAsyncThunk<
   VendorType[],
   void,
@@ -84,14 +83,14 @@ export const getVendorByUser = createAsyncThunk<
 });
 
 // remove added vendors from list
-
 export const removeAddedVendor = createAsyncThunk(
   "vendor/removeVendor",
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = axios.delete(
+      const response = await axios.delete(
         `http://localhost:5000/api/vendors/remove-vendor/${id}`
       );
+      return response.data;
     } catch (error: any) {
       rejectWithValue(error.response?.data || error.message);
     }
