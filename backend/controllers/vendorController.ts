@@ -51,18 +51,16 @@ export const addVendors = async (req: Request, res: Response) => {
   try {
     const vendorData = req.body;
 
-    // Prevent duplicate vendors by placeId
     const existing = await Vendor.findOne({ placeId: vendorData.placeId });
     if (existing) {
       res.status(400).json({ success: false, message: "Vendor already added" });
       return;
     }
 
-    // Cast vendor as VendorDocument so TypeScript knows it has `price`
-    const vendor = (await Vendor.create(vendorData)) as VendorDocument;
+    const vendor = await Vendor.create(vendorData);
 
     // Find the related event and cast as EventDocument
-    const event = (await Event.findById(vendor.event)) as EventDocument | null;
+    const event = await Event.findById(vendor.event);
 
     if (!event) {
       res
@@ -123,9 +121,10 @@ export const addVendorInSplit = asyncHandler(
 
     event.vendorsInSplit = [...selected];
     await event.save();
-    res
-      .status(200)
-      .json({ status: "success", message: "Vendor added successfully" });
+    res.status(200).json({
+      status: "success",
+      message: "Vendor added in split successfully",
+    });
   }
 );
 
@@ -188,19 +187,33 @@ export const sendMailToUser = asyncHandler(async (req, res) => {
 export const removeAddedVendor = asyncHandler(
   async (req: Request, res: Response) => {
     const { id } = req.params;
-    if (!id) return res.status(404).json({ message: "Id not found" });
 
+    if (!id) return res.status(400).json({ message: "Vendor ID is required" });
+
+    // Find and delete the vendor
     const vendor = await Vendor.findByIdAndDelete(id);
-    console.log(vendor?.event.toString());
 
     if (!vendor)
       return res
         .status(404)
-        .json({ success: "failed", msg: "Vendor not found" });
+        .json({ success: false, message: "Vendor not found" });
 
-    res
-      .status(200)
-      .json({ success: true, message: "Vendor remove successfully!" });
+    // Subtract the price from the event's spent budget
+    const updatedEvent = await Event.findByIdAndUpdate(
+      vendor.event,
+      { $inc: { "budget.spent": -vendor.price } },
+      { new: true }
+    );
+
+    if (!updatedEvent)
+      return res
+        .status(404)
+        .json({ success: false, message: "Event not found" });
+
+    return res.status(200).json({
+      success: true,
+      message: "Vendor removed successfully and budget updated!",
+    });
   }
 );
 

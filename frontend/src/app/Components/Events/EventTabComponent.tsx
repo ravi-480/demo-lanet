@@ -31,7 +31,6 @@ export default function EventTabComponent({ id }: { id: string }) {
   const tabs = [
     { value: "overview", label: "Overview" },
     { value: "vendors", label: "Vendors" },
-    { value: "guests", label: "Guests" },
   ];
 
   return (
@@ -76,8 +75,6 @@ export default function EventTabComponent({ id }: { id: string }) {
             eventLocation={event.location}
           />
         </TabsContent>
-
-        <TabsContent value="guests" className="p-4"></TabsContent>
       </Tabs>
     </div>
   );

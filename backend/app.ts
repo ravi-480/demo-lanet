@@ -8,6 +8,7 @@ import authRoutes from "./routes/authRoutes";
 import eventRoutes from "./routes/eventRoute";
 import vendorRoutes from "./routes/vendorRoutes";
 import notificationRoute from "./routes/notificationRoute";
+import rsvpRoutes from "./routes/rsvpRoutes";
 import { errorConverter, errorHandler } from "./middleware/errorHandler";
 
 const app = express();
@@ -30,6 +31,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/vendors", vendorRoutes);
 app.use("/api/notifications", notificationRoute);
+app.use("/api/guest", rsvpRoutes);
 
 // 404 Handler
 app.use("*", (req: Request, res: Response) => {

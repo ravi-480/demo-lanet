@@ -1,52 +1,97 @@
 import { IEvent } from "../../../Interface/interface";
-
-
-
 import MyPieChart from "./EventPieChart";
+import { Users, Wallet } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const EventOverView = ({ event }: { event: IEvent }) => {
-
   const { budget = { allocated: 0, spent: 0 }, rsvp } = event;
   const remaining = budget.allocated - budget.spent;
+
+  // Calculate percentages for progress bars
+  const attendancePercentage =
+    rsvp.total > 0 ? (rsvp.confirmed / rsvp.total) * 100 : 0;
+  const spentPercentage =
+    budget.allocated > 0 ? (budget.spent / budget.allocated) * 100 : 0;
+
   return (
-    <div>
+    <div className="grid gap-6">
       <MyPieChart event={event} />
-      <section className="bg-gray-800 mt-20 rounded-2xl p-4">
-        <p className="text-blue-600 mb-3">Guest Summary</p>
-        <div className="space-y-1">
-          <div className="flex justify-between items-center">
-            <span>Total Invited:</span> <span>{rsvp.total}</span>
+
+      {/* Guest Summary Card */}
+      <Card className="border-0 bg-gray-800 text-white shadow-lg">
+        <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardTitle className="text-cyan-400 flex items-center">
+            <Users className="mr-2" size={20} />
+            Guest Summary
+          </CardTitle>
+          <span className="text-sm text-gray-400">Total: {rsvp.total}</span>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          <div>
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-gray-300">Confirmed</span>
+              <span className="font-medium text-green-400">
+                {rsvp.confirmed} ({attendancePercentage.toFixed(0)}%)
+              </span>
+            </div>
+            <Progress value={attendancePercentage} />
           </div>
-          <div className="flex justify-between items-center">
-            <span>Confirmed:</span>{" "}
-            <span className="text-green-700">{rsvp.confirmed}</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span>Pending:</span>{" "}
-            <span className="text-amber-400">
+
+          <div className="flex justify-between items-center mt-2">
+            <span className="text-gray-300">Pending</span>
+            <span className="font-medium text-amber-400">
               {rsvp.total - rsvp.confirmed}
             </span>
           </div>
-        </div>
-      </section>
+        </CardContent>
+        <CardFooter>
+          <Link href={`/events/${event._id}/guest`}>
+            <Button>Manage Guest</Button>
+          </Link>
+        </CardFooter>
+      </Card>
 
-      {/* Budget Summary */}
-      <section className="bg-green-950 rounded-2xl mt-3 p-4">
-        <p className="text-green-100 mb-3">Budget Summary</p>
-        <div className="space-y-1">
-          <div className="flex justify-between items-center">
-            <span>Total Budget:</span>{" "}
-            <span>₹{budget.allocated.toLocaleString()}</span>
+      {/* Budget Summary Card */}
+      <Card className="border-0 bg-green-950 text-white shadow-lg">
+        <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardTitle className="text-green-100 flex items-center">
+            <Wallet className="mr-2" size={20} />
+            Budget Summary
+          </CardTitle>
+          <span className="text-sm text-green-200">
+            Total: ₹{budget.allocated.toLocaleString()}
+          </span>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          <div>
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-green-100">Spent</span>
+              <span className="font-medium text-red-300">
+                ₹{budget.spent.toLocaleString()} ({spentPercentage.toFixed(0)}%)
+              </span>
+            </div>
+            <Progress value={spentPercentage} />
           </div>
-          <div className="flex justify-between items-center">
-            <span>Spent:</span> <span>₹{budget.spent.toLocaleString()}</span>
+
+          <div className="flex justify-between items-center mt-2">
+            <span className="text-green-100">Remaining</span>
+            <span className="font-medium text-blue-400">
+              ₹{remaining.toLocaleString()}
+            </span>
           </div>
-          <div className="flex justify-between items-center">
-            <span>Remaining:</span>{" "}
-            <span className="text-blue-500">₹{remaining.toLocaleString()}</span>
-          </div>
-        </div>
-      </section>
+        </CardContent>
+      </Card>
     </div>
   );
 };

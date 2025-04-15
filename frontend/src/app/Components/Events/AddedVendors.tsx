@@ -133,6 +133,7 @@ const AddedVendorsList = ({ eventId }: { eventId: string }) => {
         return updated;
       });
       const response = await dispatch(removeAddedVendor(vendorID));
+
       if (removeAddedVendor.fulfilled.match(response)) {
         toast.success("Vendor removed successfully");
       } else {
@@ -237,7 +238,7 @@ const AddedVendorsList = ({ eventId }: { eventId: string }) => {
         </p>
         <Button
           onClick={handleSaveSplit}
-          disabled={selectedVendors.length === 0 }
+          disabled={selectedVendors.length === 0}
           className="bg-green-600 text-white cursor-pointer hover:bg-green-700"
         >
           Save & Add Split

@@ -46,7 +46,6 @@ const MyPieChart = ({ event }: MyPieChartProps) => {
     const y = cy + radius * Math.sin((-midAngle * Math.PI) / 180);
 
     if (percent < 0.05) return null; // Don't show labels for tiny slices
-
     return (
       <text
         x={x}
@@ -85,6 +84,10 @@ const MyPieChart = ({ event }: MyPieChartProps) => {
     }
     return null;
   };
+
+  let budgetPercent = Number(
+    ((budget.spent / budget.allocated) * 100).toFixed(1)
+  );
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -132,11 +135,18 @@ const MyPieChart = ({ event }: MyPieChartProps) => {
             </div>
             <div className="bg-gray-700 p-2 rounded">
               <p className="text-sm text-gray-300">Budget Utilized</p>
-              <p className="text-lg text-cyan-500 font-bold">
-                {budget.allocated > 0
-                  ? ((budget.spent / budget.allocated) * 100).toFixed(1)
-                  : 0}
-                %
+              <p
+                className="text-lg font-bold"
+                style={{
+                  color:
+                    budget.allocated > 0 && budgetPercent > 100
+                      ? "#ef4444"
+                      : budgetPercent >= 90
+                      ? "#facc15"
+                      : "#22d3ee",
+                }}
+              >
+                {budgetPercent}%
               </p>
             </div>
           </div>

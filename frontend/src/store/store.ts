@@ -5,6 +5,7 @@ import vendorReducer from "./vendorSlice";
 import splitVendorPrice from "./splitSlice";
 import paymentReducers from "./paymentSlice";
 import notificationReducer from "./notificationSlice";
+import rsvpReducer from "./rsvpSlice";
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -13,6 +14,7 @@ export const store = configureStore({
     splitPrice: splitVendorPrice,
     payment: paymentReducers,
     notification: notificationReducer,
+    rsvp: rsvpReducer,
   },
 });
 

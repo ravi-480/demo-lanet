@@ -7,17 +7,7 @@ export interface EventDocument extends Omit<Document, "id">, IEvent {
   updatedAt: Date;
 }
 
-// Define the budget type for use in the schema
-interface Budget {
-  allocated: number;
-  spent: number;
-}
 
-// Define the RSVP type for use in the schema
-interface RSVP {
-  total: number;
-  confirmed: number;
-}
 
 const eventSchema = new mongoose.Schema(
   {
