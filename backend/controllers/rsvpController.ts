@@ -86,3 +86,56 @@ export const getUserByEventId = asyncHandler(
     }
   }
 );
+
+// add single guest manually
+
+export const addSingleGuest = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { data } = req.body;
+    await Guest.create(data);
+    return res
+      .status(201)
+      .json({ success: true, message: "Guest added Successfully" });
+  }
+);
+
+export const removeSingleGuest = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { guestId } = req.query;
+
+    await Guest.findByIdAndDelete(guestId);
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Guest removed successfully" });
+  }
+);
+
+// controllers/guestController.ts
+
+export const updateGuest = asyncHandler(async (req: Request, res: Response) => {
+  try {
+    const { eventId, guestId } = req.params;
+    const { name, email, status } = req.body;
+
+    if (!name || !email || !status) {
+      return res.status(400).json({ message: "All fields are required." });
+    }
+
+    // Find and update the guest
+    const updatedGuest = await Guest.findOneAndUpdate(
+      { _id: guestId, eventId },
+      { name, email, status },
+      { new: true }
+    );
+
+    if (!updatedGuest) {
+      return res.status(404).json({ message: "Guest not found." });
+    }
+
+    return res.status(200).json(updatedGuest);
+  } catch (error) {
+    console.error("Error updating guest:", error);
+    return res.status(500).json({ message: "Server error." });
+  }
+});
