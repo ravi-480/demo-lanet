@@ -3,8 +3,10 @@ import { asyncHandler } from "../utils/asyncHandler";
 import XLSX from "xlsx";
 import Guest from "../models/rsvpSchema";
 import mongoose from "mongoose";
+import Notification from "../models/notificationModel";
 import Event from "../models/eventModel";
 import { sendEmail } from "../utils/emailService";
+import { getIO } from "../utils/socketUtils";
 
 // Upload Guests from Excel File
 export const addGuestFromFile = asyncHandler(
@@ -113,8 +115,6 @@ export const removeSingleGuest = asyncHandler(
       .json({ success: true, message: "Guest removed successfully" });
   }
 );
-
-
 
 export const updateGuest = asyncHandler(async (req: Request, res: Response) => {
   try {
@@ -255,8 +255,7 @@ export const validateUrl = asyncHandler(async (req, res) => {
   });
 });
 
-
-// submit guest response 
+// submit guest response
 export const responseInvite = asyncHandler(
   async (req: Request, res: Response) => {
     const { guestId, eventId, attending } = req.body;
@@ -278,8 +277,43 @@ export const responseInvite = asyncHandler(
     }
     console.log(req.body);
 
+    // Update guest status
+    const previousStatus = guest.status;
     guest.status = attending ? "Confirmed" : "Declined";
     await guest.save();
+
+    // Get the event to find the organizer/creator ID
+    const event = await Event.findById(eventId);
+    if (event) {
+      const organizerId = event.creator.toString();
+
+      // Create notification message based on response
+      const message = `${guest.name} has ${
+        attending ? "accepted" : "declined"
+      } your invitation to ${event.name || "your event"}.`;
+
+      // Create notification in DB
+      const notification = await Notification.create({
+        userId: organizerId,
+        eventId,
+        message,
+        type: "response",
+        status: "unread",
+        metadata: {
+          guestId: guest._id.toString(),
+          guestName: guest.name,
+          response: guest.status,
+          previousStatus,
+          eventTitle: event.name || "Event",
+        },
+      });
+
+      // Emit notification through socket.io
+      const io = getIO();
+      if (io) {
+        io.to(`user:${organizerId}`).emit("new-notification", notification);
+      }
+    }
 
     return res.status(200).json({
       success: true,

@@ -61,13 +61,15 @@ import {
 import { AppDispatch, RootState } from "@/store/store";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
-import { fetchById, singleEvent } from "@/store/eventSlice";
+import { GuestStatCard } from "./GuestStatCard";
 
 const GuestManagementPage = ({ eventId }: { eventId: string }) => {
   const [isAddGuestOpen, setIsAddGuestOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchFilter, setSearchFilter] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const guestsPerPage = 10;
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -123,6 +125,10 @@ const GuestManagementPage = ({ eventId }: { eventId: string }) => {
     return matchesStatus && matchesSearch;
   });
 
+  const indexOfLast = currentPage * guestsPerPage;
+  const indexOfFirst = indexOfLast - guestsPerPage;
+  const currentGuest = filteredGuests.slice(indexOfFirst, indexOfLast);
+
   // handle single user add
 
   const [editGuest, setEditGuest] = useState<any | null>(null); // guest to edit
@@ -162,9 +168,9 @@ const GuestManagementPage = ({ eventId }: { eventId: string }) => {
         const result = await dispatch(addSingleGuest({ ...data, eventId }));
         if (addSingleGuest.fulfilled.match(result)) {
           toast.success("Guest added successfully");
-          await dispatch(fetchGuests(eventId)); 
-          setIsAddGuestOpen(false); 
-          reset(); 
+          await dispatch(fetchGuests(eventId));
+          setIsAddGuestOpen(false);
+          reset();
         } else {
           toast.error("Failed to add guest");
         }
@@ -185,7 +191,7 @@ const GuestManagementPage = ({ eventId }: { eventId: string }) => {
   const handleInvite = async () => {
     const pendingList = rsvpData.filter((data) => data.status === "Pending");
     await dispatch(sendInviteAll(pendingList));
-    alert("Email sent");
+    toast.success("Email send successfully");
   };
 
   const refreshData = () => {
@@ -311,83 +317,38 @@ const GuestManagementPage = ({ eventId }: { eventId: string }) => {
       </div>
 
       {/* Guest Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-2  lg:grid-cols-4 gap-4 mb-6">
-        <Card className="bg-gray-800">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-300">
-              Total Guests
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl text-gray-100 font-bold">
-              {totalGuests}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gray-800">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-300">
-              Confirmed
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold  text-green-400">
-              {confirmedGuests}
-            </div>
-            <p className="text-xs text-gray-300 mt-1">
-              {totalGuests > 0
-                ? ((confirmedGuests / totalGuests) * 100).toFixed(1)
-                : 0}
-              % of total guests
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gray-800">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-300">
-              Pending
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-amber-500">
-              {pendingGuests}
-            </div>
-            <p className="text-xs text-gray-300 mt-1">
-              {totalGuests > 0
-                ? ((pendingGuests / totalGuests) * 100).toFixed(1)
-                : 0}
-              % of total guests
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gray-800">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-300">
-              Declined
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-500">
-              {declinedGuests}
-            </div>
-            <p className="text-xs text-gray-300 mt-1">
-              {totalGuests > 0
-                ? ((declinedGuests / totalGuests) * 100).toFixed(1)
-                : 0}
-              % of total guests
-            </p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <GuestStatCard
+          title="Total Guests"
+          count={totalGuests}
+          total={totalGuests}
+          color="text-gray-100"
+        />
+        <GuestStatCard
+          title="Confirmed"
+          count={confirmedGuests}
+          total={totalGuests}
+          color="text-green-400"
+        />
+        <GuestStatCard
+          title="Pending"
+          count={pendingGuests}
+          total={totalGuests}
+          color="text-amber-500"
+        />
+        <GuestStatCard
+          title="Declined"
+          count={declinedGuests}
+          total={totalGuests}
+          color="text-red-500"
+        />
       </div>
 
       {/* Guest List */}
-      <Card className="">
+      <Card className="bg-gray-800">
         <CardHeader className="pb-3">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-            <CardTitle className="flex items-center gap-3">
+            <CardTitle className="flex text-white items-center gap-3">
               <h3>Guest List</h3>
               <span>
                 <RefreshCcw
@@ -414,11 +375,13 @@ const GuestManagementPage = ({ eventId }: { eventId: string }) => {
                   value={statusFilter}
                   onValueChange={(value) => setStatusFilter(value)}
                 >
-                  <SelectTrigger className="w-[130px] h-9">
+                  <SelectTrigger className="w-[130px] text-gray-100 bg-gray-800 h-9">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
+                  <SelectContent className="">
+                    <SelectItem className="" value="all">
+                      All Status
+                    </SelectItem>
                     <SelectItem value="Confirmed">Confirmed</SelectItem>
                     <SelectItem value="Pending">Pending</SelectItem>
                     <SelectItem value="Declined">Declined</SelectItem>
@@ -436,23 +399,27 @@ const GuestManagementPage = ({ eventId }: { eventId: string }) => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[250px]">Name</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-gray-100 w-[250px]">
+                    Name
+                  </TableHead>
+                  <TableHead className="text-gray-100">Contact</TableHead>
+                  <TableHead className="text-gray-100">Status</TableHead>
+                  <TableHead className="text-gray-100 text-right">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredGuests.map((guest) => (
+                {currentGuest.map((guest) => (
                   <TableRow key={guest._id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className="font-medium">{guest.name}</div>
+                        <div className="font-medium text-gray-100">{guest.name}</div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="text-sm">{guest.email}</div>
+                        <div className="text-sm text-gray-100">{guest.email}</div>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -477,7 +444,7 @@ const GuestManagementPage = ({ eventId }: { eventId: string }) => {
                             size="icon"
                             className="h-8 w-8"
                           >
-                            <MoreHorizontal size={15} />
+                            <MoreHorizontal size={15} className="text-white" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -520,13 +487,29 @@ const GuestManagementPage = ({ eventId }: { eventId: string }) => {
         </CardContent>
         <CardFooter className="flex justify-between">
           <div className="text-sm text-muted-foreground">
-            Showing {filteredGuests.length} of {rsvpData.length} guests
+            Showing {currentGuest.length} of {rsvpData.length} guests
           </div>
           <div className="flex gap-1">
-            <Button variant="outline" size="sm" disabled>
+            <Button
+              variant="outline"
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              size="sm"
+              disabled={currentPage === 1}
+            >
               Previous
             </Button>
-            <Button variant="outline" size="sm" disabled>
+            <Button
+              onClick={() =>
+                setCurrentPage((p) =>
+                  p < Math.ceil(filteredGuests.length / guestsPerPage)
+                    ? p + 1
+                    : p
+                )
+              }
+              disabled={
+                currentPage >= Math.ceil(filteredGuests.length / guestsPerPage)
+              }
+            >
               Next
             </Button>
           </div>
