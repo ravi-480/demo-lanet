@@ -72,7 +72,7 @@ export interface IEvent {
     confirmed: number;
   };
   includedInSplit: {
-    _id?:string
+    _id?: string;
     userId: string;
     status: string;
     name: string;
@@ -86,6 +86,7 @@ export interface IEvent {
     price: string;
     includedAt?: Date;
   }[];
+  eventType: string;
   creator: string;
 
   createdAt?: Date;

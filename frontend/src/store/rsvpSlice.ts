@@ -36,7 +36,7 @@ export const uploadFile = createAsyncThunk(
           withCredentials: true,
         }
       );
-      return response.data.message; // return useful message or data
+      return response.data.message;
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to upload file"
@@ -56,7 +56,7 @@ export const fetchGuests = createAsyncThunk(
           withCredentials: true,
         }
       );
-      return response.data.rsvpList; // ensure your backend returns rsvpList
+      return response.data.rsvpList;
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch guest list"
@@ -72,9 +72,9 @@ export const addSingleGuest = createAsyncThunk(
     try {
       const response = await axios.post(
         "http://localhost:5000/api/guest/addSingleGuest",
-        data, // Fixed: send only the data
+        data,
         {
-          withCredentials: true, // Fixed: moved to the config object
+          withCredentials: true,
         }
       );
       return response.data;
@@ -115,8 +115,6 @@ export const updateSingleGuest = createAsyncThunk(
     thunkAPI
   ) => {
     try {
-      console.log(eventId, guestId, data);
-
       const response = await axios.put(
         `http://localhost:5000/api/guest/${eventId}/${guestId}`,
         data,
@@ -133,6 +131,44 @@ export const updateSingleGuest = createAsyncThunk(
   }
 );
 
+// send invite to all
+export const sendInviteAll = createAsyncThunk(
+  "rsvp/sendInviteAll",
+  async (data: any, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/guest/inviteAll",
+        data,
+        { withCredentials: true }
+      );
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response.data.message || "Failed to send mail to all"
+      );
+    }
+  }
+);
+
+// send reminder to pending guest
+export const sendReminder = createAsyncThunk(
+  "rsvp/sendReminder",
+  async (data: { eventId: string; guestId: string }, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/guest/sendReminder",
+        data,
+        { withCredentials: true }
+      );
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response.data.message || "Failed to send reminder mail"
+      );
+    }
+  }
+);
+
 const rsvpSlice = createSlice({
   name: "rsvp",
   initialState,
@@ -143,7 +179,6 @@ const rsvpSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // FETCH GUESTS
       .addCase(fetchGuests.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -160,7 +195,6 @@ const rsvpSlice = createSlice({
         state.error = action.payload as string;
       })
 
-      // UPLOAD FILE
       .addCase(uploadFile.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -173,7 +207,6 @@ const rsvpSlice = createSlice({
         state.error = action.payload as string;
       })
 
-      // handle single user uploading
       .addCase(addSingleGuest.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -187,7 +220,6 @@ const rsvpSlice = createSlice({
         state.error = (action.payload as string) || "Failed to add Guest";
       })
 
-      // remove single guest
       .addCase(removeSingleGuest.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -203,14 +235,12 @@ const rsvpSlice = createSlice({
         state.error = (action.payload as string) || "Failed to remove guest";
       })
 
-      // edit guest details
       .addCase(updateSingleGuest.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(updateSingleGuest.fulfilled, (state, action) => {
         state.loading = false;
-        // Properly handle the response structure
         const updatedGuest = action.payload.guest || action.payload;
         const index = state.rsvpData.findIndex(
           (guest) => guest._id === updatedGuest._id
@@ -220,6 +250,30 @@ const rsvpSlice = createSlice({
         }
       })
       .addCase(updateSingleGuest.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      .addCase(sendInviteAll.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(sendInviteAll.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(sendInviteAll.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // send reminder
+      .addCase(sendReminder.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(sendReminder.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(sendReminder.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

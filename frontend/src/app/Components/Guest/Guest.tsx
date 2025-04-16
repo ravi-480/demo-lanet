@@ -6,6 +6,7 @@ import {
   Search,
   Filter,
   MoreHorizontal,
+  RefreshCcw,
 } from "lucide-react";
 import {
   Card,
@@ -38,7 +39,6 @@ import {
   DialogTitle,
   DialogFooter,
   DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -53,12 +53,15 @@ import {
   addSingleGuest,
   fetchGuests,
   removeSingleGuest,
+  sendInviteAll,
+  sendReminder,
   updateSingleGuest,
   uploadFile,
 } from "@/store/rsvpSlice";
 import { AppDispatch, RootState } from "@/store/store";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
+import { fetchById, singleEvent } from "@/store/eventSlice";
 
 const GuestManagementPage = ({ eventId }: { eventId: string }) => {
   const [isAddGuestOpen, setIsAddGuestOpen] = useState(false);
@@ -159,9 +162,9 @@ const GuestManagementPage = ({ eventId }: { eventId: string }) => {
         const result = await dispatch(addSingleGuest({ ...data, eventId }));
         if (addSingleGuest.fulfilled.match(result)) {
           toast.success("Guest added successfully");
-          await dispatch(fetchGuests(eventId)); // Refresh the guest list
-          setIsAddGuestOpen(false); // Close the dialog manually
-          reset(); // Reset the form
+          await dispatch(fetchGuests(eventId)); 
+          setIsAddGuestOpen(false); 
+          reset(); 
         } else {
           toast.error("Failed to add guest");
         }
@@ -177,6 +180,20 @@ const GuestManagementPage = ({ eventId }: { eventId: string }) => {
   const removeGuest = async (guestId: string) => {
     await dispatch(removeSingleGuest(guestId));
     dispatch(fetchGuests(eventId));
+  };
+
+  const handleInvite = async () => {
+    const pendingList = rsvpData.filter((data) => data.status === "Pending");
+    await dispatch(sendInviteAll(pendingList));
+    alert("Email sent");
+  };
+
+  const refreshData = () => {
+    dispatch(fetchGuests(eventId));
+  };
+
+  const handleSendReminder = (data: any) => {
+    dispatch(sendReminder({ ...data, eventId }));
   };
 
   return (
@@ -370,7 +387,17 @@ const GuestManagementPage = ({ eventId }: { eventId: string }) => {
       <Card className="">
         <CardHeader className="pb-3">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-            <CardTitle>Guest List</CardTitle>
+            <CardTitle className="flex items-center gap-3">
+              <h3>Guest List</h3>
+              <span>
+                <RefreshCcw
+                  onClick={refreshData}
+                  className="inline cursor-pointer"
+                  size={20}
+                />{" "}
+                sync
+              </span>
+            </CardTitle>
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -381,6 +408,7 @@ const GuestManagementPage = ({ eventId }: { eventId: string }) => {
                   className="pl-8 h-9 md:w-64"
                 />
               </div>
+              <Button onClick={handleInvite}>Send mail All</Button>
               <div className="flex gap-2">
                 <Select
                   value={statusFilter}
@@ -467,7 +495,13 @@ const GuestManagementPage = ({ eventId }: { eventId: string }) => {
                             Edit Details
                           </DropdownMenuItem>
 
-                          <DropdownMenuItem>Send Reminder</DropdownMenuItem>
+                          {guest.status === "Pending" && (
+                            <DropdownMenuItem
+                              onClick={() => handleSendReminder(guest)}
+                            >
+                              Send Reminder
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={() => removeGuest(guest._id)}
