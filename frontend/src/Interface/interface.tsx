@@ -239,3 +239,12 @@ export interface Props {
   users: SplitUser[];
   vendors: Vendor[];
 }
+
+
+ export interface Guest {
+  _id: string;
+  name: string;
+  email: string;
+  status: "Confirmed" | "Pending" | "Declined";
+  eventId: string;
+}

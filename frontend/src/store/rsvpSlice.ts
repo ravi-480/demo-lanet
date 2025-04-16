@@ -1,13 +1,8 @@
+import { Guest } from "@/Interface/interface";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
 
-interface Guest {
-  _id: string;
-  name: string;
-  email: string;
-  status: string;
-  eventId: string;
-}
+
 
 interface RSVPState {
   rsvpData: Guest[];

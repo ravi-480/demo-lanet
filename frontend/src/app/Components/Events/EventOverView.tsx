@@ -91,6 +91,11 @@ const EventOverView = ({ event }: { event: IEvent }) => {
             </span>
           </div>
         </CardContent>
+        <CardFooter>
+          <Link href={`/events/${event._id}/budget`}>
+            <Button>Manage Budget</Button>
+          </Link>
+        </CardFooter>
       </Card>
     </div>
   );

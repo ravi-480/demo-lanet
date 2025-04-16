@@ -1,11 +1,9 @@
-import Guest from "@/app/Components/Guest/Guest";
-import React from "react";
+import GuestManagement from "@/app/Components/Guest/GuestManagement";
 
 const GuestPage = async ({ params }: any) => {
-  const id = await params.id;
   return (
     <div>
-      <Guest eventId={params.id} />
+      <GuestManagement eventId={params.id} />
     </div>
   );
 };
