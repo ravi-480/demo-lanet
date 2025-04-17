@@ -1,5 +1,5 @@
-import Vendor, { VendorDocument } from "../models/vendorModel";
-import Event, { EventDocument } from "../models/eventModel";
+import Vendor from "../models/vendorModel";
+import Event from "../models/eventModel";
 import { asyncHandler } from "../utils/asyncHandler";
 import { Request, Response } from "express";
 import { sendEmail } from "../utils/emailService";
@@ -88,7 +88,16 @@ export const addVendors = async (req: Request, res: Response) => {
 
 export const getVendorsByEvent = asyncHandler(
   async (req: Request, res: Response) => {
-    const vendors = await Vendor.find({ event: req.params.eventId });
+    const { eventId } = req.params;
+    const { includeSplit } = req.query;
+
+    const query: any = { event: eventId };
+
+    if (includeSplit === "true") {
+      query.isIncludedInSplit = true;
+    }
+
+    const vendors = await Vendor.find(query);
     res.json(vendors);
   }
 );
@@ -134,10 +143,6 @@ export const addUserInSplit = asyncHandler(
 
     const event = await Event.findById(id);
     if (!event) return res.status(404).json({ message: "Event not found" });
-
-    if (!Array.isArray(event.includedInSplit)) {
-      event.includedInSplit = [];
-    }
 
     event.includedInSplit = [...event.includedInSplit, user];
     await event.save();

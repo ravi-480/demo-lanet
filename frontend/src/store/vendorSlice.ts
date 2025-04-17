@@ -21,7 +21,7 @@ const initialState: VendorState = {
 export const createVendor = createAsyncThunk<
   VendorType,
   VendorType,
-  { rejectValue: { message: string } } // Change to object with message property
+  { rejectValue: { message: string } }
 >("vendors/createVendor", async (vendorId, { rejectWithValue }) => {
   try {
     const response = await axios.post(
@@ -39,21 +39,24 @@ export const createVendor = createAsyncThunk<
   }
 });
 
-// Get vendors by event
-export const getVendorsByEvent = createAsyncThunk<
-  VendorType[],
-  string,
-  { rejectValue: string }
->("vendors/getVendorsByEvent", async (eventId, { rejectWithValue }) => {
-  try {
-    const response = await axios.get(
-      `http://localhost:5000/api/vendors/event/${eventId}`
-    );
-    return response.data as VendorType[];
-  } catch (error: any) {
-    return rejectWithValue(error.response?.data || error.message);
+export const getVendorsByEvent = createAsyncThunk(
+  "vendors/getVendorsByEvent",
+  async ({ eventId, includeSplit }: any, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/api/vendors/event/${eventId}`,
+        {
+          params: {
+            includeSplit: includeSplit ? "true" : undefined,
+          },
+        }
+      );
+      return response.data as VendorType[];
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
   }
-});
+);
 
 // get vendor by user account
 export const getVendorByUser = createAsyncThunk<
@@ -92,7 +95,7 @@ export const addManualVendorExpense = createAsyncThunk(
   "vendor/addOtherExpense",
   async (data: any, { rejectWithValue }) => {
     console.log(data);
-    
+
     try {
       const response = await axios.post(
         "http://localhost:5000/api/vendors/addManualExpense",
@@ -138,7 +141,7 @@ const vendorSlice = createSlice({
       })
       .addCase(getVendorsByEvent.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.payload || "Failed to fetch vendors";
+        state.error = (action.payload as string) || "Failed to fetch vendors";
       })
       .addCase(getVendorByUser.pending, (state, action) => {
         (state.status = "loading"), (state.error = null);

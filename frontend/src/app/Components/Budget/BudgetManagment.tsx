@@ -26,7 +26,7 @@ const BudgetManagment = ({ eventId }: { eventId: string }) => {
 
   useEffect(() => {
     if (eventId) {
-      dispatch(getVendorsByEvent(eventId));
+      dispatch(getVendorsByEvent({ eventId }));
     }
   }, [dispatch, eventId]);
 
@@ -54,7 +54,7 @@ const BudgetManagment = ({ eventId }: { eventId: string }) => {
     });
 
   const refreshData = () => {
-    dispatch(getVendorsByEvent(eventId));
+    dispatch(getVendorsByEvent({eventId}));
     dispatch(fetchById(eventId));
   };
 

@@ -170,13 +170,6 @@ const SplitOverviewClient = () => {
     }
   }, [dispatch, id]);
 
-  //  const { items, error } = useSelector((state: RootState) => state.vendors);
-  //  useEffect(()=>{
-  //   if(!items){
-  //     dispatch(getVendorsByEvent())
-  //   }
-  //  })
-
   return (
     <Card className="border-0 shadow-lg bg-gradient-to-br from-gray-900 to-gray-800 text-white">
       <CardHeader className="pb-2">
@@ -468,7 +461,6 @@ const SplitOverviewClient = () => {
               <SplitTabsDialog
                 eventId={event?._id}
                 users={event?.includedInSplit}
-                vendors={event?.vendorsInSplit}
               />
             </DialogContent>
           </Dialog>

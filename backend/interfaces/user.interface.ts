@@ -80,12 +80,6 @@ export interface IEvent {
     joinedAt?: Date;
   }[];
 
-  vendorsInSplit: {
-    vendorId: string;
-    title: string;
-    price: string;
-    includedAt?: Date;
-  }[];
   eventType: string;
   creator: string;
 

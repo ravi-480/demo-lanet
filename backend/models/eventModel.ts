@@ -7,8 +7,6 @@ export interface EventDocument extends Omit<Document, "id">, IEvent {
   updatedAt: Date;
 }
 
-
-
 const eventSchema = new mongoose.Schema(
   {
     name: {
@@ -86,17 +84,6 @@ const eventSchema = new mongoose.Schema(
           name: String,
           email: String,
           joinedAt: { type: Date, default: Date.now },
-        },
-      ],
-      default: [],
-    },
-    vendorsInSplit: {
-      type: [
-        {
-          vendorId: { type: Schema.Types.ObjectId, ref: "Vendor" },
-          title: String,
-          price: Number,
-          includedAt: { type: Date, default: Date.now },
         },
       ],
       default: [],

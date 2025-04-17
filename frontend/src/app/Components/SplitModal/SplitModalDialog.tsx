@@ -11,15 +11,27 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Props } from "@/Interface/interface";
+import { AppDispatch, RootState } from "@/store/store";
+import { getVendorsByEvent } from "@/store/vendorSlice";
 import { handleSendRequest } from "@/utils/helper";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
-const SplitTabsDialog = ({ users, vendors, eventId }: Props) => {
+const SplitTabsDialog = ({ users, eventId }: Props) => {
   const [mode, setMode] = useState<"equal" | "custom">("equal");
 
   const [customSplit, setCustomSplit] = useState<string[]>(
     Array(users.length).fill("")
   );
+  const dispatch = useDispatch<AppDispatch>();
+  useEffect(() => {
+    if (eventId) {
+      dispatch(getVendorsByEvent({ eventId, includeSplit: true }));
+    }
+  }, [dispatch, eventId]);
+
+  const { items: vendors } = useSelector((state: RootState) => state.vendors);
+
   const totalCost = vendors.reduce((acc, v) => acc + v.price, 0);
 
   const customTotal = customSplit.reduce(
@@ -115,7 +127,9 @@ const SplitTabsDialog = ({ users, vendors, eventId }: Props) => {
               key={idx}
               className="flex justify-between items-center bg-gray-800 p-3 rounded-md border border-gray-700"
             >
-              <span className="text-white font-medium">{vendor.title}</span>
+              <span className="text-white text-sm truncate max-w-[300px] overflow-hidden font-medium">
+                {vendor.title}
+              </span>
               <span className="text-cyan-400">₹{vendor.price}</span>
             </div>
           ))}
