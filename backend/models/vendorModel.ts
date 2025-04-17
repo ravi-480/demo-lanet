@@ -22,6 +22,7 @@ const vendorSchema = new Schema(
     pricingUnit: { type: String, required: true },
     category: { type: String, required: true },
     numberOfGuests: { type: Number, default: 1 },
+    isIncludedInSplit: { type: Boolean, default: false },
     addedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",

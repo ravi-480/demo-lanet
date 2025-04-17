@@ -18,23 +18,26 @@ const initialState: SplitState = {
   error: null,
 };
 
-export const addToSplitVendors = createAsyncThunk(
-  "vendorSplit/addToSplit",
-  async (vendorData: {}, { rejectWithValue }) => {
-    try {
-      const response = await axios.post(
-        "http://localhost:5000/api/vendors/addToSplit",
-        vendorData,
-        { withCredentials: true }
-      );
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to add vendor to split"
-      );
-    }
+export const addVendorInSplitOrRemove = createAsyncThunk<
+  any, // returned data type from the API
+  string, // payload type
+  { rejectValue: string }
+>("vendorSplit/addToSplit", async (vendorId, { rejectWithValue }) => {
+  console.log(vendorId);
+
+  try {
+    const response = await axios.post(
+      "http://localhost:5000/api/vendors/addToSplit",
+      { vendorId },
+      { withCredentials: true }
+    );
+    return response.data;
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || "Failed to add vendor to split"
+    );
   }
-);
+});
 
 interface AddUserPayload {
   user: { name: string; email: string };
@@ -108,14 +111,14 @@ const splitVendorPrice = createSlice({
   extraReducers: (builder) => {
     builder
       // Add to split vendors
-      .addCase(addToSplitVendors.pending, (state) => {
+      .addCase(addVendorInSplitOrRemove.pending, (state) => {
         state.status = "loading";
         state.error = null;
       })
-      .addCase(addToSplitVendors.fulfilled, (state) => {
+      .addCase(addVendorInSplitOrRemove.fulfilled, (state) => {
         state.status = "success";
       })
-      .addCase(addToSplitVendors.rejected, (state, action) => {
+      .addCase(addVendorInSplitOrRemove.rejected, (state, action) => {
         state.status = "failed";
         state.error = (action.payload as string) || "Unknown error occurred";
       })

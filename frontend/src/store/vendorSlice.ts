@@ -22,11 +22,11 @@ export const createVendor = createAsyncThunk<
   VendorType,
   VendorType,
   { rejectValue: { message: string } } // Change to object with message property
->("vendors/createVendor", async (vendorData, { rejectWithValue }) => {
+>("vendors/createVendor", async (vendorId, { rejectWithValue }) => {
   try {
     const response = await axios.post(
       "http://localhost:5000/api/vendors/add",
-      vendorData
+      vendorId
     );
     return response.data;
   } catch (error: any) {
@@ -55,21 +55,7 @@ export const getVendorsByEvent = createAsyncThunk<
   }
 });
 
-//  Delete vendor
-export const deleteVendor = createAsyncThunk<
-  string,
-  string,
-  { rejectValue: string }
->("vendors/deleteVendor", async (vendorId, { rejectWithValue }) => {
-  try {
-    await axios.delete(`http://localhost:5000/api/vendors/${vendorId}`);
-    return vendorId;
-  } catch (error: any) {
-    return rejectWithValue(error.response?.data || error.message);
-  }
-});
-
-// get vendor by user
+// get vendor by user account
 export const getVendorByUser = createAsyncThunk<
   VendorType[],
   void,
@@ -135,11 +121,6 @@ const vendorSlice = createSlice({
       .addCase(getVendorsByEvent.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload || "Failed to fetch vendors";
-      })
-      .addCase(deleteVendor.fulfilled, (state, action) => {
-        state.items = state.items.filter(
-          (vendor) => vendor._id !== action.payload
-        );
       })
       .addCase(getVendorByUser.pending, (state, action) => {
         (state.status = "loading"), (state.error = null);

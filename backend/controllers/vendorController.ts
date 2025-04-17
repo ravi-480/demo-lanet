@@ -107,20 +107,18 @@ export const getByUser = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // add vendor in split
-
-export const addVendorInSplit = asyncHandler(
+export const addVendorInSplitOrRemove = asyncHandler(
   async (req: Request, res: Response) => {
-    const { eventId, selected } = req.body;
+    const { vendorId } = req.body;
 
-    const event = await Event.findById(eventId);
-    if (!event) return res.status(404).json({ message: "Event not found" });
+    const vendor = await Vendor.findById(vendorId);
+    if (!vendor) return res.status(404).json({ message: "Event not found" });
+    console.log(vendor);
 
-    if (!Array.isArray(event.vendorsInSplit)) {
-      event.vendorsInSplit = [];
-    }
+    vendor.isIncludedInSplit = !vendor.isIncludedInSplit;
 
-    event.vendorsInSplit = [...selected];
-    await event.save();
+    await vendor.save();
+
     res.status(200).json({
       status: "success",
       message: "Vendor added in split successfully",
@@ -204,6 +202,8 @@ export const removeAddedVendor = asyncHandler(
       { $inc: { "budget.spent": -vendor.price } },
       { new: true }
     );
+
+    console.log(updatedEvent);
 
     if (!updatedEvent)
       return res

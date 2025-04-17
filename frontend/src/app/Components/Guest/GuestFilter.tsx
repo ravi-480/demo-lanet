@@ -30,7 +30,6 @@ const GuestFilters = ({
   setSearchFilter,
   statusFilter,
   setStatusFilter,
-  eventId,
   pendingGuests,
 }: GuestFiltersProps) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -53,7 +52,7 @@ const GuestFilters = ({
   return (
     <div className="flex flex-col sm:flex-row gap-2">
       <div className="relative">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
         <Input
           value={searchFilter}
           onChange={(e) => setSearchFilter(e.target.value)}

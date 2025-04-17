@@ -2,7 +2,7 @@ import { Router } from "express";
 import { authenticate } from "../middleware/authMiddleware";
 
 import {
-  addVendorInSplit,
+  addVendorInSplitOrRemove,
   addUserInSplit,
   addVendors,
   getByUser,
@@ -24,7 +24,7 @@ router.get("/event/:eventId", getVendorsByEvent);
 router.get("/getByUser", authenticate, getByUser);
 
 // add to split
-router.post("/addToSplit", addVendorInSplit);
+router.post("/addToSplit", addVendorInSplitOrRemove);
 router.post("/addUserToSplit", addUserInSplit);
 
 // remove vendor

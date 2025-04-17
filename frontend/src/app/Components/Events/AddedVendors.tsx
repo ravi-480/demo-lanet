@@ -15,7 +15,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { VendorType } from "@/Interface/interface";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { addToSplitVendors } from "@/store/splitSlice";
 import { fetchById, singleEvent } from "@/store/eventSlice";
 import { toast } from "sonner";
 
@@ -87,27 +86,7 @@ const AddedVendorsList = ({ eventId }: { eventId: string }) => {
       }));
   }, [localVendors, addToSplit]);
 
-  const handleSaveSplit = async () => {
-    if (selectedVendors.length === 0) {
-      toast.error("Please select at least one vendor");
-      return;
-    }
-    try {
-      const response = await dispatch(
-        addToSplitVendors({ selected: selectedVendors, eventId })
-      );
-      if (addToSplitVendors.fulfilled.match(response)) {
-        toast.success(
-          response.payload.message || "Vendors added to split successfully"
-        );
-        dispatch(fetchById(eventId));
-      } else {
-        toast.error("Failed to add vendors in split");
-      }
-    } catch (error) {
-      toast.error("An error occurred while saving the split");
-    }
-  };
+
 
   const vendorsAlreadyInSplit = useMemo(() => {
     return (
@@ -237,7 +216,6 @@ const AddedVendorsList = ({ eventId }: { eventId: string }) => {
           {selectedVendors.length} of {localVendors.length} vendors selected
         </p>
         <Button
-          onClick={handleSaveSplit}
           disabled={selectedVendors.length === 0}
           className="bg-green-600 text-white cursor-pointer hover:bg-green-700"
         >
