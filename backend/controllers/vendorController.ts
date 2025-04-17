@@ -329,3 +329,65 @@ export const editUserInSplit = asyncHandler(
     }
   }
 );
+
+// add manual expense
+export const addManualExpense = asyncHandler(
+  async (req: Request, res: Response) => {
+    try {
+      const { title, price, status, eventId, pricingUnit } = req.body;
+
+      if (!title || !price || !status || !eventId || !pricingUnit) {
+        return res.status(400).json({
+          success: false,
+          message: "Missing required fields",
+        });
+      }
+
+      const priceAsNumber = Number(price);
+
+      // Find the event
+      const event = await Event.findById(eventId);
+      if (!event) {
+        return res.status(404).json({
+          success: false,
+          message: "Associated event not found",
+        });
+      }
+
+      const addedBy = event.creator;
+      if (!addedBy) {
+        return res.status(500).json({
+          success: false,
+          message: "Event creator not found",
+        });
+      }
+
+      const manualVendor = await Vendor.create({
+        title,
+        price: priceAsNumber,
+        category: status,
+        pricingUnit,
+        event: eventId,
+        addedBy,
+        isIncludedInSplit: false,
+      });
+
+      // Update event budget
+      event.budget.spent += priceAsNumber;
+      await event.save();
+
+      res.status(201).json({
+        success: true,
+        message: "Manual expense added successfully",
+        vendor: manualVendor,
+      });
+    } catch (error) {
+      console.error("Error adding manual expense:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to add manual expense",
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  }
+);

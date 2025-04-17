@@ -1,5 +1,3 @@
-// app/event/[id]/page.tsx
-
 import SplitOverviewWrapper from "@/app/Components/SplitVendors/SplitOverviewWrapper";
 
 export default function Page() {

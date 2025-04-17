@@ -88,6 +88,24 @@ export const removeAddedVendor = createAsyncThunk(
   }
 );
 
+export const addManualVendorExpense = createAsyncThunk(
+  "vendor/addOtherExpense",
+  async (data: any, { rejectWithValue }) => {
+    console.log(data);
+    
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/vendors/addManualExpense",
+        data,
+        { withCredentials: true }
+      );
+      return response.data;
+    } catch (error: any) {
+      rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
 const vendorSlice = createSlice({
   name: "vendors",
   initialState,

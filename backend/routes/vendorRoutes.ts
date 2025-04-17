@@ -13,7 +13,8 @@ import {
   confirmPayment,
   checkPaymentStatus,
   removeFromSplit,
-  editUserInSplit
+  editUserInSplit,
+  addManualExpense
 } from "../controllers/vendorController";
 
 const router = Router();
@@ -48,5 +49,8 @@ router.delete("/delete/addedInSplit", removeFromSplit);
 // edit user from split
 
 router.patch("/split/users/edituser",editUserInSplit);
+
+// add manual expense
+router.post("/addManualExpense",addManualExpense)
 
 export default router;

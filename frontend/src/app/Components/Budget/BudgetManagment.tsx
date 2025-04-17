@@ -12,6 +12,7 @@ import BudgetFilters from "./BudgetFilters";
 import BudgetList from "./BudgetList";
 import { getVendorsByEvent } from "@/store/vendorSlice";
 import Link from "next/link";
+import BudgetDialog from "./BudgetDialog";
 
 const BudgetManagment = ({ eventId }: { eventId: string }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -30,6 +31,7 @@ const BudgetManagment = ({ eventId }: { eventId: string }) => {
   }, [dispatch, eventId]);
 
   const { items, error } = useSelector((state: RootState) => state.vendors);
+  const [isAddBudgetOpen, setIsAddBudgetOpen] = useState(false);
   const [searchFilter, setSearchFilter] = useState("");
   const [priceSortOrder, setPriceSortOrder] = useState<
     "lowToHigh" | "highToLow"
@@ -53,7 +55,7 @@ const BudgetManagment = ({ eventId }: { eventId: string }) => {
 
   const refreshData = () => {
     dispatch(getVendorsByEvent(eventId));
-    dispatch(fetchById(eventId))
+    dispatch(fetchById(eventId));
   };
 
   return (
@@ -64,13 +66,16 @@ const BudgetManagment = ({ eventId }: { eventId: string }) => {
           Budget Management
         </h1>
         <div className="flex gap-2">
-        <Link href="vendor-cart/splitted-vendors">
+          <Link href="vendor-cart/splitted-vendors">
             <Button className="bg-cyan-400 hover:bg-cyan-500 cursor-pointer">
               Go to split <ArrowRight className="ml-1" />
             </Button>
           </Link>
-          {/* <GuestUpload eventId={eventId} /> */}
-          <Button>Add expense</Button>
+          <BudgetDialog
+            eventId={eventId}
+            isOpen={isAddBudgetOpen}
+            setIsOpen={setIsAddBudgetOpen}
+          />
         </div>
       </div>
       <BudgetStats eventBudget={event} />

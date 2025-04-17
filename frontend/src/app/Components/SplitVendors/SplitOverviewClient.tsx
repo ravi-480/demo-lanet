@@ -41,9 +41,10 @@ import {
   deleteUserFromSplit,
   editUserInSplit,
 } from "@/store/splitSlice";
-import { AppDispatch } from "@/store/store";
+import { AppDispatch, RootState } from "@/store/store";
 import { SplitUser } from "@/Interface/interface";
 import SplitTabsDialog from "../SplitModal/SplitModalDialog";
+import { getVendorsByEvent } from "@/store/vendorSlice";
 
 const SplitOverviewClient = () => {
   const { id } = useParams();
@@ -168,6 +169,13 @@ const SplitOverviewClient = () => {
       refreshEventData();
     }
   }, [dispatch, id]);
+
+  //  const { items, error } = useSelector((state: RootState) => state.vendors);
+  //  useEffect(()=>{
+  //   if(!items){
+  //     dispatch(getVendorsByEvent())
+  //   }
+  //  })
 
   return (
     <Card className="border-0 shadow-lg bg-gradient-to-br from-gray-900 to-gray-800 text-white">
