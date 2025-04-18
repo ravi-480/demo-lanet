@@ -67,10 +67,7 @@ export interface IEvent {
     spent: number;
   };
   guestLimit: number;
-  rsvp: {
-    total: number;
-    confirmed: number;
-  };
+  noOfGuestAdded: number;
   includedInSplit: {
     _id?: string;
     userId: string;

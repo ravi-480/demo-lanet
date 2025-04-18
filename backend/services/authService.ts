@@ -150,7 +150,7 @@ export const forgotPassword = async (email: string): Promise<void> => {
   await user.save();
 
   // Create reset URL
-  const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
+  const resetUrl = `http://localhost:3001/reset-password/${resetToken}`;
 
   // Send email with reset link
   try {

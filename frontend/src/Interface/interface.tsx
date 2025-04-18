@@ -15,22 +15,14 @@ export interface IEvent {
     spent: number;
   };
   guestLimit: number;
-  rsvp: {
-    confirmed: number;
-    total: number;
-  };
+  noOfGuestAdded: number;
   includedInSplit: {
     userId: string;
     name: string;
     email: string;
     joinedAt?: Date;
   };
-  vendorsInSplit: {
-    vendorId: string;
-    title: string;
-    price: string;
-    includedAt?: Date;
-  };
+
   creator: string;
   eventType: EventType;
   durationInDays: number;
@@ -240,8 +232,7 @@ export interface Props {
   vendors: Vendor[];
 }
 
-
- export interface Guest {
+export interface Guest {
   _id: string;
   name: string;
   email: string;

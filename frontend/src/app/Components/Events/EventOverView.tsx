@@ -11,20 +11,44 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useEffect } from "react";
+import { fetchGuests } from "@/store/rsvpSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/store/store";
 
 const EventOverView = ({ event }: { event: IEvent }) => {
-  const { budget = { allocated: 0, spent: 0 }, rsvp } = event;
+  const dispatch = useDispatch<AppDispatch>();
+  const { rsvpData } = useSelector((state: RootState) => state.rsvp);
+
+  const eventId = event._id;
+
+  useEffect(() => {
+    if (eventId) {
+      dispatch(fetchGuests(eventId));
+    }
+  }, [dispatch, eventId]);
+
+  const { budget = { allocated: 0, spent: 0 } } = event;
   const remaining = budget.allocated - budget.spent;
+
+  // Calculate guest data from rsvpData
+  const totalGuests = rsvpData.length;
+  const confirmedGuests = rsvpData.filter(
+    (guest) => guest.status === "Confirmed"
+  ).length;
+  const pendingGuests = rsvpData.filter(
+    (guest) => guest.status === "Pending"
+  ).length;
 
   // Calculate percentages for progress bars
   const attendancePercentage =
-    rsvp.total > 0 ? (rsvp.confirmed / rsvp.total) * 100 : 0;
+    totalGuests > 0 ? (confirmedGuests / totalGuests) * 100 : 0;
   const spentPercentage =
     budget.allocated > 0 ? (budget.spent / budget.allocated) * 100 : 0;
 
   return (
     <div className="grid gap-6">
-      <MyPieChart event={event} />
+      <MyPieChart event={event} rsvpData={rsvpData} />
 
       {/* Guest Summary Card */}
       <Card className="border-0 bg-gray-800 text-white shadow-lg">
@@ -33,7 +57,7 @@ const EventOverView = ({ event }: { event: IEvent }) => {
             <Users className="mr-2" size={20} />
             Guest Summary
           </CardTitle>
-          <span className="text-sm text-gray-400">Total: {rsvp.total}</span>
+          <span className="text-sm text-gray-400">Total: {totalGuests}</span>
         </CardHeader>
 
         <CardContent className="space-y-4">
@@ -41,7 +65,7 @@ const EventOverView = ({ event }: { event: IEvent }) => {
             <div className="flex justify-between items-center mb-1">
               <span className="text-gray-300">Confirmed</span>
               <span className="font-medium text-green-400">
-                {rsvp.confirmed} ({attendancePercentage.toFixed(0)}%)
+                {confirmedGuests} ({attendancePercentage.toFixed(0)}%)
               </span>
             </div>
             <Progress value={attendancePercentage} />
@@ -49,9 +73,7 @@ const EventOverView = ({ event }: { event: IEvent }) => {
 
           <div className="flex justify-between items-center mt-2">
             <span className="text-gray-300">Pending</span>
-            <span className="font-medium text-amber-400">
-              {rsvp.total - rsvp.confirmed}
-            </span>
+            <span className="font-medium text-amber-400">{pendingGuests}</span>
           </div>
         </CardContent>
         <CardFooter>

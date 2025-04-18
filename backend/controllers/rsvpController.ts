@@ -7,29 +7,43 @@ import Notification from "../models/notificationModel";
 import Event from "../models/eventModel";
 import { sendEmail } from "../utils/emailService";
 import { getIO } from "../utils/socketUtils";
+import Vendor from "../models/vendorModel";
+import { createNotification, formatEmailTemplate } from "../utils/helper";
 
-// Upload Guests from Excel File
+// Helper functions to reduce repetition
+
+const validateIdFormat = (id: string): boolean => {
+  return mongoose.Types.ObjectId.isValid(id);
+};
+
 export const addGuestFromFile = asyncHandler(
   async (req: Request, res: Response) => {
     try {
       const { eventId } = req.body;
-
-      if (!mongoose.Types.ObjectId.isValid(eventId)) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Invalid Event ID" });
-      }
-
       const file = req.file;
+
       if (!file) {
         return res
           .status(400)
           .json({ success: false, message: "File not uploaded" });
       }
 
+      if (!validateIdFormat(eventId)) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid Event ID" });
+      }
+
+      const event = await Event.findById(eventId);
+      if (!event) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Event not found" });
+      }
+
+      // Process the Excel file
       const workBook = XLSX.read(file.buffer, { type: "buffer" });
-      const sheetName = workBook.SheetNames[0];
-      const sheet = workBook.Sheets[sheetName];
+      const sheet = workBook.Sheets[workBook.SheetNames[0]];
       const guests = XLSX.utils.sheet_to_json(sheet);
 
       if (!Array.isArray(guests) || guests.length === 0) {
@@ -38,19 +52,91 @@ export const addGuestFromFile = asyncHandler(
           .json({ success: false, message: "No data found in file" });
       }
 
-      const guestsWithEvent = guests.map((guest: any) => ({
-        name: guest.name || "unknown",
-        email: guest.email || "nomail@gmail.com",
-        status: "Pending",
-        eventId: new mongoose.Types.ObjectId(eventId),
-      }));
+      // Get existing guests and create a set of emails for quick lookup
+      const existingGuests = await Guest.find({ eventId });
+      const existingEmails = new Set(
+        existingGuests.map((g) => g.email.toLowerCase())
+      );
 
-      await Guest.insertMany(guestsWithEvent);
+      // Process new guests, skipping duplicates
+      const newGuests = [];
+      let duplicateCount = 0;
+
+      for (const guest of guests) {
+        const guestObj = guest as Record<string, any>;
+        const email = (
+          (guestObj.email as string) || "nomail@gmail.com"
+        ).toLowerCase();
+
+        if (existingEmails.has(email)) {
+          duplicateCount++;
+        } else {
+          newGuests.push({
+            name: guestObj.name || "unknown",
+            email,
+            status: "Pending",
+            eventId,
+          });
+          existingEmails.add(email); // Prevent duplicates within the current upload
+        }
+      }
+
+      // Bulk insert new guests if any
+      if (newGuests.length > 0) {
+        await Guest.insertMany(newGuests);
+      }
+
+      // Update event with total guest count
+      const totalGuests = existingGuests.length + newGuests.length;
+      await Event.findByIdAndUpdate(eventId, { noOfGuestAdded: totalGuests });
+
+      // Check if guest limit is exceeded
+      const guestLimit = event.guestLimit || 0;
+      const guestsOverLimit = Math.max(0, totalGuests - guestLimit);
+
+      // Update per-plate vendors in one operation
+      const vendors = await Vendor.find({
+        event: eventId,
+        pricingUnit: "per plate",
+      });
+
+      if (vendors.length > 0) {
+        const vendorUpdates = vendors.map((vendor) => {
+          const perPlatePrice =
+            (vendor.price || 0) / (vendor.numberOfGuests || 1);
+          return Vendor.findByIdAndUpdate(vendor._id, {
+            price: perPlatePrice * totalGuests,
+            numberOfGuests: totalGuests,
+          });
+        });
+
+        await Promise.all(vendorUpdates);
+      }
+
+      // Send notification if guest limit exceeded
+      if (guestsOverLimit > 0) {
+        const message = `Guest limit exceeded by ${guestsOverLimit}. Total: ${totalGuests}, Limit: ${guestLimit}`;
+
+        await createNotification(
+          event.creator.toString(),
+          eventId,
+          message,
+          "warning",
+          {
+            eventTitle: event.name || "Event",
+            currentGuestCount: totalGuests,
+            guestLimit,
+            guestsOverLimit,
+          }
+        );
+      }
 
       return res.status(201).json({
         success: true,
-        message: "Guests added successfully",
-        count: guestsWithEvent.length,
+        message: `Guests added: ${newGuests.length}, Duplicates skipped: ${duplicateCount}`,
+        totalGuests,
+        ...(guestsOverLimit > 0 && { guestsOverLimit }),
+        ...(vendors.length > 0 && { vendorsUpdated: vendors.length }),
       });
     } catch (error) {
       console.error("Error in addGuestFromFile:", error);
@@ -65,7 +151,7 @@ export const getUserByEventId = asyncHandler(
     try {
       const { eventId } = req.params;
 
-      if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      if (!validateIdFormat(eventId)) {
         return res
           .status(400)
           .json({ success: false, message: "Invalid Event ID" });
@@ -91,28 +177,61 @@ export const getUserByEventId = asyncHandler(
   }
 );
 
-// add single guest manually
-
+// Add single guest manually
 export const addSingleGuest = asyncHandler(
   async (req: Request, res: Response) => {
-    const data = req.body;
+    try {
+      const guest = await Guest.create(req.body);
 
-    await Guest.create(data);
-    return res
-      .status(201)
-      .json({ success: true, message: "Guest added Successfully" });
+      // Increment guest count in event
+      await Event.findByIdAndUpdate(req.body.eventId, {
+        $inc: { noOfGuestAdded: 1 },
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: "Guest added Successfully",
+        guest,
+      });
+    } catch (error) {
+      console.error("Error adding guest:", error);
+      return res.status(500).json({ success: false, message: "Server error" });
+    }
   }
 );
 
 export const removeSingleGuest = asyncHandler(
   async (req: Request, res: Response) => {
-    const { guestId } = req.query;
+    try {
+      const { guestId } = req.query;
 
-    await Guest.findByIdAndDelete(guestId);
+      if (!validateIdFormat(guestId as string)) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid Guest ID" });
+      }
 
-    return res
-      .status(200)
-      .json({ success: true, message: "Guest removed successfully" });
+      const guest = await Guest.findByIdAndDelete(guestId);
+
+      if (!guest) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Guest not found" });
+      }
+
+      // Decrement guest count in event
+      await Event.findByIdAndUpdate(guest.eventId, {
+        $inc: { noOfGuestAdded: -1 },
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: "Guest removed successfully",
+      });
+    } catch (error) {
+      console.error("Error removing guest:", error);
+      return res.status(500).json({ success: false, message: "Server error" });
+    }
   }
 );
 
@@ -122,10 +241,17 @@ export const updateGuest = asyncHandler(async (req: Request, res: Response) => {
     const { name, email, status } = req.body;
 
     if (!name || !email || !status) {
-      return res.status(400).json({ message: "All fields are required." });
+      return res
+        .status(400)
+        .json({ success: false, message: "All fields are required" });
     }
 
-    // Find and update the guest
+    if (!validateIdFormat(eventId) || !validateIdFormat(guestId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid ID format" });
+    }
+
     const updatedGuest = await Guest.findOneAndUpdate(
       { _id: guestId, eventId },
       { name, email, status },
@@ -133,266 +259,248 @@ export const updateGuest = asyncHandler(async (req: Request, res: Response) => {
     );
 
     if (!updatedGuest) {
-      return res.status(404).json({ message: "Guest not found." });
+      return res
+        .status(404)
+        .json({ success: false, message: "Guest not found" });
     }
 
-    return res.status(200).json(updatedGuest);
+    return res.status(200).json({
+      success: true,
+      message: "Guest updated successfully",
+      guest: updatedGuest,
+    });
   } catch (error) {
     console.error("Error updating guest:", error);
-    return res.status(500).json({ message: "Server error." });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
-//send invite mail to all guest
-
+// Send invitation emails to all guests
 export const inviteAllGuest = asyncHandler(
   async (req: Request, res: Response) => {
-    const guestData = req.body;
-    const eventId = guestData[0].eventId;
-    const event = await Event.findById(eventId);
-
-    if (!event) {
-      return res.status(404).json({ message: "Event not found" });
-    }
-    console.log(event);
-
     try {
-      // Extract the event details for the email
-      const { name, date, location, description, eventType } = event;
-      console.log(eventType);
-
-      // Format the date for display
-      const formattedDate = new Date(date).toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-
-      // Send invitation emails to all guests
-      for (const guest of guestData) {
-        await sendEmail({
-          to: guest.email,
-          subject: `Invitation: ${name} - ${
-            eventType.charAt(0).toUpperCase() + eventType.slice(1)
-          }`,
-          text: "",
-          html: `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <h2>You're Invited!</h2>
-                <h3>${name} - ${
-            eventType.charAt(0).toUpperCase() + eventType.slice(1)
-          }</h3>
-                
-                <p>Hello ${guest.name || "there"},</p>
-                
-                <p>You are cordially invited to attend our ${eventType} event.</p>
-                
-                <div style="background-color: #f8f8f8; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                  <p><strong>Date:</strong> ${formattedDate}</p>
-                  <p><strong>Location:</strong> ${location}</p>
-                  <p><strong>Details:</strong> ${description}</p>
-                </div>
-                
-                <p>Please let us know if you can attend by clicking the button below:</p>
-                
-                <div style="text-align: center; margin: 30px 0;">
-                  <a href="http://localhost:3000/rsvp/respond?eventId=${eventId}&guestId=${
-            guest._id
-          }"
-                    style="background-color: #0ea5e9; padding: 12px 25px; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                    Respond to Invitation
-                  </a>
-                </div>
-                
-                <p>We look forward to celebrating with you!</p>
-              </div>
-            `,
+      const guestData = req.body;
+      if (!guestData || !Array.isArray(guestData) || guestData.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "No guest data provided",
         });
       }
 
-      res.status(200).json({
+      const eventId = guestData[0].eventId;
+
+      if (!validateIdFormat(eventId)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid Event ID",
+        });
+      }
+
+      const event = await Event.findById(eventId);
+      if (!event) {
+        return res.status(404).json({
+          success: false,
+          message: "Event not found",
+        });
+      }
+
+      // Send emails in batches to avoid overwhelming the email service
+      const batchSize = 10;
+      const emailPromises = [];
+
+      for (let i = 0; i < guestData.length; i += batchSize) {
+        const batch = guestData.slice(i, i + batchSize);
+
+        const batchPromises = batch.map((guest) =>
+          sendEmail({
+            to: guest.email,
+            subject: `Invitation: ${event.name} - ${
+              event.eventType.charAt(0).toUpperCase() + event.eventType.slice(1)
+            }`,
+            text: "",
+            html: formatEmailTemplate(event, guest),
+          })
+        );
+
+        emailPromises.push(Promise.all(batchPromises));
+
+        if (i + batchSize < guestData.length) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+      }
+
+      await Promise.all(emailPromises.flat());
+
+      return res.status(200).json({
         success: true,
-        message: "Invitations sent successfully to all guests!",
+        message: `Invitations sent successfully to ${guestData.length} guests!`,
       });
     } catch (error) {
       console.error("Error sending invitations:", error);
-      res.status(500).json({ message: "Failed to send invitations." });
+      return res.status(500).json({
+        success: false,
+        message: "Failed to send invitations",
+      });
     }
   }
 );
 
-export const validateUrl = asyncHandler(async (req, res) => {
-  const { eventId, guestId } = req.query;
-  console.log(eventId, guestId);
+export const validateUrl = asyncHandler(async (req: Request, res: Response) => {
+  try {
+    const { eventId, guestId } = req.query;
 
-  if (!eventId || !guestId) {
-    return res.status(400).json({ message: "Missing eventId or guestId" });
-  }
-
-  if (
-    !mongoose.Types.ObjectId.isValid(eventId as string) ||
-    !mongoose.Types.ObjectId.isValid(guestId as string)
-  ) {
-    return res.status(400).json({ message: "Invalid eventId or guestId" });
-  }
-
-  const event = await Event.findById(eventId);
-  const guest = await Guest.findById(guestId);
-
-  if (!event || !guest) {
-    return res.status(404).json({ message: "Invalid RSVP link" });
-  }
-
-  return res.status(200).json({
-    guest: {
-      name: guest.name,
-      email: guest.email,
-      date: event.date,
-      location: event.location,
-      responseStatus: guest.status,
-    },
-  });
-});
-
-// submit guest response
-export const responseInvite = asyncHandler(
-  async (req: Request, res: Response) => {
-    const { guestId, eventId, attending } = req.body;
-
-    if (!guestId || !eventId) {
+    if (!eventId || !guestId) {
       return res.status(400).json({
         success: false,
-        message: "Missing or invalid guestId, eventId, or status",
+        message: "Missing eventId or guestId",
       });
     }
 
-    const guest = await Guest.findById(guestId);
+    if (
+      !validateIdFormat(eventId as string) ||
+      !validateIdFormat(guestId as string)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid eventId or guestId format",
+      });
+    }
 
-    if (!guest) {
+    // Fetch both event and guest in parallel
+    const [event, guest] = await Promise.all([
+      Event.findById(eventId),
+      Guest.findById(guestId),
+    ]);
+
+    if (!event || !guest) {
       return res.status(404).json({
         success: false,
-        message: "Guest not found",
+        message: "Invalid RSVP link",
       });
     }
-    console.log(req.body);
 
-    // Update guest status
-    const previousStatus = guest.status;
-    guest.status = attending ? "Confirmed" : "Declined";
-    await guest.save();
+    return res.status(200).json({
+      success: true,
+      guest: {
+        name: guest.name,
+        email: guest.email,
+        date: event.date,
+        location: event.location,
+        responseStatus: guest.status,
+      },
+    });
+  } catch (error) {
+    console.error("Error validating URL:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
 
-    // Get the event to find the organizer/creator ID
-    const event = await Event.findById(eventId);
-    if (event) {
-      const organizerId = event.creator.toString();
+// Submit guest response
+export const responseInvite = asyncHandler(
+  async (req: Request, res: Response) => {
+    try {
+      const { guestId, eventId, attending } = req.body;
 
-      // Create notification message based on response
-      const message = `${guest.name} has ${
-        attending ? "accepted" : "declined"
-      } your invitation to ${event.name || "your event"}.`;
+      if (!guestId || !eventId) {
+        return res.status(400).json({
+          success: false,
+          message: "Missing guestId or eventId",
+        });
+      }
 
-      // Create notification in DB
-      const notification = await Notification.create({
-        userId: organizerId,
-        eventId,
-        message,
-        type: "response",
-        status: "unread",
-        metadata: {
+      const guest = await Guest.findById(guestId);
+      if (!guest) {
+        return res.status(404).json({
+          success: false,
+          message: "Guest not found",
+        });
+      }
+
+      // Update guest status
+      const previousStatus = guest.status;
+      guest.status = attending ? "Confirmed" : "Declined";
+      await guest.save();
+
+      // Get the event and create notification in parallel
+      const event = await Event.findById(eventId);
+      if (event) {
+        const organizerId = event.creator.toString();
+        const message = `${guest.name} has ${
+          attending ? "accepted" : "declined"
+        } your invitation to ${event.name || "your event"}.`;
+
+        await createNotification(organizerId, eventId, message, "response", {
           guestId: guest._id.toString(),
           guestName: guest.name,
           response: guest.status,
           previousStatus,
           eventTitle: event.name || "Event",
-        },
-      });
-
-      // Emit notification through socket.io
-      const io = getIO();
-      if (io) {
-        io.to(`user:${organizerId}`).emit("new-notification", notification);
+        });
       }
-    }
 
-    return res.status(200).json({
-      success: true,
-      message: `RSVP ${guest.status}`,
-      guest: {
-        id: guest._id,
-        name: guest.name,
-        email: guest.email,
-        status: guest.status,
-      },
-    });
+      return res.status(200).json({
+        success: true,
+        message: `RSVP ${guest.status}`,
+        // guest: {
+        //   id: guest._id,
+        //   name: guest.name,
+        //   email: guest.email,
+        //   status: guest.status,
+        // },
+      });
+    } catch (error) {
+      console.error("Error processing RSVP response:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Server error",
+      });
+    }
   }
 );
 
-// send reminder mail to guest
-
+// Send reminder email to guest
 export const sendReminder = asyncHandler(
   async (req: Request, res: Response) => {
-    const { eventId, name, email, _id: guestId } = req.body;
-
-    const event = await Event.findById(eventId);
-
-    if (!event) {
-      return res.status(404).json({ message: "Event not found" });
-    }
-
     try {
-      const { name: eventName, date, location, description, eventType } = event;
+      const { eventId, name, email, _id: guestId } = req.body;
 
-      const formattedDate = new Date(date).toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
+      if (!validateIdFormat(eventId) || !validateIdFormat(guestId)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid ID format",
+        });
+      }
+
+      const event = await Event.findById(eventId);
+      if (!event) {
+        return res.status(404).json({
+          success: false,
+          message: "Event not found",
+        });
+      }
 
       await sendEmail({
         to: email,
-        subject: `Reminder: ${eventName} - ${
-          eventType.charAt(0).toUpperCase() + eventType.slice(1)
+        subject: `Reminder: ${event.name} - ${
+          event.eventType.charAt(0).toUpperCase() + event.eventType.slice(1)
         }`,
         text: "",
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h2>We Miss Your RSVP!</h2>
-            <h3>${eventName} - ${
-          eventType.charAt(0).toUpperCase() + eventType.slice(1)
-        }</h3>
-            
-            <p>Hello ${name || "there"},</p>
-            <p>This is a friendly reminder to RSVP for our upcoming ${eventType} event.</p>
-            
-            <div style="background-color: #f8f8f8; padding: 15px; border-radius: 5px; margin: 20px 0;">
-              <p><strong>Date:</strong> ${formattedDate}</p>
-              <p><strong>Location:</strong> ${location}</p>
-              <p><strong>Details:</strong> ${description}</p>
-            </div>
-            
-            <p>Please respond by clicking the button below:</p>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="http://localhost:3000/rsvp/respond?eventId=${eventId}&guestId=${guestId}"
-                style="background-color: #f97316; padding: 12px 25px; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                RSVP Now
-              </a>
-            </div>
-            
-            <p>We hope to hear from you soon!</p>
-          </div>
-        `,
+        html: formatEmailTemplate(event, { name, email, _id: guestId }, true),
       });
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
-        message: "Reminder email sent successfully.",
+        message: "Reminder email sent successfully",
       });
     } catch (error) {
       console.error("Error sending reminder:", error);
-      res.status(500).json({ message: "Failed to send reminder." });
+      return res.status(500).json({
+        success: false,
+        message: "Failed to send reminder",
+      });
     }
   }
 );

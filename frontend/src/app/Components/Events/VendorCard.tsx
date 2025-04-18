@@ -31,6 +31,7 @@ type VendorCardProps = {
   pricingUnit?: string;
   numberOfGuests?: number;
   eventId?: string;
+  noOfAddedGuest: number;
   addedBy?: string;
 };
 
@@ -52,6 +53,7 @@ const VendorCard = ({
   vendor,
   category,
   pricingUnit,
+  noOfAddedGuest,
   numberOfGuests = 50,
   eventId,
   addedBy,
@@ -63,11 +65,14 @@ const VendorCard = ({
   const priceUnit = pricingUnit || getPriceUnitLabel(category);
   const price = vendor.price || Math.floor(Math.random() * 500 + 100);
 
+  const checkNoOfGuest =
+    noOfAddedGuest > numberOfGuests ? noOfAddedGuest : numberOfGuests;
+
   const totalEstimate =
-    priceUnit === "per hour" || priceUnit === "per day"
+    priceUnit === "per hour"
       ? Number(units) * price
       : priceUnit === "per plate"
-      ? price * numberOfGuests
+      ? price * checkNoOfGuest
       : price;
 
   const dispatch = useDispatch<AppDispatch>();
@@ -76,10 +81,10 @@ const VendorCard = ({
     if (!eventId || !addedBy) return;
 
     const adjustedPrice =
-      priceUnit === "per hour" || priceUnit === "per day"
+      priceUnit === "per hour"
         ? Number(units) * price
         : priceUnit === "per plate"
-        ? price * numberOfGuests
+        ? price * checkNoOfGuest
         : price;
 
     const vendorData = {
@@ -98,7 +103,7 @@ const VendorCard = ({
       price: adjustedPrice,
       pricingUnit: priceUnit,
       category,
-      numberOfGuests,
+      numberOfGuests:checkNoOfGuest,
       addedBy,
     };
 
@@ -222,7 +227,7 @@ const VendorCard = ({
               </>
             ) : priceUnit === "per plate" ? (
               <p>
-                Approx cost for <strong>{numberOfGuests}</strong> guests:{" "}
+                Approx cost for <strong>{checkNoOfGuest}</strong> guests:
                 <strong>₹{totalEstimate.toLocaleString()}</strong>
               </p>
             ) : (

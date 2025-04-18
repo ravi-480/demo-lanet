@@ -112,6 +112,10 @@ export const getByUser = asyncHandler(async (req: Request, res: Response) => {
   const vendors = await Vendor.find({ addedBy: userId }).sort({
     createdAt: -1,
   });
+  if(!vendors){
+    return res.status(404).json({success:false,message:"no vendors found"})
+  }
+  
   return res.status(200).json(vendors);
 });
 
@@ -168,7 +172,7 @@ export const sendMailToUser = asyncHandler(async (req, res) => {
       <h3>Hello from Split App</h3>
       <p>You’ve been asked to confirm a split expense of <strong>₹${amounts[i]}</strong>.</p>
       <p>
-    <a href="http://localhost:3000/split/confirm?eventId=${eventId[i]}&userId=${userId[i]}"
+    <a href="http://localhost:3001/split/confirm?eventId=${eventId[i]}&userId=${userId[i]}"
        style="background-color:#0ea5e9;padding:10px 20px;color:white;text-decoration:none;border-radius:5px;">
       Confirm Your Share
     </a>

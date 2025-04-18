@@ -8,7 +8,7 @@ let io: SocketIOServer;
 export const initializeSocketIP = (httpServer: HttpServer) => {
   io = new SocketIOServer(httpServer, {
     cors: {
-      origin: "http://localhost:3000",
+      origin: "http://localhost:3001",
       methods: ["GET", "POST"],
       credentials: true,
     },

@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import {
   PieChart,
   Pie,
@@ -8,14 +9,26 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
+import { useDispatch } from "react-redux";
 import { IEvent } from "../../../Interface/interface";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppDispatch } from "../../../store/store";
+import { fetchGuests } from "@/store/rsvpSlice";
 
 type MyPieChartProps = {
   event: IEvent;
+  rsvpData: any[]; // Accept rsvpData as a prop
 };
 
-const MyPieChart = ({ event }: MyPieChartProps) => {
+const MyPieChart = ({ event, rsvpData }: MyPieChartProps) => {
+  const dispatch = useDispatch<AppDispatch>();
+
+  const eventId = event._id;
+
+  const refreshData = () => {
+    dispatch(fetchGuests(eventId));
+  };
+
   const { budget = { allocated: 0, spent: 0 } } = event;
   const remaining = budget.allocated - budget.spent;
 
@@ -25,22 +38,31 @@ const MyPieChart = ({ event }: MyPieChartProps) => {
     { name: "Remaining", value: remaining > 0 ? remaining : 0 },
   ];
 
+  // Use the guest data passed from props
+  const totalGuests = rsvpData?.length || 0;
+  const confirmedGuests =
+    rsvpData?.filter((guest) => guest.status === "Confirmed").length || 0;
+  const pendingGuests =
+    rsvpData?.filter((guest) => guest.status === "Pending").length || 0;
+  const declinedGuests =
+    rsvpData?.filter((guest) => guest.status === "Declined").length || 0;
+
   // Create guest data for pie chart
   const guestData = [
-    { name: "Confirmed", value: event.rsvp.confirmed },
-    { name: "Pending", value: event.rsvp.total - event.rsvp.confirmed },
-  ];
+    { name: "Confirmed", value: confirmedGuests },
+    { name: "Pending", value: pendingGuests },
+    { name: "Declined", value: declinedGuests },
+  ].filter((item) => item.value > 0); // Only include non-zero values
 
   // Colors for pie charts with better contrast
   const BUDGET_COLORS = ["#FF6C6B", "#4ECDC4"];
-  const GUEST_COLORS = ["#59A5D8", "#FFD166"];
+  const GUEST_COLORS = ["#59A5D8", "#FFD166", "#EF476F"];
 
   const formatCurrency = (value: number) => `₹${value.toLocaleString()}`;
 
   // Custom label renderer for better readability
   const renderCustomizedLabel = (props: any) => {
-    const { cx, cy, midAngle, innerRadius, outerRadius, percent, index, name } =
-      props;
+    const { cx, cy, midAngle, innerRadius, outerRadius, percent } = props;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos((-midAngle * Math.PI) / 180);
     const y = cy + radius * Math.sin((-midAngle * Math.PI) / 180);
@@ -76,7 +98,10 @@ const MyPieChart = ({ event }: MyPieChartProps) => {
           ) : (
             <p className="text-gray-300">
               {data.value} guests (
-              {((data.value / event.rsvp.total) * 100).toFixed(1)}%)
+              {totalGuests > 0
+                ? ((data.value / totalGuests) * 100).toFixed(1)
+                : 0}
+              %)
             </p>
           )}
         </div>
@@ -88,6 +113,9 @@ const MyPieChart = ({ event }: MyPieChartProps) => {
   let budgetPercent = Number(
     ((budget.spent / budget.allocated) * 100).toFixed(1)
   );
+
+  // Compare guest count with limit
+  const guestLimitExceeded = totalGuests > event.guestLimit;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -120,7 +148,7 @@ const MyPieChart = ({ event }: MyPieChartProps) => {
               <Legend
                 verticalAlign="bottom"
                 align="center"
-                formatter={(value, entry, index) => (
+                formatter={(value) => (
                   <span className="text-gray-300">{value}</span>
                 )}
               />
@@ -154,8 +182,14 @@ const MyPieChart = ({ event }: MyPieChartProps) => {
       </Card>
 
       <Card className="bg-gray-800 border-gray-700">
-        <CardHeader>
+        <CardHeader className="flex justify-between items-center">
           <CardTitle className="text-blue-400">Guest Overview</CardTitle>
+          <button
+            onClick={refreshData}
+            className="p-1 text-sm text-gray-300 hover:text-cyan-400"
+          >
+            Refresh
+          </button>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={200}>
@@ -182,7 +216,7 @@ const MyPieChart = ({ event }: MyPieChartProps) => {
               <Legend
                 verticalAlign="bottom"
                 align="center"
-                formatter={(value, entry, index) => (
+                formatter={(value) => (
                   <span className="text-gray-300">{value}</span>
                 )}
               />
@@ -190,16 +224,23 @@ const MyPieChart = ({ event }: MyPieChartProps) => {
           </ResponsiveContainer>
           <div className="mt-4 grid grid-cols-2 gap-2 text-center">
             <div className="bg-gray-700 p-2 rounded">
-              <p className="text-sm text-gray-300">Total Invited</p>
-              <p className="text-lg text-cyan-500 font-bold">
-                {event.rsvp.total}
+              <p className="text-sm text-gray-300">Total Guests</p>
+              <p
+                className={`text-lg font-bold ${
+                  guestLimitExceeded ? "text-red-500" : "text-cyan-500"
+                }`}
+              >
+                {totalGuests} / {event.guestLimit}
               </p>
+              {guestLimitExceeded && (
+                <p className="text-xs text-red-400 mt-1">Limit exceeded</p>
+              )}
             </div>
             <div className="bg-gray-700 p-2 rounded">
               <p className="text-sm text-gray-300">Response Rate</p>
               <p className="text-lg text-cyan-500 font-bold">
-                {event.rsvp.total > 0
-                  ? ((event.rsvp.confirmed / event.rsvp.total) * 100).toFixed(1)
+                {totalGuests > 0
+                  ? ((confirmedGuests / totalGuests) * 100).toFixed(1)
                   : 0}
                 %
               </p>

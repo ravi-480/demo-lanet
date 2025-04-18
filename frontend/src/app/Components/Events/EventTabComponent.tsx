@@ -68,6 +68,7 @@ export default function EventTabComponent({ id }: { id: string }) {
         <TabsContent value="vendors" className="p-4">
           <SearchVendor
             eventId={event._id}
+            noOfAddedGuest = {event.noOfGuestAdded}
             addedBy={event.creator}
             noOfGuest={event.guestLimit}
             eventType={event.eventType}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Command, CommandInput } from "@/components/ui/command";
 import { Loader } from "lucide-react";
 import VendorCard from "./VendorCard";
@@ -21,6 +21,7 @@ type SearchVendorProps = {
   eventId: string;
   addedBy: string;
   eventLocation: string;
+  noOfAddedGuest: number;
 };
 
 const SearchVendor = ({
@@ -29,6 +30,8 @@ const SearchVendor = ({
   noOfGuest,
   addedBy,
   eventLocation,
+  noOfAddedGuest,
+
   eventId,
 }: SearchVendorProps) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -169,6 +172,7 @@ const SearchVendor = ({
             {getSortedVendors().map((vendor, idx) => (
               <VendorCard
                 key={idx}
+                noOfAddedGuest={noOfAddedGuest}
                 eventId={eventId}
                 vendor={vendor}
                 addedBy={addedBy}

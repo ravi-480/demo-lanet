@@ -12,7 +12,6 @@ interface AuthenticatedRequest extends Request {
 
 export const createEvent = asyncHandler(
   async (req: AuthenticatedRequest, res: Response) => {
-    // Ensure user is authenticated
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         success: false,
@@ -35,13 +34,16 @@ export const createEvent = asyncHandler(
       try {
         image = await uploadImageToCloudinary(req.file);
       } catch (error) {
-        res
-          .status(500)
-          .json({ success: false, message: "Failed to upload image on " });
+        return res.status(500).json({
+          success: false,
+          message: "Failed to upload image",
+        });
       }
     }
 
     const eventData = buildEventData(req.body, image, req.user.id);
+
+    console.log(eventData);
 
     try {
       const newEvent = await Event.create(eventData);
@@ -51,6 +53,8 @@ export const createEvent = asyncHandler(
         data: newEvent,
       });
     } catch (error: any) {
+      console.log(error);
+
       return res.status(500).json({
         success: false,
         message: "Error creating event",
