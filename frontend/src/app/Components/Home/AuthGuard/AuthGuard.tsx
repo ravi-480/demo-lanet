@@ -30,15 +30,12 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
       try {
         // Only make the API call if we don't already have the user in Redux
         if (!user) {
-          const response = await axios.get(
-            "http://localhost:5000/api/auth/dashboard",
-            {
-              withCredentials: true,
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+          const response = await axios.get("http://localhost:5000/api/auth", {
+            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
           dispatch(setUser(response.data.user));
         }
 

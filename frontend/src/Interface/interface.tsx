@@ -1,4 +1,3 @@
-import { SliderImage } from "@/Types/type";
 import { EventType } from "react-hook-form";
 
 export interface IEvent {
@@ -45,6 +44,12 @@ export interface IBudget {
 export interface IRSVP {
   confirmed: number;
   total: number;
+}
+
+export interface SliderImage {
+  id: string;
+  src: string;
+  alt: string;
 }
 
 export interface ImageSliderProps {
@@ -134,6 +139,7 @@ export interface VendorType {
   price: number;
   pricingUnit: string;
   category: string;
+  createdAt?:string
   numberOfGuests: number;
   addedBy: string;
 }
@@ -246,3 +252,25 @@ export interface SearchVendorProps {
   eventLocation: string;
   noOfAddedGuest: number;
 }
+
+
+export enum EventTypeEnum {
+  Wedding = "Wedding",
+  Birthday = "Birthday",
+  Corporate = "Corporate",
+  Anniversary = "Anniversary",
+  BabyShower = "Baby Shower",
+  Engagement = "Engagement",
+  Graduation = "Graduation",
+  Festival = "Festival",
+  Concert = "Concert",
+  CharityGala = "Charity Gala",
+  Farewell = "Farewell Party",
+  Housewarming = "Housewarming",
+  Workshop = "Workshop",
+}
+
+export const eventTypeOptions = Object.entries(EventTypeEnum).map(([key, value]) => ({
+  label: value,
+  value: key.toLowerCase(),
+}));

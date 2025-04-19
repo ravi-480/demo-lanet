@@ -2,9 +2,8 @@
 
 import { storeEvent } from "@/store/eventSlice";
 import { useDispatch } from "react-redux";
-import AuthGuard from "../Components/Home/AuthGuard/AuthGuard";
 import { useRouter } from "next/navigation";
-import EventForm from "../Components/Form/EventForm";
+import EventForm from "@/app/Components/Form/EventForm";
 
 const CreateEventForm = () => {
   const dispatch = useDispatch();
@@ -22,9 +21,7 @@ const CreateEventForm = () => {
   };
 
   return (
-    <AuthGuard>
       <EventForm onSubmit={handleCreate} />
-    </AuthGuard>
   );
 };
 

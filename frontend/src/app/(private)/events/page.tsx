@@ -1,6 +1,6 @@
 "use client";
 
-import AuthGuard from "../Components/Home/AuthGuard/AuthGuard";
+import AuthGuard from "../../Components/Home/AuthGuard/AuthGuard";
 
 const EventPage = () => {
   return (

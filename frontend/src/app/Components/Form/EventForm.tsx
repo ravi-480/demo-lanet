@@ -17,8 +17,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 import { z } from "zod";
-import { eventTypeOptions } from "@/Types/type";
-import { IEvent } from "@/Interface/interface";
+import { eventTypeOptions, IEvent } from "@/Interface/interface";
 
 const eventFormSchema = z.object({
   name: z.string().min(1, { message: "Event name is required" }),

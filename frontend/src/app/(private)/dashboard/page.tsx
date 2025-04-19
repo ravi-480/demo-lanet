@@ -1,11 +1,11 @@
 "use client";
 
-import Budget from "../Components/DashBoard/Budget";
-import SideBar from "../Components/DashBoard/SideBar";
-import Testimonials from "../Components/DashBoard/Testimonial";
-import EventDisplay from "../Components/DashBoard/EventDisplay";
-import Welcome from "../Components/DashBoard/Welcome";
-import AuthGuard from "../Components/Home/AuthGuard/AuthGuard";
+import Budget from "../../Components/DashBoard/Budget";
+import SideBar from "../../Components/DashBoard/SideBar";
+import Testimonials from "../../Components/DashBoard/Testimonial";
+import EventDisplay from "../../Components/DashBoard/EventDisplay";
+import Welcome from "../../Components/DashBoard/Welcome";
+import AuthGuard from "../../Components/Home/AuthGuard/AuthGuard";
 
 const Dashboard = () => {
 
