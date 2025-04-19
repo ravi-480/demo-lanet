@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import AuthGuard from "../Components/Home/AuthGuard/AuthGuard";
+import AuthGuard from "../../utils/AuthGuard/AuthGuard";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -14,7 +14,5 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-        <AuthGuard>{children}</AuthGuard>
-  );
+  return <AuthGuard>{children}</AuthGuard>;
 }

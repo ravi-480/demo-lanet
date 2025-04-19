@@ -3,12 +3,8 @@ import Event from "../models/eventModel";
 import { asyncHandler } from "../utils/asyncHandler";
 import { buildEventData, uploadImageToCloudinary } from "../utils/eventBuild";
 import Vendor from "../models/vendorModel";
+import { AuthenticatedRequest } from "../interfaces/user.interface";
 
-interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-  };
-}
 
 export const createEvent = asyncHandler(
   async (req: AuthenticatedRequest, res: Response) => {

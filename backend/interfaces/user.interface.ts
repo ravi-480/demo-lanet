@@ -83,3 +83,11 @@ export interface IEvent {
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+import {Request} from "express"
+
+export interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+  };
+}

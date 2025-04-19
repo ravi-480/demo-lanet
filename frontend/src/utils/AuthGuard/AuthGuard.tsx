@@ -6,7 +6,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/store/store";
-import { setUser, logout } from "@/store/authSlice";
+import { setUser, logout, logoutUser } from "@/store/authSlice";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -22,28 +22,48 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
     const checkAuth = async () => {
       const token = Cookies.get("token");
 
-      if (!token) {
-        router.replace("/login");
-        return;
-      }
+      // if (!token) {
+      //     router.replace("/login");
+      //     return;
+      //   }
+      //   console.log("hello");
 
       try {
-        // Only make the API call if we don't already have the user in Redux
         if (!user) {
           const response = await axios.get("http://localhost:5000/api/auth", {
             withCredentials: true,
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
           });
-          dispatch(setUser(response.data.user));
+          dispatch(setUser(response.data.user)); // havent sended yet response as user from backend
         }
 
         setLoading(false);
-      } catch (error) {
-        console.error("Authentication error:", error);
-        dispatch(logout());
-        router.replace("/login");
+      } catch (error: any) {
+        const status = error.response?.status;
+
+        if (status === 401) {
+          try {
+            const retryRefresh = await axios.post(
+              "http://localhost:5000/api/auth/refresh-token",
+              {},
+              { withCredentials: true }
+            );
+
+            const newAccessToken = retryRefresh.data.data.accessToken;
+            Cookies.set("token", newAccessToken);
+
+            const retryRes = await axios.get("http://localhost:5000/api/auth", {
+              withCredentials: true,
+            });
+            dispatch(setUser(retryRes.data.user));
+          } catch (refreshError) {
+            // ❌ Don't dispatch logout multiple times
+            await dispatch(logoutUser());
+            router.replace("/login");
+          }
+        } else {
+          await dispatch(logoutUser());
+          router.replace("/login");
+        }
       }
     };
 

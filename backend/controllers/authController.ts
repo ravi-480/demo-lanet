@@ -6,6 +6,7 @@ import {
   ISignupRequest,
   IForgotPasswordRequest,
   IResetPasswordRequest,
+  AuthenticatedRequest,
 } from "../interfaces/user.interface";
 
 export const signup = asyncHandler(async (req: Request, res: Response) => {
@@ -21,16 +22,34 @@ export const signup = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+// authGuard
+export const authGuard = asyncHandler(
+  async (req: AuthenticatedRequest, res) => {
+    res.status(200).json({ success: true, user: req.user });
+  }
+);
+
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const loginData: ILoginRequest = req.body;
   const result = await authService.login(loginData);
 
-  // Store refresh token in HttpOnly cookie
+
   res.cookie("refreshToken", result.refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: "/",
+  });
+
+
+
+  // Store refresh token in HttpOnly cookie
+  res.cookie("token", result.accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 1*60 * 1000,
     path: "/",
   });
 
@@ -61,11 +80,19 @@ export const refreshToken = asyncHandler(
       await authService.refreshAccessToken(refreshToken);
 
     // Set new refresh token in cookie
+    res.cookie("token", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 15 * 60 * 1000,
+      path: "/",
+    });
+
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/",
     });
 
@@ -79,16 +106,22 @@ export const refreshToken = asyncHandler(
 );
 
 export const logout = asyncHandler(async (req: Request, res: Response) => {
-  // Get user ID from request (assuming it's set by auth middleware)
+  // Get user ID from request
   const userId = (req as any).user?.id;
 
   // Clear refresh token from cookie
-  res.clearCookie("refreshToken", {
+  res.clearCookie("token", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
   });
+  // res.clearCookie("refreshToken", {
+  //   httpOnly: true,
+  //   secure: process.env.NODE_ENV === "production",
+  //   sameSite: "lax",
+  //   path: "/",
+  // });
 
   // If we have a user ID, also clear the token in the database
   if (userId) {

@@ -7,7 +7,13 @@ import {
   SignupPayload,
   StandardResponse,
 } from "@/Interface/interface";
-import { User } from "@/Types/type";
+
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+}
 
 interface AuthState {
   user: User | null;
@@ -167,6 +173,30 @@ export const resetPassword = createAsyncThunk<
 
   return rejectWithValue(result.message);
 });
+
+
+export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
+  "auth/logoutUser",
+  async (_, { rejectWithValue, dispatch }) => {
+    try {
+      await axios.post(
+        "http://localhost:5000/api/auth/logout",
+        {},
+        { withCredentials: true }
+      );
+
+      // Clear cookies
+      Cookies.remove("token");
+      Cookies.remove("user");
+
+      // Clear state
+      dispatch(logoutUser());
+    } catch (error: any) {
+      return rejectWithValue("Logout failed");
+    }
+  }
+);
+
 
 const authSlice = createSlice({
   name: "auth",

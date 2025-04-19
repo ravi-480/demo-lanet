@@ -105,6 +105,8 @@ export const getVendorsByEvent = asyncHandler(
 export const getByUser = asyncHandler(async (req: Request, res: Response) => {
   let reqUser = req as AuthenticatedRequest;
   const userId = reqUser.user.id;
+  console.log(userId);
+  
 
   if (!userId) {
     return res.status(401).json({ success: false, message: "unauthorized" });

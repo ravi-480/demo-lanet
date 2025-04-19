@@ -5,10 +5,9 @@ import SideBar from "../../Components/DashBoard/SideBar";
 import Testimonials from "../../Components/DashBoard/Testimonial";
 import EventDisplay from "../../Components/DashBoard/EventDisplay";
 import Welcome from "../../Components/DashBoard/Welcome";
-import AuthGuard from "../../Components/Home/AuthGuard/AuthGuard";
+import AuthGuard from "../../../utils/AuthGuard/AuthGuard";
 
 const Dashboard = () => {
-
   return (
     <AuthGuard>
       <div className="min-h-screen bg-gray-900">

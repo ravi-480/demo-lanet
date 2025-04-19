@@ -20,8 +20,7 @@ const Budget = () => {
     if (vendorDetail.items.length === 0 && vendorDetail.status !== "loading") {
       dispatch(getVendorByUser());
     }
-  }, [vendorDetail.items.length, vendorDetail.status]);
- // error here solve later
+  }, []);
  
   return (
     <>

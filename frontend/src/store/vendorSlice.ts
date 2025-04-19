@@ -72,7 +72,9 @@ export const getVendorByUser = createAsyncThunk<
 
     return response.data;
   } catch (error: any) {
-    return rejectWithValue(error.response?.data || error.message);
+    console.log(error);
+    
+    return rejectWithValue(error.response?.data || error.message || error);
   }
 });
 
