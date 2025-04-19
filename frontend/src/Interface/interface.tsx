@@ -126,20 +126,16 @@ export interface VendorType {
   type: string;
   address: string;
   rating: number;
-  reviews: number;
   description?: string;
   website?: string;
   directionsLink?: string;
   placeId: string;
-  yearsInBusiness?: string;
   phone?: string;
   price: number;
   pricingUnit: string;
   category: string;
   numberOfGuests: number;
   addedBy: string;
-  createdAt?: string;
-  updatedAt?: string;
 }
 
 export interface Expense {
@@ -238,4 +234,15 @@ export interface Guest {
   email: string;
   status: "Confirmed" | "Pending" | "Declined";
   eventId: string;
+}
+
+
+export interface SearchVendorProps {
+  eventType: string;
+  allowedCategories: string[];
+  noOfGuest: number;
+  eventId: string;
+  addedBy: string;
+  eventLocation: string;
+  noOfAddedGuest: number;
 }

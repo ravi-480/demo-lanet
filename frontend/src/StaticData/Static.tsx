@@ -159,9 +159,8 @@ export function formatDate(isoString: string): string {
   return `${day}/${month}/${year} • ${hours}:${minutes}${ampm}`;
 }
 
-// Importing event vendor mapping to use inside the component
 export const eventVendorMapping = {
-  Wedding: [
+  wedding: [
     { category: "catering", pricingUnit: "per plate" },
     { category: "photography", pricingUnit: "per hour" },
     { category: "decoration", pricingUnit: "flat rate" },
@@ -170,74 +169,75 @@ export const eventVendorMapping = {
     { category: "videography", pricingUnit: "per hour" },
     { category: "lighting/sound", pricingUnit: "flat rate" },
   ],
-  Birthday: [
+  birthday: [
     { category: "catering", pricingUnit: "per plate" },
     { category: "decoration", pricingUnit: "flat rate" },
     { category: "music", pricingUnit: "per hour" },
     { category: "photography", pricingUnit: "per hour" },
     { category: "venue", pricingUnit: "per day" },
   ],
-  Corporate: [
+  corporate: [
     { category: "catering", pricingUnit: "per plate" },
     { category: "venue", pricingUnit: "per day" },
     { category: "lighting/sound", pricingUnit: "flat rate" },
     { category: "decoration", pricingUnit: "flat rate" },
   ],
-  Anniversary: [
+  anniversary: [
     { category: "catering", pricingUnit: "per plate" },
     { category: "music", pricingUnit: "per hour" },
     { category: "photography", pricingUnit: "per hour" },
     { category: "decoration", pricingUnit: "flat rate" },
   ],
-  BabyShower: [
+  babyshower: [
     { category: "catering", pricingUnit: "per plate" },
     { category: "decoration", pricingUnit: "flat rate" },
     { category: "venue", pricingUnit: "per day" },
   ],
-  Engagement: [
+  engagement: [
     { category: "catering", pricingUnit: "per plate" },
     { category: "photography", pricingUnit: "per hour" },
     { category: "decoration", pricingUnit: "flat rate" },
     { category: "music", pricingUnit: "per hour" },
   ],
-  Graduation: [
+  graduation: [
     { category: "venue", pricingUnit: "per day" },
     { category: "catering", pricingUnit: "per plate" },
     { category: "music", pricingUnit: "per hour" },
   ],
-  Festival: [
+  festival: [
     { category: "catering", pricingUnit: "per plate" },
     { category: "music", pricingUnit: "per hour" },
     { category: "lighting/sound", pricingUnit: "flat rate" },
     { category: "decoration", pricingUnit: "flat rate" },
   ],
-  Concert: [
+  concert: [
     { category: "music", pricingUnit: "per hour" },
     { category: "lighting/sound", pricingUnit: "flat rate" },
     { category: "venue", pricingUnit: "per day" },
   ],
-  CharityGala: [
+  charitygala: [
     { category: "catering", pricingUnit: "per plate" },
     { category: "decoration", pricingUnit: "flat rate" },
     { category: "photography", pricingUnit: "per hour" },
     { category: "venue", pricingUnit: "per day" },
   ],
-  Farewell: [
+  farewell: [
     { category: "venue", pricingUnit: "per day" },
     { category: "music", pricingUnit: "per hour" },
     { category: "catering", pricingUnit: "per plate" },
   ],
-  Housewarming: [
+  housewarming: [
     { category: "decoration", pricingUnit: "flat rate" },
     { category: "catering", pricingUnit: "per plate" },
     { category: "music", pricingUnit: "per hour" },
   ],
-  Workshop: [
+  workshop: [
     { category: "venue", pricingUnit: "per day" },
     { category: "lighting/sound", pricingUnit: "flat rate" },
     { category: "catering", pricingUnit: "per plate" },
   ],
 };
+
 
 export const getRandomPrice = (category: string, isFlatRate = false) => {
   const normalized = category.toLowerCase();

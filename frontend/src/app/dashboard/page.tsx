@@ -8,6 +8,7 @@ import Welcome from "../Components/DashBoard/Welcome";
 import AuthGuard from "../Components/Home/AuthGuard/AuthGuard";
 
 const Dashboard = () => {
+
   return (
     <AuthGuard>
       <div className="min-h-screen bg-gray-900">

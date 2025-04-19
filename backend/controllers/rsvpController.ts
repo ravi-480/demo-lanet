@@ -3,10 +3,8 @@ import { asyncHandler } from "../utils/asyncHandler";
 import XLSX from "xlsx";
 import Guest from "../models/rsvpSchema";
 import mongoose from "mongoose";
-import Notification from "../models/notificationModel";
 import Event from "../models/eventModel";
 import { sendEmail } from "../utils/emailService";
-import { getIO } from "../utils/socketUtils";
 import Vendor from "../models/vendorModel";
 import { createNotification, formatEmailTemplate } from "../utils/helper";
 

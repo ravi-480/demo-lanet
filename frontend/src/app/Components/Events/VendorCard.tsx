@@ -93,12 +93,10 @@ const VendorCard = ({
       type: vendor.type || category,
       address: vendor.address || "No address provided",
       rating: vendor.rating || 0,
-      reviews: vendor.reviews || 0,
       description: vendor.description || "",
       website: vendor.links?.website || "",
       directionsLink: vendor.links?.directions || "",
       placeId: vendor.place_id || vendor.placeId || "",
-      yearsInBusiness: vendor.years_in_business || "",
       phone: vendor.phone || "",
       price: adjustedPrice,
       pricingUnit: priceUnit,
@@ -219,7 +217,6 @@ const VendorCard = ({
                   value={units}
                   onChange={(e) => setUnits(e.target.value)}
                   min={1}
-                  step={1}
                 />
                 <p className="text-muted-foreground">
                   Estimated Total: ₹{totalEstimate.toLocaleString()}
@@ -232,7 +229,7 @@ const VendorCard = ({
               </p>
             ) : (
               <p>
-                Flat rate cost:{" "}
+                Flat rate cost:
                 <strong>₹{totalEstimate.toLocaleString()}</strong>
               </p>
             )}

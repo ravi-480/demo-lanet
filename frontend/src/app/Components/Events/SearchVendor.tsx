@@ -1,10 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Command, CommandInput } from "@/components/ui/command";
+import { useState } from "react";
 import { Loader } from "lucide-react";
-import VendorCard from "./VendorCard";
-import { eventVendorMapping, getRandomPrice } from "@/StaticData/Static";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -14,15 +11,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-type SearchVendorProps = {
-  eventType: string;
-  allowedCategories: string[];
-  noOfGuest: number;
-  eventId: string;
-  addedBy: string;
-  eventLocation: string;
-  noOfAddedGuest: number;
-};
+import VendorCard from "./VendorCard";
+import { eventVendorMapping, getRandomPrice } from "@/StaticData/Static";
+import { SearchVendorProps } from "@/Interface/interface";
+import { Input } from "@/components/ui/input";
 
 const SearchVendor = ({
   eventType,
@@ -31,7 +23,6 @@ const SearchVendor = ({
   addedBy,
   eventLocation,
   noOfAddedGuest,
-
   eventId,
 }: SearchVendorProps) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,31 +32,31 @@ const SearchVendor = ({
   const [hasMore, setHasMore] = useState(true);
   const [sortOption, setSortOption] = useState("");
 
-  const getPricingUnitForCategory = (category: string) => {
-    const mapping =
-      eventVendorMapping[eventType as keyof typeof eventVendorMapping] || [];
-    return (
-      mapping.find(
-        (item) => item.category.toLowerCase() === category.toLowerCase()
-      )?.pricingUnit || "flat rate"
-    );
+  const getPricingUnit = (category: string) =>
+    eventVendorMapping[eventType as keyof typeof eventVendorMapping]?.find(
+      (item) => item.category.toLowerCase() === category.toLowerCase()
+    )?.pricingUnit || "flat rate";
+
+  const enrichVendor = (vendor: any, matchedCategory: string | null) => {
+    const recommended = !!matchedCategory;
+    const isCatering = matchedCategory?.toLowerCase() === "catering";
+
+    return {
+      ...vendor,
+      price: getRandomPrice(matchedCategory || "default", !recommended),
+      category: recommended ? matchedCategory : "Premium Service",
+      numberOfGuests: isCatering ? noOfGuest : 0,
+      pricingUnit: recommended
+        ? matchedCategory === "photography"
+          ? "per hour"
+          : matchedCategory === "catering"
+          ? "per plate"
+          : getPricingUnit(matchedCategory)
+        : "flat rate",
+    };
   };
 
-  const detectMatchedCategory = (term: string) => {
-    const lowerTerm = term.toLowerCase();
-    for (const category of allowedCategories) {
-      if (lowerTerm.includes(category.toLowerCase())) return category;
-    }
-    if (
-      lowerTerm.includes("photo") &&
-      allowedCategories.includes("photography")
-    ) {
-      return "photography";
-    }
-    return null;
-  };
-
-  const handleSearch = async (pageNum = 1) => {
+  const fetchVendors = async (pageNum = 1) => {
     setLoading(true);
     setPage(pageNum);
 
@@ -75,66 +66,39 @@ const SearchVendor = ({
       );
       const data = await res.json();
 
-      const matchedCategory = detectMatchedCategory(searchTerm);
-      const isCatering = matchedCategory?.toLowerCase() === "catering";
+      const enrichedVendors = (data.vendors || []).map((vendor: any) =>
+        enrichVendor(vendor, searchTerm)
+      );
 
-      const enriched = (data.vendors || []).map((vendor: any) => {
-        const recommended = !!matchedCategory;
-        const price = recommended
-          ? getRandomPrice(matchedCategory!)
-          : getRandomPrice("default", true);
-
-        const pricingUnit = recommended
-          ? matchedCategory === "photography"
-            ? "per hour"
-            : matchedCategory === "catering"
-            ? "per plate"
-            : getPricingUnitForCategory(matchedCategory)
-          : "flat rate";
-
-        return {
-          ...vendor,
-          price,
-          category: recommended ? matchedCategory : "Premium Service",
-          numberOfGuests: isCatering ? noOfGuest : 1,
-          pricingUnit,
-        };
-      });
-
-      setVendors(enriched);
+      setVendors(enrichedVendors);
       setHasMore(data.pagination?.hasMore ?? false);
     } catch (err) {
-      console.error("Error fetching vendors:", err);
+      console.error("Vendor fetch error:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const getSortedVendors = () => {
-    const sorted = [...vendors];
-    if (sortOption === "lowToHigh")
-      return sorted.sort((a, b) => a.price - b.price);
-    if (sortOption === "highToLow")
-      return sorted.sort((a, b) => b.price - a.price);
-    if (sortOption === "rating")
-      return sorted.sort((a, b) => b.rating - a.rating);
-    return sorted;
-  };
+  const sortedVendors = [...vendors].sort((a, b) => {
+    if (sortOption === "lowToHigh") return a.price - b.price;
+    if (sortOption === "highToLow") return b.price - a.price;
+    if (sortOption === "rating") return b.rating - a.rating;
+    return 0;
+  });
 
   return (
     <div className="space-y-4">
-      {/* Search bar */}
+      {/* Search input */}
       <div className="flex items-center gap-2">
-        <Command className="flex-1 rounded-lg border shadow-md">
-          <CommandInput
-            placeholder={`Search vendors for ${eventType}...`}
-            value={searchTerm}
-            onValueChange={setSearchTerm}
-          />
-        </Command>
-        <Button onClick={() => handleSearch()}>Search</Button>
+        <Input
+          placeholder={`Search vendors for ${eventType}...`}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <Button onClick={() => fetchVendors()}>Search</Button>
       </div>
 
+      {/* Sort dropdown */}
       {vendors.length > 0 && (
         <div className="flex items-center gap-4">
           <span className="text-sm text-muted-foreground">Sort by:</span>
@@ -154,28 +118,29 @@ const SearchVendor = ({
       {/* Loader */}
       {loading && (
         <div className="text-gray-500 text-sm flex items-center gap-2">
-          <Loader className="animate-spin" size={16} /> Loading vendors...
+          <Loader className="animate-spin" size={16} />
+          Loading vendors...
         </div>
       )}
 
-      {/* No vendors found */}
+      {/* No vendors */}
       {!loading && vendors.length === 0 && searchTerm && (
         <div className="text-center py-8 text-gray-500">
           No vendors found matching "{searchTerm}"
         </div>
       )}
 
-      {/* Vendor results */}
+      {/* Vendors grid */}
       {!loading && vendors.length > 0 && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {getSortedVendors().map((vendor, idx) => (
+            {sortedVendors.map((vendor, idx) => (
               <VendorCard
                 key={idx}
-                noOfAddedGuest={noOfAddedGuest}
-                eventId={eventId}
                 vendor={vendor}
+                eventId={eventId}
                 addedBy={addedBy}
+                noOfAddedGuest={noOfAddedGuest}
                 numberOfGuests={vendor.numberOfGuests}
                 category={vendor.category}
                 pricingUnit={vendor.pricingUnit}
@@ -183,22 +148,23 @@ const SearchVendor = ({
             ))}
           </div>
 
+          {/* Pagination */}
           <div className="flex justify-center items-center gap-4 mt-4">
-            <button
-              onClick={() => handleSearch(page - 1)}
+            <Button
+              onClick={() => fetchVendors(page - 1)}
               disabled={page === 1}
-              className="px-3 py-1 bg-gray-800 rounded hover:bg-gray-700 disabled:opacity-50"
+              variant="secondary"
             >
               Prev
-            </button>
+            </Button>
             <span className="text-sm text-gray-300">Page {page}</span>
-            <button
-              onClick={() => handleSearch(page + 1)}
+            <Button
+              onClick={() => fetchVendors(page + 1)}
               disabled={!hasMore}
-              className="px-3 py-1 bg-gray-800 rounded hover:bg-gray-700 disabled:opacity-50"
+              variant="secondary"
             >
               Next
-            </button>
+            </Button>
           </div>
         </>
       )}

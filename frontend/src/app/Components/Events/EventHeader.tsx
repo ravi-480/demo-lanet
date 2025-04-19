@@ -53,13 +53,10 @@ const EventHeader = ({ event }: { event: IEvent }) => {
 
         <div className="mt-2">
           <Link href={`${event._id}/edit`}>
-            <Button className="mr-4 cursor-pointer bg-blue-500 ">
+            <Button className="cursor-pointer ">
               Edit Event
             </Button>
           </Link>
-          <Button className="bg-transparent border cursor-pointer ">
-            Send Invites
-          </Button>
         </div>
       </div>
 
@@ -73,17 +70,25 @@ const EventHeader = ({ event }: { event: IEvent }) => {
       <AlertDialog open={open}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-gray-900">Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle className="text-gray-900">
+              Are you absolutely sure?
+            </AlertDialogTitle>
             <AlertDialogDescription className="text-gray-700 font-semibold">
               This action cannot be undone. This will permanently delete your
               Event and remove your data from our servers.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="hover:bg-none text-black cursor-pointer" onClick={() => setOpen(false)}>
+            <AlertDialogCancel
+              className="hover:bg-none text-black cursor-pointer"
+              onClick={() => setOpen(false)}
+            >
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction className="cursor-pointer bg-cyan-600 hover:bg-cyan-700" onClick={handleDelete}>
+            <AlertDialogAction
+              className="cursor-pointer bg-cyan-600 hover:bg-cyan-700"
+              onClick={handleDelete}
+            >
               Continue
             </AlertDialogAction>
           </AlertDialogFooter>

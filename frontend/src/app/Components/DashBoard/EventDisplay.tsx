@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Clock, MapPin, Users } from "lucide-react";
+import { Clock, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../../../store/store";
@@ -163,15 +163,6 @@ const EventDisplay: React.FC = () => {
                             {event.location || "No location"}
                           </span>
                         </div>
-                      </div>
-
-                      <div className="flex items-center">
-                        <Users size={14} className="mr-2" />
-                        <span>
-                          RSVPs: {event.rsvp?.confirmed || 0} confirmed
-                          {event.rsvp?.total !== undefined &&
-                            ` / ${event.rsvp.total} invited`}
-                        </span>
                       </div>
                     </div>
                   </div>

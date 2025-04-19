@@ -17,7 +17,7 @@ import { fetchGuests } from "@/store/rsvpSlice";
 
 type MyPieChartProps = {
   event: IEvent;
-  rsvpData: any[]; // Accept rsvpData as a prop
+  rsvpData: any[]; // rsvpData as a prop
 };
 
 const MyPieChart = ({ event, rsvpData }: MyPieChartProps) => {
@@ -184,12 +184,6 @@ const MyPieChart = ({ event, rsvpData }: MyPieChartProps) => {
       <Card className="bg-gray-800 border-gray-700">
         <CardHeader className="flex justify-between items-center">
           <CardTitle className="text-blue-400">Guest Overview</CardTitle>
-          <button
-            onClick={refreshData}
-            className="p-1 text-sm text-gray-300 hover:text-cyan-400"
-          >
-            Refresh
-          </button>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={200}>
