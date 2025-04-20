@@ -64,12 +64,6 @@ const Header = () => {
 
             <nav className="hidden md:flex md:space-x-8">
               <Link
-                href="/dashboard"
-                className="hover:text-primary-600 hover:text-amber-200 px-1 py-5 text-sm font-medium"
-              >
-                Dashboard
-              </Link>
-              <Link
                 href="/events"
                 className="hover:text-primary-600 hover:text-amber-200 px-1 py-5 text-sm font-medium"
               >
@@ -158,38 +152,6 @@ const Header = () => {
                     </ScrollArea>
                   </PopoverContent>
                 </Popover>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="flex items-center space-x-2 p-2 rounded-full">
-                      <div className="w-8 h-8 rounded-full bg-gray-200 cursor-pointer flex items-center justify-center">
-                        <User size={16} className="text-gray-600" />
-                      </div>
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>User Profile</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {user && (
-                      <div className="px-2 py-1.5 text-sm">
-                        <div className="font-medium">{user.name}</div>
-                      </div>
-                    )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile">My Profile</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      {isAuthenticated ? (
-                        <Link href="/" onClick={() => dispatch(logout())}>
-                          Logout
-                        </Link>
-                      ) : (
-                        <Link href="/login">Login</Link>
-                      )}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </div>
               <AuthButtons />
             </div>

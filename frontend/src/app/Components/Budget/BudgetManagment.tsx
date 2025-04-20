@@ -50,11 +50,11 @@ const BudgetManagment = ({ eventId }: { eventId: string }) => {
       } else if (priceSortOrder === "highToLow") {
         return b.price - a.price;
       }
-      return 0; // no sorting
+      return 0;
     });
 
   const refreshData = () => {
-    dispatch(getVendorsByEvent({eventId}));
+    dispatch(getVendorsByEvent({ eventId }));
     dispatch(fetchById(eventId));
   };
 

@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
-import Cookies from "js-cookie";
-import { useSelector, useDispatch } from "react-redux";
-import { RootState, AppDispatch } from "@/store/store";
-import { setUser, logout, logoutUser } from "@/store/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/store/store";
+import { setUser } from "@/store/authSlice";
+import api from "@/utils/api";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -14,61 +13,30 @@ interface AuthGuardProps {
 
 const AuthGuard = ({ children }: AuthGuardProps) => {
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const { user } = useSelector((state: RootState) => state.auth);
+  const router = useRouter();
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const token = Cookies.get("token");
-
-      // if (!token) {
-      //     router.replace("/login");
-      //     return;
-      //   }
-      //   console.log("hello");
-
+    const verifySession = async () => {
       try {
-        if (!user) {
-          const response = await axios.get("http://localhost:5000/api/auth", {
-            withCredentials: true,
-          });
-          dispatch(setUser(response.data.user)); // havent sended yet response as user from backend
-        }
+        const response = await api.get("/auth");
+        const user = response.data.user;
 
-        setLoading(false);
-      } catch (error: any) {
-        const status = error.response?.status;
-
-        if (status === 401) {
-          try {
-            const retryRefresh = await axios.post(
-              "http://localhost:5000/api/auth/refresh-token",
-              {},
-              { withCredentials: true }
-            );
-
-            const newAccessToken = retryRefresh.data.data.accessToken;
-            Cookies.set("token", newAccessToken);
-
-            const retryRes = await axios.get("http://localhost:5000/api/auth", {
-              withCredentials: true,
-            });
-            dispatch(setUser(retryRes.data.user));
-          } catch (refreshError) {
-            // ❌ Don't dispatch logout multiple times
-            await dispatch(logoutUser());
-            router.replace("/login");
-          }
+        if (user) {
+          dispatch(setUser(user));
         } else {
-          await dispatch(logoutUser());
           router.replace("/login");
         }
+      } catch (error) {
+        router.replace("/login");
+      } finally {
+        setLoading(false);
       }
     };
 
-    checkAuth();
-  }, [router, dispatch, user]);
+    verifySession();
+  }, [dispatch, router]);
 
   if (loading) {
     return (

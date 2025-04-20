@@ -28,7 +28,7 @@ const EventHeader = ({ event }: { event: IEvent }) => {
   const router = useRouter();
   const handleDelete = () => {
     dispatch(deleteEvent(event._id));
-    router.push("/dashboard");
+    router.push("/events");
   };
 
   const [open, setOpen] = useState(false);
@@ -53,9 +53,7 @@ const EventHeader = ({ event }: { event: IEvent }) => {
 
         <div className="mt-2">
           <Link href={`${event._id}/edit`}>
-            <Button className="cursor-pointer ">
-              Edit Event
-            </Button>
+            <Button className="cursor-pointer ">Edit Event</Button>
           </Link>
         </div>
       </div>
@@ -74,8 +72,8 @@ const EventHeader = ({ event }: { event: IEvent }) => {
               Are you absolutely sure?
             </AlertDialogTitle>
             <AlertDialogDescription className="text-gray-700 font-semibold">
-              This action cannot be undone. This will permanently delete your
-              Event and remove your data from our servers.
+              This will permanently delete your Event and remove your data from
+              our servers.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

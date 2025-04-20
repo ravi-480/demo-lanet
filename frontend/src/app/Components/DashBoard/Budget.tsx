@@ -10,18 +10,33 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const Budget = () => {
   const dispatch = useDispatch<AppDispatch>();
   const vendorDetail = useSelector(vendorByUser);
-  console.log(vendorDetail);
 
   useEffect(() => {
     if (vendorDetail.items.length === 0 && vendorDetail.status !== "loading") {
       dispatch(getVendorByUser());
     }
   }, []);
- 
+
+  if (vendorDetail.status === "succeeded" && vendorDetail.items.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-80">
+        <h2 className="text-xl font-semibold mb-1">No Recent Expenses</h2>
+        <p className="text-sm text-gray-300 mb-4">
+          You haven’t added any expenses yet. Start by adding your first one.
+        </p>
+        <Link href="/">
+          <Button>Add Expense</Button>
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <>
       <h1>Recent Expenses</h1>

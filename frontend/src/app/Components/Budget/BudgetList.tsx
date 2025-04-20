@@ -25,7 +25,6 @@ import { toast } from "sonner";
 const BudgetList = ({ items }: any) => {
   const dispatch = useDispatch<AppDispatch>();
   const handleRemoveVendor = async (vendorId: string) => {
-    console.log(vendorId);
 
     if (confirm("Are you sure you want to remove this guest?")) {
       try {

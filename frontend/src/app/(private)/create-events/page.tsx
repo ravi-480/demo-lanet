@@ -13,16 +13,14 @@ const CreateEventForm = () => {
     dispatch(storeEvent(data) as any)
       .unwrap()
       .then(() => {
-        router.push("/dashboard");
+        router.push("/events");
       })
       .catch((err: any) => {
         console.error("Failed to create event:", err);
       });
   };
 
-  return (
-      <EventForm onSubmit={handleCreate} />
-  );
+  return <EventForm onSubmit={handleCreate} />;
 };
 
 export default CreateEventForm;

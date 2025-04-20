@@ -72,7 +72,6 @@ export const getVendorByUser = createAsyncThunk<
 
     return response.data;
   } catch (error: any) {
-    console.log(error);
     
     return rejectWithValue(error.response?.data || error.message || error);
   }
@@ -96,7 +95,6 @@ export const removeAddedVendor = createAsyncThunk(
 export const addManualVendorExpense = createAsyncThunk(
   "vendor/addOtherExpense",
   async (data: any, { rejectWithValue }) => {
-    console.log(data);
 
     try {
       const response = await axios.post(

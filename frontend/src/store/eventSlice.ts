@@ -22,22 +22,10 @@ export const storeEvent = createAsyncThunk(
   "events/storeEvent",
   async (eventData: FormData, { rejectWithValue, getState }) => {
     try {
-      const state = getState() as RootState;
-      let token: string | null =
-        state.auth.token || Cookies.get("token") || null;
-
-      if (!token) {
-        return rejectWithValue("User not authenticated - no token available");
-      }
-
       const response = await axios.post(
         "http://localhost:5000/api/events",
         eventData,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
           withCredentials: true,
         }
       );
@@ -129,7 +117,6 @@ export const deleteEvent = createAsyncThunk(
           withCredentials: true,
         }
       );
-      console.log(response);
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to delete Event"
@@ -148,6 +135,7 @@ const eventSlice = createSlice({
     resetEventState: (state) => {
       state.isLoading = false;
       state.error = null;
+      state.singleEvent = null;
     },
   },
   extraReducers: (builder) => {
@@ -182,6 +170,8 @@ const eventSlice = createSlice({
         state.events.unshift(action.payload);
       })
       .addCase(storeEvent.rejected, (state, action) => {
+        console.log("kya dikat", action.payload);
+
         state.isLoading = false;
         state.error =
           typeof action.payload === "string"

@@ -2,7 +2,7 @@ import { AppDispatch, RootState } from "@/store/store";
 import { Socket, io } from "socket.io-client";
 import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { INotification } from "@/Types/type";
+// import { INotification } from "@/Types/type";
 import { addNotification } from "@/store/notificationSlice";
 
 export const useSocket = () => {
@@ -23,7 +23,7 @@ export const useSocket = () => {
       }
     });
 
-    socket.on("new-notification", (notification: INotification) => {
+    socket.on("new-notification", (notification: any) => {
       console.log(" New notification:", notification);
       dispatch(addNotification(notification));
     });

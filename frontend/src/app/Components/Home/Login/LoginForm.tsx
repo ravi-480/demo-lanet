@@ -54,14 +54,14 @@ export default function LoginForm() {
     // Check if already logged in
     const token = Cookies.get("token");
     if (token) {
-      router.replace("/dashboard");
+      router.replace("/events");
     }
   }, [router]);
 
   // Handle redirection after login
   useEffect(() => {
     if (user && authStatus === "succeeded") {
-      router.replace("/dashboard");
+      router.replace("/events");
     }
   }, [user, authStatus, router]);
 

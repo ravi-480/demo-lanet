@@ -10,7 +10,6 @@ const Confirm = ({
     return <p className="text-red-500">Invalid link</p>;
   }
 
-  console.log(searchParams.userId);
 
   return (
     <div className="flex justify-center items-center m-4 ">

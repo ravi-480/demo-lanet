@@ -16,7 +16,7 @@ const HeroSection: React.FC = () => {
           <p className="text-lg md:text-xl text-amber-50 mb-8">
             Streamline your event planning with intuitive modern design.
           </p>
-          <Link href="/dashboard">
+          <Link href="/events">
             <Button className="bg-[#d4c99e] cursor-pointer hover:p-4 hover:bg-[#c4b98e] text-black font-medium text-base h-12 px-6">
               Get Started <ArrowRight />
             </Button>

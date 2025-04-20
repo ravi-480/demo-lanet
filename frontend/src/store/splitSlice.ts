@@ -23,7 +23,6 @@ export const addVendorInSplitOrRemove = createAsyncThunk<
   string, // payload type
   { rejectValue: string }
 >("vendorSplit/addToSplit", async (vendorId, { rejectWithValue }) => {
-  console.log(vendorId);
 
   try {
     const response = await axios.post(

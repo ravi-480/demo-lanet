@@ -8,7 +8,6 @@ import {
   StandardResponse,
 } from "@/Interface/interface";
 
-
 export interface User {
   id: string;
   name: string;
@@ -46,7 +45,7 @@ const storedToken = Cookies.get("token") || null;
 
 const initialState: AuthState = {
   user: storedUser,
-  isAuthenticated: !!storedUser,
+  isAuthenticated: false,
   token: storedToken,
   status: "idle",
   error: null,
@@ -174,30 +173,6 @@ export const resetPassword = createAsyncThunk<
   return rejectWithValue(result.message);
 });
 
-
-export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
-  "auth/logoutUser",
-  async (_, { rejectWithValue, dispatch }) => {
-    try {
-      await axios.post(
-        "http://localhost:5000/api/auth/logout",
-        {},
-        { withCredentials: true }
-      );
-
-      // Clear cookies
-      Cookies.remove("token");
-      Cookies.remove("user");
-
-      // Clear state
-      dispatch(logoutUser());
-    } catch (error: any) {
-      return rejectWithValue("Logout failed");
-    }
-  }
-);
-
-
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -279,7 +254,6 @@ const authSlice = createSlice({
       .addCase(signupUser.pending, setPending)
       .addCase(signupUser.fulfilled, (state, action) => {
         state.status = "succeeded";
-        console.log(action);
 
         state.signupSuccess = action.payload.success;
         state.signupMessage = action.payload.message;
@@ -346,12 +320,10 @@ export const {
 // Selectors
 export const selectAuth = (state: RootState) => state.auth;
 export const selectUser = (state: RootState) => state.auth.user;
-export const selectIsAuthenticated = (state: RootState) =>
-  state.auth.isAuthenticated;
+
 export const selectAuthStatus = (state: RootState) => state.auth.status;
 export const selectAuthError = (state: RootState) => state.auth.error;
-export const selectSignupSuccess = (state: RootState) =>
-  state.auth.signupSuccess;
+
 export const selectSignupMessage = (state: RootState) =>
   state.auth.signupMessage;
 export const selectForgotPasswordSuccess = (state: RootState) =>

@@ -91,7 +91,6 @@ const EventForm: React.FC<EventFormProps> = ({
     if (imageFile) formData.append("image", imageFile);
 
     if (initialData?._id) formData.append("eventId", initialData._id); // for edit
-    console.log(formData);
 
     onSubmit(formData);
   };

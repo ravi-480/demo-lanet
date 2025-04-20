@@ -22,7 +22,7 @@ const EditEvent = () => {
   const handleUpdate = (formData: FormData) => {
     dispatch(updateEvent(formData))
       .unwrap()
-      .then(() => router.push("/dashboard"))
+      .then(() => router.push("/events"))
       .catch(console.error);
   };
 
