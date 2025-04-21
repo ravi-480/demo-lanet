@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 
 const SearchVendor = ({
   eventType,
+  noOfDay,
   allowedCategories,
   noOfGuest,
   addedBy,

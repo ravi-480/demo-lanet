@@ -29,7 +29,6 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
       router.push("/login");
     };
 
-    
     if (typeof window !== "undefined" && originalConsoleError) {
       console.error = (...args) => {
         // Filter out common expected errors
@@ -45,7 +44,6 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
           return;
         }
 
-        
         originalConsoleError.apply(console, args);
       };
     }
@@ -65,7 +63,6 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
         if (error.message === "SERVER_DOWN") {
           setServerDown(true);
         } else {
-          // For 401 and other auth errors, redirect silently
           router.push("/login");
           return;
         }
@@ -79,7 +76,6 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
     // Clean up
     return () => {
       api.onAuthError = undefined;
-      // Restore original console.error
       if (typeof window !== "undefined" && originalConsoleError) {
         console.error = originalConsoleError;
       }

@@ -390,7 +390,7 @@ const SplitOverviewClient = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {event.includedInSplit.map((user, idx) => (
+                {event.includedInSplit.map((user: any, idx: any) => (
                   <TableRow
                     key={idx}
                     className="hover:bg-gray-800/70 border-gray-700 transition-colors"
@@ -467,6 +467,12 @@ const SplitOverviewClient = () => {
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-xl bg-gray-950 border-0 shadow-xl">
+              <DialogHeader>
+                <DialogTitle>Create Cost Split</DialogTitle>
+                <DialogDescription>
+                  Manage expense splitting for this event
+                </DialogDescription>
+              </DialogHeader>
               <SplitTabsDialog
                 eventId={event?._id}
                 users={event?.includedInSplit}

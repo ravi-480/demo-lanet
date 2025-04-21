@@ -17,9 +17,9 @@ export default function EventTabComponent({ id }: { id: string }) {
   }
 
   const allowedCategories =
-    eventVendorMapping[
-      event.eventType as keyof typeof eventVendorMapping
-    ]?.map((c) => c.category) || [];
+    eventVendorMapping[event.eventType as keyof typeof eventVendorMapping]?.map(
+      (c) => c.category
+    ) || [];
 
   const tabs = [
     { value: "overview", label: "Overview" },
@@ -52,6 +52,7 @@ export default function EventTabComponent({ id }: { id: string }) {
 
         <TabsContent value="vendors" className="p-4">
           <SearchVendor
+            noOfDay={event.durationInDays}
             eventId={event._id}
             noOfAddedGuest={event.noOfGuestAdded}
             addedBy={event.creator}

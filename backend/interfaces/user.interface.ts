@@ -66,6 +66,7 @@ export interface IEvent {
     allocated: number;
     spent: number;
   };
+  placeId: number;
   guestLimit: number;
   noOfGuestAdded: number;
   includedInSplit: {
@@ -84,7 +85,7 @@ export interface IEvent {
   updatedAt?: Date;
 }
 
-import {Request} from "express"
+import { Request } from "express";
 
 export interface AuthenticatedRequest extends Request {
   user?: {

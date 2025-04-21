@@ -25,7 +25,6 @@ import { toast } from "sonner";
 const BudgetList = ({ items }: any) => {
   const dispatch = useDispatch<AppDispatch>();
   const handleRemoveVendor = async (vendorId: string) => {
-
     if (confirm("Are you sure you want to remove this guest?")) {
       try {
         await dispatch(removeAddedVendor(vendorId));
@@ -39,8 +38,10 @@ const BudgetList = ({ items }: any) => {
   };
 
   const handleAddOrRemoveFromSplit = async (vendorId: string) => {
+
     dispatch(addVendorInSplitOrRemove(vendorId));
   };
+
 
   return (
     <div className="rounded-md border">
@@ -57,9 +58,9 @@ const BudgetList = ({ items }: any) => {
         </TableHeader>
         <TableBody>
           {items.length > 0 ? (
-            items.map((item: any) => (
+            items.map((item: any, index: number) => (
               <TableRow
-                key={item._id}
+                key={item._id || index}
                 className="text-gray-200 hover:bg-gray-900/50"
               >
                 <TableCell>
@@ -143,7 +144,7 @@ const GuestActions = ({
           onClick={() => onRemove(item._id)}
           className="text-red-600"
         >
-          Remove Guest
+          Remove Vendors
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

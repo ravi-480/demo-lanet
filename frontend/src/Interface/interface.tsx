@@ -139,7 +139,7 @@ export interface VendorType {
   price: number;
   pricingUnit: string;
   category: string;
-  createdAt?:string
+  createdAt?: string;
   numberOfGuests: number;
   addedBy: string;
 }
@@ -242,17 +242,16 @@ export interface Guest {
   eventId: string;
 }
 
-
 export interface SearchVendorProps {
   eventType: string;
   allowedCategories: string[];
   noOfGuest: number;
+  noOfDay: number;
   eventId: string;
   addedBy: string;
   eventLocation: string;
   noOfAddedGuest: number;
 }
-
 
 export enum EventTypeEnum {
   Wedding = "Wedding",
@@ -270,7 +269,9 @@ export enum EventTypeEnum {
   Workshop = "Workshop",
 }
 
-export const eventTypeOptions = Object.entries(EventTypeEnum).map(([key, value]) => ({
-  label: value,
-  value: key.toLowerCase(),
-}));
+export const eventTypeOptions = Object.entries(EventTypeEnum).map(
+  ([key, value]) => ({
+    label: value,
+    value: key.toLowerCase(),
+  })
+);

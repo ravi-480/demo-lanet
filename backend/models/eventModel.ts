@@ -30,20 +30,17 @@ const eventSchema = new mongoose.Schema(
       min: 0,
     },
 
-    // ✅ Fix field name to match your usage
     noOfGuestAdded: {
       type: Number,
       default: 0,
     },
 
-    // ✅ Add this
     status: {
       type: String,
       enum: ["upcoming", "completed", "cancelled"],
       default: "upcoming",
     },
 
-    // ✅ Add this
     vendorsInSplit: {
       type: [Schema.Types.ObjectId],
       ref: "Vendor",

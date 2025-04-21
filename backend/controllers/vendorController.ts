@@ -105,7 +105,6 @@ export const getVendorsByEvent = asyncHandler(
 export const getByUser = asyncHandler(async (req: Request, res: Response) => {
   let reqUser = req as AuthenticatedRequest;
   const userId = reqUser.user.id;
-  
 
   if (!userId) {
     return res.status(401).json({ success: false, message: "unauthorized" });
@@ -113,10 +112,12 @@ export const getByUser = asyncHandler(async (req: Request, res: Response) => {
   const vendors = await Vendor.find({ addedBy: userId }).sort({
     createdAt: -1,
   });
-  if(!vendors){
-    return res.status(404).json({success:false,message:"no vendors found"})
+  if (!vendors) {
+    return res
+      .status(404)
+      .json({ success: false, message: "no vendors found" });
   }
-  
+
   return res.status(200).json(vendors);
 });
 
@@ -126,9 +127,11 @@ export const addVendorInSplitOrRemove = asyncHandler(
     const { vendorId } = req.body;
 
     const vendor = await Vendor.findById(vendorId);
+
     if (!vendor) return res.status(404).json({ message: "Event not found" });
 
     vendor.isIncludedInSplit = !vendor.isIncludedInSplit;
+
 
     await vendor.save();
 
@@ -210,7 +213,6 @@ export const removeAddedVendor = asyncHandler(
       { $inc: { "budget.spent": -vendor.price } },
       { new: true }
     );
-
 
     if (!updatedEvent)
       return res

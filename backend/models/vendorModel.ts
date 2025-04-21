@@ -16,6 +16,7 @@ const vendorSchema = new Schema(
     directionsLink: { type: String },
     phone: { type: String },
     price: { type: Number, required: true },
+    placeId: { type: String, required: true, unique: true },
     pricingUnit: { type: String, required: true },
     category: { type: String, required: true },
     numberOfGuests: { type: Number, default: 1 },

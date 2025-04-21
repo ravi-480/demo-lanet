@@ -17,12 +17,11 @@ import { fetchGuests } from "@/store/rsvpSlice";
 
 type MyPieChartProps = {
   event: IEvent;
-  rsvpData: any[]; // rsvpData as a prop
+  rsvpData: any[];
 };
 
 const MyPieChart = ({ event, rsvpData }: MyPieChartProps) => {
   const dispatch = useDispatch<AppDispatch>();
-
   const eventId = event._id;
 
   const refreshData = () => {
@@ -32,13 +31,11 @@ const MyPieChart = ({ event, rsvpData }: MyPieChartProps) => {
   const { budget = { allocated: 0, spent: 0 } } = event;
   const remaining = budget.allocated - budget.spent;
 
-  // Create budget data for pie chart
   const budgetData = [
     { name: "Spent", value: budget.spent },
     { name: "Remaining", value: remaining > 0 ? remaining : 0 },
   ];
 
-  // Use the guest data passed from props
   const totalGuests = rsvpData?.length || 0;
   const confirmedGuests =
     rsvpData?.filter((guest) => guest.status === "Confirmed").length || 0;
@@ -47,27 +44,28 @@ const MyPieChart = ({ event, rsvpData }: MyPieChartProps) => {
   const declinedGuests =
     rsvpData?.filter((guest) => guest.status === "Declined").length || 0;
 
-  // Create guest data for pie chart
-  const guestData = [
+  let guestData = [
     { name: "Confirmed", value: confirmedGuests },
     { name: "Pending", value: pendingGuests },
     { name: "Declined", value: declinedGuests },
-  ].filter((item) => item.value > 0); // Only include non-zero values
+  ].filter((item) => item.value > 0);
 
-  // Colors for pie charts with better contrast
+  if (guestData.length === 0) {
+    guestData = [{ name: "No Responses", value: 1 }];
+  }
+
   const BUDGET_COLORS = ["#FF6C6B", "#4ECDC4"];
-  const GUEST_COLORS = ["#59A5D8", "#FFD166", "#EF476F"];
+  const GUEST_COLORS = ["#59A5D8", "#FFD166", "#EF476F", "#A0AEC0"]; // Last color for "No Responses"
 
   const formatCurrency = (value: number) => `₹${value.toLocaleString()}`;
 
-  // Custom label renderer for better readability
   const renderCustomizedLabel = (props: any) => {
     const { cx, cy, midAngle, innerRadius, outerRadius, percent } = props;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos((-midAngle * Math.PI) / 180);
     const y = cy + radius * Math.sin((-midAngle * Math.PI) / 180);
 
-    if (percent < 0.05) return null; // Don't show labels for tiny slices
+    if (percent < 0.05) return null;
     return (
       <text
         x={x}
@@ -83,7 +81,6 @@ const MyPieChart = ({ event, rsvpData }: MyPieChartProps) => {
     );
   };
 
-  // Custom tooltip to show both percentage and actual values
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
@@ -95,6 +92,8 @@ const MyPieChart = ({ event, rsvpData }: MyPieChartProps) => {
               {formatCurrency(data.value)} (
               {((data.value / budget.allocated) * 100).toFixed(1)}%)
             </p>
+          ) : data.name === "No Responses" ? (
+            <p className="text-gray-300">No guest responses yet</p>
           ) : (
             <p className="text-gray-300">
               {data.value} guests (
@@ -114,11 +113,11 @@ const MyPieChart = ({ event, rsvpData }: MyPieChartProps) => {
     ((budget.spent / budget.allocated) * 100).toFixed(1)
   );
 
-  // Compare guest count with limit
   const guestLimitExceeded = totalGuests > event.guestLimit;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Budget Card */}
       <Card className="bg-gray-800 border-gray-700">
         <CardHeader>
           <CardTitle className="text-blue-400">Budget Overview</CardTitle>
@@ -181,6 +180,7 @@ const MyPieChart = ({ event, rsvpData }: MyPieChartProps) => {
         </CardContent>
       </Card>
 
+      {/* Guest Card */}
       <Card className="bg-gray-800 border-gray-700">
         <CardHeader className="flex justify-between items-center">
           <CardTitle className="text-blue-400">Guest Overview</CardTitle>

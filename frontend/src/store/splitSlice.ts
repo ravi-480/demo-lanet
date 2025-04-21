@@ -23,7 +23,6 @@ export const addVendorInSplitOrRemove = createAsyncThunk<
   string, // payload type
   { rejectValue: string }
 >("vendorSplit/addToSplit", async (vendorId, { rejectWithValue }) => {
-
   try {
     const response = await axios.post(
       "http://localhost:5000/api/vendors/addToSplit",
@@ -98,9 +97,6 @@ export const editUserInSplit = createAsyncThunk(
   }
 );
 
-
-
-
 const splitVendorPrice = createSlice({
   name: "split",
   initialState,
@@ -122,6 +118,8 @@ const splitVendorPrice = createSlice({
       })
       .addCase(addVendorInSplitOrRemove.rejected, (state, action) => {
         state.status = "failed";
+        console.log(action);
+
         state.error = (action.payload as string) || "Unknown error occurred";
       })
 

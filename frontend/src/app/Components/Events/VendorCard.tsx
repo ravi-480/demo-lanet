@@ -9,7 +9,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   Dialog,
@@ -33,6 +33,7 @@ type VendorCardProps = {
   eventId?: string;
   noOfAddedGuest: number;
   addedBy?: string;
+  noOfDay?: number; // Added prop for event duration in days
 };
 
 const getPriceUnitLabel = (category: string) => {
@@ -57,10 +58,12 @@ const VendorCard = ({
   numberOfGuests = 50,
   eventId,
   addedBy,
+  noOfDay = 1, // Default to 1 day if not provided
 }: VendorCardProps) => {
   const [showDetails, setShowDetails] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [units, setUnits] = useState("1");
+  const [error, setError] = useState<string | null>(null);
 
   const priceUnit = pricingUnit || getPriceUnitLabel(category);
   const price = vendor.price || Math.floor(Math.random() * 500 + 100);
@@ -68,23 +71,49 @@ const VendorCard = ({
   const checkNoOfGuest =
     noOfAddedGuest > numberOfGuests ? noOfAddedGuest : numberOfGuests;
 
+  // Calculate total estimate based on pricing unit
   const totalEstimate =
     priceUnit === "per hour"
       ? Number(units) * price
       : priceUnit === "per plate"
       ? price * checkNoOfGuest
+      : priceUnit === "per day"
+      ? Number(units) * price
       : price;
+
+  // Validate units when it changes or dialog opens
+  useEffect(() => {
+    if (priceUnit === "per day" && Number(units) > noOfDay) {
+      setError(
+        `Cannot book for more than the event duration (${noOfDay} day${
+          noOfDay > 1 ? "s" : ""
+        })`
+      );
+    } else {
+      setError(null);
+    }
+  }, [units, priceUnit, noOfDay]);
 
   const dispatch = useDispatch<AppDispatch>();
 
   const handleConfirmAdd = async () => {
     if (!eventId || !addedBy) return;
 
+    // Validate before submitting
+    if (priceUnit === "per day" && Number(units) > noOfDay) {
+      toast.error(
+        `Cannot book for more than the event duration (${noOfDay} days)`
+      );
+      return;
+    }
+
     const adjustedPrice =
       priceUnit === "per hour"
         ? Number(units) * price
         : priceUnit === "per plate"
         ? price * checkNoOfGuest
+        : priceUnit === "per day"
+        ? Number(units) * price
         : price;
 
     const vendorData = {
@@ -101,8 +130,9 @@ const VendorCard = ({
       price: adjustedPrice,
       pricingUnit: priceUnit,
       category,
-      numberOfGuests:checkNoOfGuest,
+      numberOfGuests: checkNoOfGuest,
       addedBy,
+      days: priceUnit === "per day" ? Number(units) : undefined, // Add days information for per day pricing
     };
 
     const data = await dispatch(createVendor(vendorData));
@@ -206,11 +236,9 @@ const VendorCard = ({
               {priceUnit}
             </p>
 
-            {priceUnit === "per hour" || priceUnit === "per day" ? (
+            {priceUnit === "per hour" ? (
               <>
-                <Label htmlFor="units">
-                  Enter {priceUnit === "per hour" ? "hours" : "days"}
-                </Label>
+                <Label htmlFor="units">Enter hours</Label>
                 <Input
                   id="units"
                   type="number"
@@ -222,20 +250,42 @@ const VendorCard = ({
                   Estimated Total: ₹{totalEstimate.toLocaleString()}
                 </p>
               </>
+            ) : priceUnit === "per day" ? (
+              <>
+                <Label htmlFor="units">Enter days</Label>
+                <Input
+                  id="units"
+                  type="number"
+                  value={units}
+                  onChange={(e) => setUnits(e.target.value)}
+                  min={1}
+                  max={noOfDay}
+                  className={error ? "border-red-500" : ""}
+                />
+                {error && <p className="text-red-500 text-xs">{error}</p>}
+                <p className="text-muted-foreground">
+                  Estimated Total: ₹{totalEstimate.toLocaleString()}
+                </p>
+                <p className="text-xs text-blue-500">
+                  Note: Event duration is {noOfDay} day{noOfDay > 1 ? "s" : ""}
+                </p>
+              </>
             ) : priceUnit === "per plate" ? (
               <p>
                 Approx cost for <strong>{checkNoOfGuest}</strong> guests:
-                <strong>₹{totalEstimate.toLocaleString()}</strong>
+                <strong> ₹{totalEstimate.toLocaleString()}</strong>
               </p>
             ) : (
               <p>
                 Flat rate cost:
-                <strong>₹{totalEstimate.toLocaleString()}</strong>
+                <strong> ₹{totalEstimate.toLocaleString()}</strong>
               </p>
             )}
           </div>
           <DialogFooter>
-            <Button onClick={handleConfirmAdd}>Confirm Add</Button>
+            <Button onClick={handleConfirmAdd} disabled={!!error}>
+              Confirm Add
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

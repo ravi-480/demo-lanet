@@ -1,8 +1,10 @@
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import EventDetailClient from "@/app/Components/Events/EventDetailClient";
+import ErrorMessage from "@/app/Components/Error/ErrorMessage";
 
 const EventDetail = async ({ params }: { params: { id: string } }) => {
+  const { id } = params;
   const cookieStore = await cookies();
   const cookieHeader = cookieStore
     .getAll()
@@ -10,40 +12,29 @@ const EventDetail = async ({ params }: { params: { id: string } }) => {
     .join("; ");
 
   try {
-    const res = await fetch(`http://localhost:5000/api/events/${params.id}`, {
+    const res = await fetch(`http://localhost:5000/api/events/${id}`, {
       headers: {
         Cookie: cookieHeader,
       },
       cache: "no-store",
     });
 
-    // Handle various response statuses
-    if (!res.ok) {
-      // For 404s use notFound
-      if (res.status === 404) {
-        return notFound();
-      }
-
-      // For other errors, show an error component
-      return (
-        <div className="p-6 text-center">
-          <h2 className="text-xl font-bold">Error loading event</h2>
-          <p>Could not load the event data. Status: {res.status}</p>
-        </div>
-      );
+    if (res.status === 404) {
+      return <ErrorMessage message={"event not found"} />;
     }
 
     const data = await res.json();
     const event = data.event;
 
+    // If no event is found in the response, trigger notFound
     if (!event) {
       return notFound();
     }
 
-    return <EventDetailClient id={params.id} />;
+    // Return the client-side component with event details
+    return <EventDetailClient id={id} />;
   } catch (error) {
     console.error("Fetch error:", error);
-    // For network errors, show an error component
     return (
       <div className="p-6 text-center">
         <h2 className="text-xl font-bold">Error loading event</h2>

@@ -5,6 +5,7 @@ import { buildEventData, uploadImageToCloudinary } from "../utils/eventBuild";
 import Vendor from "../models/vendorModel";
 import { AuthenticatedRequest } from "../interfaces/user.interface";
 import ApiError from "../utils/ApiError";
+import mongoose from "mongoose";
 
 export const createEvent = asyncHandler(
   async (req: AuthenticatedRequest, res: Response) => {
@@ -31,7 +32,6 @@ export const createEvent = asyncHandler(
 
     const eventData = buildEventData(req.body, image, req.user.id);
 
-
     try {
       const newEvent = await Event.create(eventData);
       return res.status(201).json({
@@ -50,7 +50,8 @@ export const fetchEvents = async (
   res: Response
 ): Promise<void> => {
   try {
-    // Ensure cookies are available
+    console.log("fetching");
+
     if (!req.cookies || !req.cookies.user) {
       res
         .status(401)
@@ -83,23 +84,45 @@ export const fetchEvents = async (
   }
 };
 
-export const fetchById = async (req: Request, res: Response) => {
+export const fetchById = asyncHandler(async (req: Request, res: Response) => {
   try {
     const eventId = req.params.id;
+
     if (!eventId) {
-      throw new ApiError(400, "Event ID is required");
+      return res.status(400).json({
+        success: false,
+        message: "Event ID is required",
+      });
     }
-    const event = await Event.findById(eventId).lean();
+
+    // Validate MongoDB ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(404).json({
+        success: false,
+        message: "Invalid event ID format or Event Not Found",
+      });
+    }
+
+    const event = await Event.findById(eventId);
+    console.log(event);
 
     if (!event) {
-      throw new ApiError(404, "Event Not Found");
+      return res.status(404).json({
+        success: false,
+        message: "Event Not Found",
+      });
     }
-    res.status(200).json({ success: true, event });
-  } catch (error: any) {
-    throw new ApiError(500, "Failed to fetch Event");
-  }
-};
 
+    return res.status(200).json({ success: true, event });
+  } catch (error: any) {
+    console.error("Event fetch error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch Event",
+      error: error.message,
+    });
+  }
+});
 // edit event
 export const updateEvent = asyncHandler(
   async (req: AuthenticatedRequest, res: Response) => {

@@ -31,16 +31,13 @@ api.interceptors.response.use(
 
     // TRUE server/network error
     if (!error.response) {
-      // Silent toast for better user experience
       toast.error("Server might be down. Please try again later.", {
         id: "server-down", // Using an ID prevents duplicate toasts
       });
 
-      // Throw custom error but don't console.log it
       return Promise.reject(new Error("SERVER_DOWN"));
     }
 
-    // Handle unauthorized + token refresh
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
