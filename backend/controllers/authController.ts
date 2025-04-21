@@ -49,7 +49,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 1*60 * 1000,
+    maxAge: 40*60 * 1000,
     path: "/",
   });
 
@@ -84,7 +84,7 @@ export const refreshToken = asyncHandler(
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 15 * 60 * 1000,
+      maxAge: 40 * 60 * 1000,
       path: "/",
     });
 

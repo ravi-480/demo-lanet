@@ -442,12 +442,7 @@ export const responseInvite = asyncHandler(
       return res.status(200).json({
         success: true,
         message: `RSVP ${guest.status}`,
-        // guest: {
-        //   id: guest._id,
-        //   name: guest.name,
-        //   email: guest.email,
-        //   status: guest.status,
-        // },
+    
       });
     } catch (error) {
       console.error("Error processing RSVP response:", error);

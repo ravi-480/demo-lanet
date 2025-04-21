@@ -4,7 +4,6 @@ import { Bell, Calendar, User } from "lucide-react";
 import { AuthButtons } from "./AuthButton";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
-import { logout } from "@/store/authSlice";
 import NotificationLoader from "@/store/NotificationLoader";
 
 import {
@@ -12,14 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import axios from "axios";

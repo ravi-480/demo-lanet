@@ -11,8 +11,20 @@ export const useSocket = () => {
   const { user } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    const socket = io("http://localhost:5000", { withCredentials: true });
+    const socket = io("http://localhost:5000", {
+      transports: ["websocket"],
+      withCredentials: true,
+      reconnection: true,
+      reconnectionAttempts: 3,
+      reconnectionDelay: 2000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000,
+    });
     socketRef.current = socket;
+
+    socket.on("reconnect_attempt",(attempt)=>{
+      
+    })
 
     socket.on("connect", () => {
       console.log(" Socket connected:", socket.id);
@@ -29,11 +41,11 @@ export const useSocket = () => {
     });
 
     socket.on("connect_error", (err) => {
-      console.error("Socket connection error:", err);
+      console.log("Socket connection error:", err);
     });
 
     return () => {
-      console.log(" Disconnecting socket");
+      socket.off("new-notification");
       socket.disconnect();
     };
   }, [user?.id, dispatch]);

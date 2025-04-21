@@ -84,10 +84,10 @@ const GuestList = ({
 
   return (
     <>
-      <div className="rounded-md border ">
-        <Table>
+      <div className="rounded-md border-gray-500 border">
+        <Table >
           <TableHeader>
-            <TableRow>
+            <TableRow className="hover:bg-transparent text-gray-200">
               <TableHead className="w-[250px]">Name</TableHead>
               <TableHead>Contact</TableHead>
               <TableHead>Status</TableHead>
@@ -97,7 +97,7 @@ const GuestList = ({
           <TableBody>
             {guests.length > 0 ? (
               guests.map((guest) => (
-                <TableRow key={guest._id}>
+                <TableRow key={guest._id} className="hover:bg-gray-900/40">
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <div className="font-medium">{guest.name}</div>
@@ -133,7 +133,7 @@ const GuestList = ({
       </div>
 
       <CardFooter className="flex justify-between mt-4">
-        <div className="text-sm text-muted-foreground">
+        <div className="text-sm text-gray-300">
           Showing {guests.length} of {totalGuests} guests
         </div>
         <div className="flex gap-1">

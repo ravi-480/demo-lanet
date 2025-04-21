@@ -105,7 +105,6 @@ export const getVendorsByEvent = asyncHandler(
 export const getByUser = asyncHandler(async (req: Request, res: Response) => {
   let reqUser = req as AuthenticatedRequest;
   const userId = reqUser.user.id;
-  console.log(userId);
   
 
   if (!userId) {
@@ -128,7 +127,6 @@ export const addVendorInSplitOrRemove = asyncHandler(
 
     const vendor = await Vendor.findById(vendorId);
     if (!vendor) return res.status(404).json({ message: "Event not found" });
-    console.log(vendor);
 
     vendor.isIncludedInSplit = !vendor.isIncludedInSplit;
 
@@ -162,7 +160,6 @@ export const addUserInSplit = asyncHandler(
 
 export const sendMailToUser = asyncHandler(async (req, res) => {
   const { recipients, amounts, eventId, userId } = req.body;
-  console.log(eventId, userId);
 
   try {
     for (let i = 0; i < recipients.length; i++) {
@@ -214,7 +211,6 @@ export const removeAddedVendor = asyncHandler(
       { new: true }
     );
 
-    console.log(updatedEvent);
 
     if (!updatedEvent)
       return res
@@ -283,7 +279,6 @@ export const removeFromSplit = asyncHandler(
 
     const event = await Event.findById(id);
     if (!event) return res.status(404).json({ message: "Event not found" });
-    console.log(userId);
 
     event.includedInSplit = event?.includedInSplit.filter(
       (person: any) => person._id.toString() !== userId

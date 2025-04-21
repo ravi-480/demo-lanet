@@ -70,17 +70,26 @@ const SplitOverviewClient = () => {
     setValue,
   } = useForm<SplitUser>();
 
-  // Function to refresh event data
   const refreshEventData = async () => {
-    if (id) {
-      setIsLoading(true);
-      try {
-        await dispatch(fetchById(id as string)).unwrap();
-      } catch (error) {
-        console.error("Failed to refresh event data:", error);
-      } finally {
-        setIsLoading(false);
+    if (!id) return;
+
+    setIsLoading(true);
+    try {
+      await dispatch(fetchById(id as string)).unwrap();
+    } catch (error: any) {
+      const errMsg = error?.message || error?.toString();
+
+      if (
+        errMsg.includes("Authentication required") ||
+        errMsg.includes("401") ||
+        errMsg.includes("Unauthorized")
+      ) {
+        return;
       }
+
+      console.error("Failed to refresh event data:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 

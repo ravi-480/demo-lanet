@@ -5,5 +5,9 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <AuthGuard>{children}</AuthGuard>;
+  return (
+    <AuthGuard>
+      {children}
+    </AuthGuard>
+  );
 }

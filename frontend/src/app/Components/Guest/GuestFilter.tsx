@@ -58,18 +58,20 @@ const GuestFilters = ({
           onChange={(e) => setSearchFilter(e.target.value)}
           type="search"
           placeholder="Search guests..."
-          className="pl-8 h-9 md:w-64"
+          className="pl-8 h-9 border-gray-500 md:w-64"
         />
       </div>
 
-      <Button onClick={handleInvite}>Send Mail All</Button>
+      <Button className="bg-cyan-400/50 text-gray-100" onClick={handleInvite}>
+        Send Mail All
+      </Button>
 
-      <div className="flex gap-2">
-        <Select
+      <div className="flex items-center  gap-2">
+        <Select 
           value={statusFilter}
           onValueChange={(value) => setStatusFilter(value)}
         >
-          <SelectTrigger className="w-[130px] h-9">
+          <SelectTrigger className="w-[130px] border-gray-500 text-gray-300 h-9">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -80,9 +82,7 @@ const GuestFilters = ({
           </SelectContent>
         </Select>
 
-        <Button variant="ghost" size="icon" className="h-9 w-9">
-          <Filter size={15} />
-        </Button>
+          <Filter className="text-gray-400 " size={25} />
       </div>
     </div>
   );

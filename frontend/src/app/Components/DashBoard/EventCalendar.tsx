@@ -12,7 +12,6 @@ const EventCalendar = () => {
       try {
         return parseISO(event?.date?.toString());
       } catch (error) {
-        console.log(error);
         return null;
       }
     })
@@ -24,7 +23,8 @@ const EventCalendar = () => {
         darken: (day) => dataArr.some((darkDate) => isSameDay(day, darkDate!)),
       }}
       modifiersClassNames={{
-        darken: "text-gray-500 bg-gray-950 rounded-full",
+        darken:
+          "text-gray-100 bg-cyan-300/50 hover:bg-cyan-300/40 hover:text-white rounded-5xl",
       }}
       className="rounded-lg border "
     />

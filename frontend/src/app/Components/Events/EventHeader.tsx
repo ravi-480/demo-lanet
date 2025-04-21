@@ -21,14 +21,21 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 const EventHeader = ({ event }: { event: IEvent }) => {
   const formattedDate = formatDate(event.date.toString());
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const handleDelete = () => {
-    dispatch(deleteEvent(event._id));
-    router.push("/events");
+    dispatch(deleteEvent(event._id))
+      .unwrap()
+      .then(() => {
+        toast.success("Event Deleted successfuly"), router.push("/events");
+      })
+      .catch((err) => {
+        toast.error("error", err);
+      });
   };
 
   const [open, setOpen] = useState(false);

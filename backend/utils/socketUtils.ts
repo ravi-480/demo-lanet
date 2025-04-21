@@ -26,16 +26,20 @@ export const initializeSocketIP = (httpServer: HttpServer) => {
     socket.on("disconnect", () => {
       console.log("Client disconnected:", socket.id);
     });
-
     socket.on("notify-organizer", async (data) => {
       try {
         const { eventId, senderId, type, message, metadata } = data;
 
+        // Ensure event exists
         const event = await Event.findById(eventId);
-        if (!event) return;
+        if (!event) {
+          console.log("Event not found:", eventId);
+          return;
+        }
 
         const organizerId = event.creator.toString();
 
+        // Create a new notification
         const notification = await Notification.create({
           userId: organizerId,
           eventId,
@@ -44,6 +48,7 @@ export const initializeSocketIP = (httpServer: HttpServer) => {
           metadata: { ...metadata, senderId },
         });
 
+        // Emit the notification to the specific user's room
         io.to(`user:${organizerId}`).emit("new-notification", notification);
         socket.emit("notification-sent", { success: true, notification });
 
@@ -62,3 +67,7 @@ export const initializeSocketIP = (httpServer: HttpServer) => {
 };
 
 export const getIO = () => io;
+
+
+
+

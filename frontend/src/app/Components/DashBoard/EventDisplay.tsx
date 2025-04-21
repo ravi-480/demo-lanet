@@ -24,16 +24,24 @@ const EventDisplay: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
 
   useEffect(() => {
+    let retryTimeout: any;
+
     const loadEvents = async () => {
       try {
         await dispatch(fetchEvents()).unwrap();
       } catch (err) {
-        console.error("Failed to fetch events:", err);
+
+        retryTimeout = setTimeout(() => loadEvents(), 10000); // Retry after 10 seconds
       } finally {
         setIsInitialized(true);
       }
     };
+
     loadEvents();
+
+    return () => {
+      if (retryTimeout) clearTimeout(retryTimeout);
+    };
   }, [dispatch]);
 
   const now = new Date().getTime();

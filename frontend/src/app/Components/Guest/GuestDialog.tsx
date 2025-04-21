@@ -22,7 +22,11 @@ import {
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/store/store";
-import { addSingleGuest, fetchGuests, updateSingleGuest } from "@/store/rsvpSlice";
+import {
+  addSingleGuest,
+  fetchGuests,
+  updateSingleGuest,
+} from "@/store/rsvpSlice";
 import { toast } from "sonner";
 
 interface GuestDialogProps {
@@ -33,12 +37,12 @@ interface GuestDialogProps {
   setEditGuest: (guest: any | null) => void;
 }
 
-const GuestDialog = ({ 
-  eventId, 
-  isOpen, 
-  setIsOpen, 
-  editGuest, 
-  setEditGuest 
+const GuestDialog = ({
+  eventId,
+  isOpen,
+  setIsOpen,
+  editGuest,
+  setEditGuest,
 }: GuestDialogProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const isEditing = Boolean(editGuest);
@@ -103,13 +107,16 @@ const GuestDialog = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => {
-      setIsOpen(open);
-      if (!open) {
-        setEditGuest(null);
-        reset();
-      }
-    }}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open);
+        if (!open) {
+          setEditGuest(null);
+          reset();
+        }
+      }}
+    >
       <DialogTrigger asChild>
         <Button size="sm" className="flex items-center gap-1">
           <PlusCircle size={16} />
@@ -180,11 +187,7 @@ const GuestDialog = ({
             </div>
           </div>
           <DialogFooter>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={handleClose}
-            >
+            <Button type="button" variant="ghost" onClick={handleClose}>
               Cancel
             </Button>
             <Button type="submit">

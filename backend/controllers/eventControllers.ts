@@ -4,23 +4,18 @@ import { asyncHandler } from "../utils/asyncHandler";
 import { buildEventData, uploadImageToCloudinary } from "../utils/eventBuild";
 import Vendor from "../models/vendorModel";
 import { AuthenticatedRequest } from "../interfaces/user.interface";
-
+import ApiError from "../utils/ApiError";
 
 export const createEvent = asyncHandler(
   async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user || !req.user.id) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized: User not authenticated",
-      });
+      throw new ApiError(401, "Unauthorized: User not authenticated");
     }
 
     const requiredFields = ["name", "date", "location", "description"];
     for (const field of requiredFields) {
       if (!req.body[field]) {
-        return res
-          .status(400)
-          .json({ success: false, message: `Missing field: ${field}` });
+        throw new ApiError(400, `Missing field,:${field}`);
       }
     }
 
@@ -30,16 +25,12 @@ export const createEvent = asyncHandler(
       try {
         image = await uploadImageToCloudinary(req.file);
       } catch (error) {
-        return res.status(500).json({
-          success: false,
-          message: "Failed to upload image",
-        });
+        throw new ApiError(500, "failed to upload image");
       }
     }
 
     const eventData = buildEventData(req.body, image, req.user.id);
 
-    console.log(eventData);
 
     try {
       const newEvent = await Event.create(eventData);
@@ -49,13 +40,7 @@ export const createEvent = asyncHandler(
         data: newEvent,
       });
     } catch (error: any) {
-      console.log(error);
-
-      return res.status(500).json({
-        success: false,
-        message: "Error creating event",
-        error: error.message,
-      });
+      throw new ApiError(500, "Error in creating events");
     }
   }
 );
@@ -78,15 +63,13 @@ export const fetchEvents = async (
     try {
       userData = JSON.parse(req.cookies.user);
     } catch (error) {
-      res.status(400).json({ success: false, message: "Invalid user data" });
-      return;
+      throw new ApiError(400, "Invalid user data");
     }
 
     const userId = userData?.id; // MongoDB uses `_id`
 
     if (!userId) {
-      res.status(401).json({ success: false, message: "Unauthorized" });
-      return;
+      throw new ApiError(401, "Unauthorized");
     }
 
     // Fetch only events created by this user
@@ -95,15 +78,8 @@ export const fetchEvents = async (
       .lean();
 
     res.status(200).json({ success: true, events });
-    return;
   } catch (error: any) {
-    console.error("Error fetching events:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch events",
-      error: error.message,
-    });
-    return;
+    throw new ApiError(500, "Failed to fetch events");
   }
 };
 
@@ -111,32 +87,27 @@ export const fetchById = async (req: Request, res: Response) => {
   try {
     const eventId = req.params.id;
     if (!eventId) {
-      res.status(400).json({ success: false, meesage: "Event ID is required" });
-      return;
+      throw new ApiError(400, "Event ID is required");
     }
     const event = await Event.findById(eventId).lean();
 
     if (!event) {
-      res.status(404).json({ success: false, message: "Event Not Found" });
+      throw new ApiError(404, "Event Not Found");
     }
     res.status(200).json({ success: true, event });
   } catch (error: any) {
-    console.log("Error fetching Event By Id", error);
-    res.status(500).json({ success: false, message: "Failed to fetch Event" });
+    throw new ApiError(500, "Failed to fetch Event");
   }
 };
 
 // edit event
-
 export const updateEvent = asyncHandler(
   async (req: AuthenticatedRequest, res: Response) => {
     const { eventId } = req.body;
-    console.log(req.body);
 
-    if (!eventId)
-      return res
-        .status(400)
-        .json({ success: false, message: "Missing EventID" });
+    if (!eventId) {
+      throw new ApiError(400, "Missing EventID");
+    }
 
     let image = "";
 
@@ -144,9 +115,7 @@ export const updateEvent = asyncHandler(
       try {
         image = await uploadImageToCloudinary(req.file);
       } catch (error) {
-        return res
-          .status(500)
-          .json({ success: false, message: "Failed to upload image" });
+        throw new ApiError(500, "Failed to upload image");
       }
     }
     const updatedData = buildEventData(req.body, image || undefined);
@@ -157,10 +126,7 @@ export const updateEvent = asyncHandler(
       });
 
       if (!updatedEvent) {
-        return res.status(404).json({
-          success: false,
-          message: "Event not found",
-        });
+        throw new ApiError(404, "Event not found");
       }
 
       return res.status(200).json({
@@ -168,9 +134,7 @@ export const updateEvent = asyncHandler(
         message: "Event updated successfully",
       });
     } catch (error) {
-      res
-        .status(500)
-        .json({ success: false, message: "Failed to update data" });
+      throw new ApiError(500, "Failed to update data");
     }
   }
 );
@@ -179,19 +143,15 @@ export const updateEvent = asyncHandler(
 
 export const deleteEvent = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-  console.log(id);
 
-  if (!id)
-    return res.status(400).json({ success: false, message: "Missing EventID" });
+  if (!id) throw new ApiError(400, "Missing EventID");
 
   const deletedEvent = await Event.findByIdAndDelete(id);
 
   const deletedVendor = await Vendor.deleteMany({ event: id });
 
   if (!deletedEvent && !deletedVendor)
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to delete an event" });
+    throw new ApiError(500, "Failed to delete an event");
 
   return res
     .status(201)

@@ -71,10 +71,10 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
 
       <GuestStats guests={rsvpData} />
 
-      <Card>
+      <Card className="bg-gray-800 border-gray-400">
         <CardHeader className="pb-3">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-            <CardTitle className="flex items-center gap-3">
+            <CardTitle className="flex items-center text-gray-200 gap-3">
               <h3>Guest List</h3>
               <span>
                 <RefreshCcw
@@ -108,7 +108,7 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
             eventId={eventId}
             onEdit={(guest) => {
               setEditGuest(guest);
-              setIsAddGuestOpen(true);
+              setTimeout(() => setIsAddGuestOpen(true), 0);
             }}
           />
         </CardContent>

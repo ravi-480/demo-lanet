@@ -82,7 +82,6 @@ const EventForm: React.FC<EventFormProps> = ({
 
   const submitHandler = (data: EventFormValues) => {
     const formData = new FormData();
-    console.log("sdsdsds", data);
 
     Object.entries(data).forEach(([key, value]) =>
       formData.append(key, String(value))

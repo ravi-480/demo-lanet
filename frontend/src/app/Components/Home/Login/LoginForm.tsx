@@ -67,7 +67,6 @@ export default function LoginForm() {
 
   const onSubmit = async (values: { email: string; password: string }) => {
     const response = await dispatch(loginUser(values));
-    console.log("sdsdsdsdsd", response);
     if (response.type === "auth/login/fulfilled") {
       toast.success("Login successfull");
     } else {

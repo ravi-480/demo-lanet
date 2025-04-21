@@ -43,7 +43,6 @@ export const handleSendRequest = async (
     eventId: number;
   }[]
 ) => {
-  console.log(usersWithCost);
 
   const recipients = usersWithCost.map((user: any) => user.email);
   const amounts = usersWithCost.map((user: any) => user.amount);
@@ -59,7 +58,6 @@ export const handleSendRequest = async (
         userId,
       }
     );
-    console.log("Success:", res.data.message);
     alert("Emails sent!");
   } catch (err: any) {
     console.error("Failed to send email", err);

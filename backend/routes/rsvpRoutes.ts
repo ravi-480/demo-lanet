@@ -25,3 +25,5 @@ router.post("/sendReminder",sendReminder)
 // validate url
 router.get("/rsvp/validate",validateUrl)
 export default router;
+
+

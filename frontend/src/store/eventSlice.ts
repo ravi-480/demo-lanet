@@ -1,7 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import axios from "axios";
+import axios from "@/utils/axiosConfig";
 import type { RootState } from "./store";
-import Cookies from "js-cookie";
 import { IEvent } from "@/Interface/interface";
 
 interface EventState {
@@ -18,12 +17,13 @@ const initialState: EventState = {
   error: null,
 };
 
-export const storeEvent = createAsyncThunk(
-  "events/storeEvent",
+// creating new events
+export const createEvent = createAsyncThunk(
+  "events/createEvent",
   async (eventData: FormData, { rejectWithValue, getState }) => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/events",
+        "/events/create-new-event",
         eventData,
         {
           withCredentials: true,
@@ -46,7 +46,7 @@ export const fetchEvents = createAsyncThunk(
   "events/fetchEvents",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("http://localhost:5000/api/events", {
+      const response = await axios.get("/events", {
         withCredentials: true,
       });
       return response.data.events;
@@ -65,7 +65,7 @@ export const fetchById = createAsyncThunk(
   async (id: string, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/events/${id}`,
+        `/events/${id}`,
         {
           withCredentials: true,
         }
@@ -87,7 +87,7 @@ export const updateEvent = createAsyncThunk(
   async (data: FormData, { rejectWithValue }) => {
     try {
       const response = await axios.put(
-        `http://localhost:5000/api/events/updateEvent`,
+        `/events/updateEvent`,
         data,
         {
           headers: {
@@ -96,7 +96,8 @@ export const updateEvent = createAsyncThunk(
           withCredentials: true,
         }
       );
-      console.log("updated successfully");
+
+      return response.data;
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to update event"
@@ -112,11 +113,13 @@ export const deleteEvent = createAsyncThunk(
   async (id: string, { rejectWithValue }) => {
     try {
       const response = await axios.delete(
-        `http://localhost:5000/api/events/deleteEvent/${id}`,
+        `/events/deleteEvent/${id}`,
         {
           withCredentials: true,
         }
       );
+
+      return response.data;
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to delete Event"
@@ -160,17 +163,19 @@ const eventSlice = createSlice({
             : "Failed to fetch events";
       })
 
-      // Store event
-      .addCase(storeEvent.pending, (state) => {
+      // create event
+      .addCase(createEvent.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(storeEvent.fulfilled, (state, action: PayloadAction<IEvent>) => {
-        state.isLoading = false;
-        state.events.unshift(action.payload);
-      })
-      .addCase(storeEvent.rejected, (state, action) => {
-        console.log("kya dikat", action.payload);
+      .addCase(
+        createEvent.fulfilled,
+        (state, action: PayloadAction<IEvent>) => {
+          state.isLoading = false;
+          state.events.unshift(action.payload);
+        }
+      )
+      .addCase(createEvent.rejected, (state, action) => {
 
         state.isLoading = false;
         state.error =
@@ -201,9 +206,13 @@ const eventSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(updateEvent.fulfilled, (state, action) => {
-        state.isLoading = false;
-      })
+      .addCase(
+        updateEvent.fulfilled,
+        (state, action: PayloadAction<string>) => {
+
+          state.isLoading = false;
+        }
+      )
       .addCase(updateEvent.rejected, (state, action) => {
         state.isLoading = false;
         state.error =
@@ -217,9 +226,12 @@ const eventSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(deleteEvent.fulfilled, (state, action) => {
-        state.isLoading = false;
-      })
+      .addCase(
+        deleteEvent.fulfilled,
+        (state, action: PayloadAction<string>) => {
+          state.isLoading = false;
+        }
+      )
       .addCase(deleteEvent.rejected, (state, action) => {
         state.isLoading = false;
         state.error =
@@ -236,6 +248,7 @@ export const { clearEventErrors, resetEventState } = eventSlice.actions;
 export const selectEvents = (state: RootState) => state.event.events || [];
 export const selectEventLoading = (state: RootState) => state.event.isLoading;
 export const selectEventError = (state: RootState) => state.event.error;
+
 // single event
 export const singleEvent = (state: RootState) => state.event.singleEvent;
 

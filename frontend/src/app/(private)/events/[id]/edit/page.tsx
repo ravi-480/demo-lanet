@@ -2,16 +2,17 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch } from "@/store/store";
+import { AppDispatch, RootState } from "@/store/store";
 import { useEffect } from "react";
-import { fetchById, singleEvent, updateEvent } from "@/store/eventSlice";
+import { fetchById, updateEvent } from "@/store/eventSlice";
 import EventForm from "@/app/Components/Form/EventForm";
+import { toast } from "sonner";
 
 const EditEvent = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const event = useSelector(singleEvent);
+  const { singleEvent: event } = useSelector((state: RootState) => state.event);
 
   useEffect(() => {
     if (!event || event._id !== id) {
@@ -19,11 +20,15 @@ const EditEvent = () => {
     }
   }, [dispatch, id, event]);
 
-  const handleUpdate = (formData: FormData) => {
+  const handleUpdate = async (formData: FormData) => {
     dispatch(updateEvent(formData))
       .unwrap()
-      .then(() => router.push("/events"))
-      .catch(console.error);
+      .then(() => {
+        toast.success("Event update successfuly"), router.push("/events");
+      })
+      .catch((err: any) => {
+        toast.error(err?.message || "Failed to update event");
+      });
   };
 
   if (!event) return <p className="text-white">Loading...</p>;
