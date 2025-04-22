@@ -1,29 +1,28 @@
 "use client";
 
 import Budget from "../../Components/DashBoard/Budget";
-import SideBar from "../../Components/DashBoard/SideBar";
 import Testimonials from "../../Components/DashBoard/Testimonial";
 import EventDisplay from "../../Components/DashBoard/EventDisplay";
 import Welcome from "../../Components/DashBoard/Welcome";
+import EventCalendar from "@/app/Components/DashBoard/EventCalendar";
 
 const Dashboard = () => {
   return (
-    <div className="min-h-screen bg-gray-900">
-      <div className="container mx-auto px-4 py-8">
-        <Welcome />
+    <div className="min-h-screen px-4 sm:px-6 md:px-8 lg:px-16 py-4 sm:py-7 bg-gray-900">
+      <Welcome />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2">
+      <div className="w-full mb-6">
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex-grow">
             <EventDisplay />
-
-            <Budget />
           </div>
-
-          <SideBar />
+          <EventCalendar />
         </div>
-
-        <Testimonials />
       </div>
+      
+      <Budget />
+      
+      <Testimonials />
     </div>
   );
 };

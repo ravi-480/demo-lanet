@@ -67,63 +67,65 @@ const Budget = () => {
   );
 
   return (
-    <>
-      <h1>Recent Expenses</h1>
-      <Table className="table-fixed w-full">
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="text-white">Date</TableHead>
-            <TableHead className="text-white w-1/3">Name</TableHead>
-            <TableHead className="text-white w-1/6">Category</TableHead>
-            <TableHead className="text-white w-1/6">Amount</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {currentItems.map((vendor, index) => (
-            <TableRow
-              key={vendor._id || `vendor-${index}`}
-              className="hover:bg-transparent"
-            >
-              <TableCell>{formatDate(vendor.createdAt)}</TableCell>
-              <TableCell className="w-1/3 overflow-hidden text-ellipsis">
-                {vendor.title}
-              </TableCell>
-              <TableCell className="w-1/6">
-                {vendor.category || "N/A"}
-              </TableCell>
-              <TableCell className="w-1/6">₹ {vendor.price || 0}</TableCell>
+    <div >
+      <h1 className="pl-4 mb-2">Recent Expenses</h1>
+      <div className="border border-gray-400 p-4 rounded-lg">
+        <Table className="table-fixed w-full">
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="text-white">Date</TableHead>
+              <TableHead className="text-white w-1/3">Name</TableHead>
+              <TableHead className="text-white w-1/6">Category</TableHead>
+              <TableHead className="text-white w-1/6">Amount</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {currentItems.map((vendor, index) => (
+              <TableRow
+                key={vendor._id || `vendor-${index}`}
+                className="hover:bg-transparent"
+              >
+                <TableCell>{formatDate(vendor.createdAt)}</TableCell>
+                <TableCell className="w-1/3 overflow-hidden text-ellipsis">
+                  {vendor.title}
+                </TableCell>
+                <TableCell className="w-1/6">
+                  {vendor.category || "N/A"}
+                </TableCell>
+                <TableCell className="w-1/6">₹ {vendor.price || 0}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
 
-      {/* Pagination controls */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-4 mt-4">
-          <Button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-            variant="secondary"
-            size="sm"
-          >
-            Previous
-          </Button>
-          <span className="text-sm">
-            Page {currentPage} of {totalPages}
-          </span>
-          <Button
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-            }
-            disabled={currentPage === totalPages}
-            variant="secondary"
-            size="sm"
-          >
-            Next
-          </Button>
-        </div>
-      )}
-    </>
+        {/* Pagination controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-4 mt-4">
+            <Button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              variant="secondary"
+              size="sm"
+            >
+              Previous
+            </Button>
+            <span className="text-sm">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}
+              variant="secondary"
+              size="sm"
+            >
+              Next
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

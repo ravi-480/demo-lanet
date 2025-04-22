@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -50,39 +50,43 @@ const GuestFilters = ({
   };
 
   return (
-    <div className="flex flex-col sm:flex-row gap-2">
-      <div className="relative">
+    <div className="flex flex-col sm:flex-row flex-wrap gap-2 w-full">
+      <div className="relative flex-grow max-w-full sm:max-w-xs">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
         <Input
           value={searchFilter}
           onChange={(e) => setSearchFilter(e.target.value)}
           type="search"
           placeholder="Search guests..."
-          className="pl-8 h-9 border-gray-500 md:w-64"
+          className="pl-8 h-9 border-gray-400 text-gray-200 w-full"
         />
       </div>
 
-      <Button className="bg-cyan-400/50 text-gray-100" onClick={handleInvite}>
-        Send Mail All
-      </Button>
+      <div className="flex gap-2">
+        <Button
+          size="sm"
+          className="bg-cyan-600 hover:bg-cyan-700 text-white"
+          onClick={handleInvite}
+          disabled={pendingGuests.length === 0}
+        >
+          <Mail className="mr-1 h-4 w-4" />
+          <span className="hidden xs:inline">Invite All</span>
+        </Button>
 
-      <div className="flex items-center  gap-2">
-        <Select 
+        <Select
           value={statusFilter}
           onValueChange={(value) => setStatusFilter(value)}
         >
-          <SelectTrigger className="w-[130px] border-gray-500 text-gray-300 h-9">
+          <SelectTrigger className="w-[115px] border-gray-500 text-gray-300 h-9">
+            <Filter className="h-4 w-4 mr-1" />
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="Confirmed">Confirmed</SelectItem>
             <SelectItem value="Pending">Pending</SelectItem>
             <SelectItem value="Declined">Declined</SelectItem>
           </SelectContent>
         </Select>
-
-          <Filter className="text-gray-400 " size={25} />
       </div>
     </div>
   );

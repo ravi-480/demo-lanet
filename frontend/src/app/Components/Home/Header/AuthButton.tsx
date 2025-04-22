@@ -26,7 +26,10 @@ export const AuthButtons = () => {
     <div className="flex items-center gap-4">
       <span className="text-white">{user?.name}</span>
       <Button
-        onClick={() => dispatch(logout())}
+        onClick={async () => {
+          await dispatch(logout());
+          window.location.reload();
+        }}
         className="bg-red-500 cursor-pointer hover:bg-red-600"
       >
         Logout

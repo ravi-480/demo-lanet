@@ -1,7 +1,7 @@
 import { Testimonial } from "@/Interface/interface";
-import { SliderImage } from "@/Types/type";
+// import { SliderImage } from "@/Types/type";
 
-const images: SliderImage[] = [
+const images = [
   {
     id: "home-image-1",
     src: "/images/home-image-1.jpeg",
@@ -29,12 +29,12 @@ export const featureSections = [
     reverse: false,
   },
   {
-    title: "Vendor Search",
+    title: "Guest Management",
     description:
-      "The vendor search functionality includes filters, gallery/map views, and quick-add options for efficient vendor selection. Users can easily find and add vendors to their events, enhancing the planning process with a user-friendly interface.",
-    imageUrl: "/images/gallery-image-2.jpeg",
-    imageAlt: "Apple blossoms in spring",
-    reverse: true,
+      "The guest management section allows users to track RSVP status with color-coded indicators and easily sort through the guest list. This feature streamlines the process of managing attendees and ensures a seamless experience for event planners.",
+    imageUrl: "/images/guest-image.jpeg",
+    imageAlt: "guest management",
+    reverse: false,
   },
 ];
 
@@ -62,27 +62,6 @@ export const testimonials: Testimonial[] = [
     quote:
       '"The guest management system eliminated the stress of chasing RSVPs. The automated reminders were professional and effective!"',
     author: "Priya Kapoor",
-  },
-];
-
-export const featureData = [
-  {
-    id: 1,
-    imageSrc: "/images/guest-image.jpeg",
-    title: "Guest Management",
-    description:
-      "The guest management section allows users to track RSVP status with color-coded indicators and easily sort through the guest list. This feature streamlines the process of managing attendees and ensures a seamless experience for event planners.",
-    dark: false,
-    reverse: false,
-  },
-  {
-    id: 2,
-    imageSrc: "/images/gallery-image-3.jpeg",
-    title: "Dashboard Overview",
-    description:
-      "The clean dashboard displays event cards with key details like name, date, and budget usage percentage for easy access to event information. Users can quickly navigate through events and stay organized with a visually appealing layout.",
-    dark: true,
-    reverse: true,
   },
 ];
 
@@ -237,7 +216,6 @@ export const eventVendorMapping = {
     { category: "catering", pricingUnit: "per plate" },
   ],
 };
-
 
 export const getRandomPrice = (category: string, isFlatRate = false) => {
   const normalized = category.toLowerCase();

@@ -10,7 +10,7 @@ import BudgetStats from "./BudgetStatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import BudgetFilters from "./BudgetFilters";
 import BudgetList from "./BudgetList";
-import { getVendorsByEvent } from "@/store/vendorSlice";
+import { getVendorsByEvent, removeAllVendor } from "@/store/vendorSlice";
 import Link from "next/link";
 import BudgetDialog from "./BudgetDialog";
 
@@ -29,6 +29,10 @@ const BudgetManagment = ({ eventId }: { eventId: string }) => {
       dispatch(getVendorsByEvent({ eventId }));
     }
   }, [dispatch, eventId]);
+
+  const handleRemoveAlVendor = () => {
+    dispatch(removeAllVendor({ id: eventId, query: "vendor" }));
+  };
 
   const { items, error } = useSelector((state: RootState) => state.vendors);
   const [isAddBudgetOpen, setIsAddBudgetOpen] = useState(false);
@@ -67,7 +71,7 @@ const BudgetManagment = ({ eventId }: { eventId: string }) => {
         </h1>
         <div className="flex gap-2">
           <Link href="vendor-cart/splitted-vendors">
-            <Button className="bg-cyan-400 hover:bg-cyan-500 cursor-pointer">
+            <Button className="  py-5  ">
               Go to split <ArrowRight className="ml-1" />
             </Button>
           </Link>
@@ -95,6 +99,12 @@ const BudgetManagment = ({ eventId }: { eventId: string }) => {
                 />
                 <p>sync</p>
               </span>
+              <Button
+                className="bg-red-500 hover:bg-red-600"
+                onClick={handleRemoveAlVendor}
+              >
+                Remove all vendor
+              </Button>
             </CardTitle>
             <BudgetFilters
               items={items}

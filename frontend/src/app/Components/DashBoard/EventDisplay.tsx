@@ -176,7 +176,7 @@ const EventDisplay: React.FC = () => {
                   </div>
 
                   <Link href={`/events/${event._id}`} className="mt-3">
-                    <Button className="w-full bg-amber-100 cu text-gray-900 cursor-pointer hover:bg-amber-200">
+                    <Button className="w-full bg-amber-100  text-gray-900 cursor-pointer hover:bg-amber-200">
                       View more
                     </Button>
                   </Link>

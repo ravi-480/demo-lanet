@@ -108,38 +108,40 @@ const Header = () => {
                           </p>
                         )}
 
-                        {!loading &&
-                          !error &&
-                          (!items || items.length === 0) && (
-                            <p className="text-center text-gray-500 py-4">
-                              No notifications
-                            </p>
-                          )}
-
-                        {!loading &&
-                          items &&
-                          items.map((notification) => (
-                            <div
-                              key={notification._id}
-                              className={`p-3 border-b border-gray-100 hover:bg-gray-50 ${
-                                notification.status === "unread"
-                                  ? "bg-blue-50"
-                                  : ""
-                              }`}
-                            >
-                              <p className="font-medium text-gray-800">
-                                {notification.type}
+                        {!loading && !error && (
+                          <>
+                            {items?.filter((n) => n.status === "unread")
+                              .length === 0 ? (
+                              <p className="text-center text-gray-500 py-4">
+                                No  notifications
                               </p>
-                              <p className="text-sm text-gray-600">
-                                {notification.message}
-                              </p>
-                              <p className="text-xs text-gray-400 mt-1">
-                                {new Date(
-                                  notification.createdAt
-                                ).toLocaleString()}
-                              </p>
-                            </div>
-                          ))}
+                            ) : (
+                              items
+                                .filter(
+                                  (notification) =>
+                                    notification.status === "unread"
+                                )
+                                .map((notification) => (
+                                  <div
+                                    key={notification._id}
+                                    className="p-3 border-b border-gray-100 hover:bg-gray-50 bg-blue-50"
+                                  >
+                                    <p className="font-medium text-cyan-900">
+                                      {notification.type}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      {notification.message}
+                                    </p>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                      {new Date(
+                                        notification.createdAt
+                                      ).toLocaleString()}
+                                    </p>
+                                  </div>
+                                ))
+                            )}
+                          </>
+                        )}
                       </div>
                     </ScrollArea>
                   </PopoverContent>

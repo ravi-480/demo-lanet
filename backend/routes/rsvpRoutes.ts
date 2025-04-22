@@ -8,7 +8,8 @@ import {
   inviteAllGuest,
   validateUrl,
   responseInvite,
-  sendReminder
+  sendReminder,
+  removeAllGuestOrVendor
 } from "../controllers/rsvpController";
 import { upload } from "../middleware/uploadMiddleware";
 const router = Router();
@@ -21,7 +22,7 @@ router.put("/:eventId/:guestId", updateGuest);
 router.post("/inviteAll",inviteAllGuest)
 router.post("/rsvp/respond",responseInvite)
 router.post("/sendReminder",sendReminder)
-
+router.delete("/removeAllGuestOrVendor",removeAllGuestOrVendor)
 // validate url
 router.get("/rsvp/validate",validateUrl)
 export default router;

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Upload } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/store/store";
 import { fetchGuests, uploadFile } from "@/store/rsvpSlice";
@@ -35,6 +36,12 @@ const GuestUpload = ({ eventId }: GuestUploadProps) => {
         toast.success("Guest file uploaded successfully");
         dispatch(fetchGuests(eventId)); // refreshing
         setFile(null); // Reset file input
+
+        // Reset file input element
+        const fileInput = document.getElementById(
+          "guest-file-upload"
+        ) as HTMLInputElement;
+        if (fileInput) fileInput.value = "";
       } else {
         toast.error("Upload failed: " + result.payload);
       }
@@ -45,15 +52,24 @@ const GuestUpload = ({ eventId }: GuestUploadProps) => {
   };
 
   return (
-    <div className="flex gap-2">
-      <Input
-        type="file"
-        onChange={handleFileChange}
-        accept=".xlsx, .xls, .csv"
-        className="max-w-64"
-      />
-      <Button disabled={!file} onClick={handleUpload}>
-        Upload
+    <div className="flex flex-wrap gap-2 max-w-xs sm:max-w-md">
+      <div className="relative flex-grow">
+        <Input
+          id="guest-file-upload"
+          type="file"
+          onChange={handleFileChange}
+          accept=".xlsx, .xls, .csv"
+          className="text-sm"
+        />
+      </div>
+      <Button
+        size="sm"
+        disabled={!file}
+        onClick={handleUpload}
+        className="whitespace-nowrap"
+      >
+        <Upload className="h-4 w-4 mr-1" />
+        <span>Upload</span>
       </Button>
     </div>
   );

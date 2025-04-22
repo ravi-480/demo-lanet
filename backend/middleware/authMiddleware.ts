@@ -42,7 +42,11 @@ export const authenticate = asyncHandler(
         }
 
         // Generate new access token
-        const newAccessToken = generateAccessToken(user.id, user.email);
+        const newAccessToken = generateAccessToken(
+          user.id,
+          user.email,
+          user.name
+        );
 
         // Set new access token in cookie
         res.cookie("token", newAccessToken, {

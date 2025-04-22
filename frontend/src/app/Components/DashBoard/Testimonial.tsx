@@ -5,7 +5,7 @@ const Testimonials: React.FC = () => {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
 
   return (
-    <div className="bg-blue-950 rounded-lg shadow-sm p-6 mt-6">
+    <div className=" border border-gray-500 rounded-lg shadow-sm p-6 mt-6">
       <h2 className="text-lg font-medium text-gray-300 mb-6">
         Success Stories
       </h2>
@@ -20,7 +20,7 @@ const Testimonials: React.FC = () => {
           >
             {testimonials2.map((testimonial, index) => (
               <div key={testimonial.id} className="w-full flex-shrink-0 px-4">
-                <div className="bg-blue-900 rounded-lg p-6">
+                <div className="bg-gray-800 rounded-lg p-6">
                   <div className="flex items-center mb-4">
                     <img
                       src={testimonial.image}

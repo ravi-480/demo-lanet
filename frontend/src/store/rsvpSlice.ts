@@ -2,8 +2,6 @@ import { Guest } from "@/Interface/interface";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
 
-
-
 interface RSVPState {
   rsvpData: Guest[];
   loading: boolean;
@@ -52,6 +50,25 @@ export const fetchGuests = createAsyncThunk(
         }
       );
       return response.data.rsvpList;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch guest list"
+      );
+    }
+  }
+);
+
+// remove all guest
+export const removeAllGuest = createAsyncThunk(
+  "rsvp/remove-guest",
+  async (data: { id: string; query: string }, { rejectWithValue }) => {
+    try {
+      console.log(data);
+
+      const response = await axios.delete(
+        `http://localhost:5000/api/guest/removeAllGuestOrVendor`,
+        { data, withCredentials: true }
+      );
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch guest list"
@@ -269,6 +286,19 @@ const rsvpSlice = createSlice({
         state.loading = false;
       })
       .addCase(sendReminder.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // remove
+      .addCase(removeAllGuest.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(removeAllGuest.fulfilled, (state) => {
+        state.loading = false;
+        state.rsvpData = []; // clear guest list on success
+      })
+      .addCase(removeAllGuest.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

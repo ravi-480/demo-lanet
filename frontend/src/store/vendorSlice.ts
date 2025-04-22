@@ -72,7 +72,6 @@ export const getVendorByUser = createAsyncThunk<
 
     return response.data;
   } catch (error: any) {
-    
     return rejectWithValue(error.response?.data || error.message || error);
   }
 });
@@ -95,12 +94,26 @@ export const removeAddedVendor = createAsyncThunk(
 export const addManualVendorExpense = createAsyncThunk(
   "vendor/addOtherExpense",
   async (data: any, { rejectWithValue }) => {
-
     try {
       const response = await axios.post(
         "http://localhost:5000/api/vendors/addManualExpense",
         data,
         { withCredentials: true }
+      );
+      return response.data;
+    } catch (error: any) {
+      rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const removeAllVendor = createAsyncThunk(
+  "vendor/removeAllVendor",
+  async (data: { id: string; query: string }, { rejectWithValue }) => {
+    try {
+      const response = await axios.delete(
+        "http://localhost:5000/api/guest/removeAllGuestOrVendor",
+        { data, withCredentials: true }
       );
       return response.data;
     } catch (error: any) {
@@ -154,6 +167,19 @@ const vendorSlice = createSlice({
       .addCase(getVendorByUser.rejected, (state, action) => {
         (state.status = "failed"),
           (state.error = action.payload || "Failed to fetch vendors by user");
+      })
+      .addCase(removeAllVendor.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(removeAllVendor.fulfilled, (state) => {
+        state.status = "succeeded";
+        state.items = []; // Clear the vendor list
+      })
+      .addCase(removeAllVendor.rejected, (state, action) => {
+        state.status = "failed";
+        state.error =
+          (action.payload as string) || "Failed to remove all vendors";
       });
   },
 });

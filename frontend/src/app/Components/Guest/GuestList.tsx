@@ -84,14 +84,14 @@ const GuestList = ({
 
   return (
     <>
-      <div className="rounded-md border-gray-500 border">
-        <Table >
+      <div className="w-full overflow-x-auto rounded-md border-gray-500 border">
+        <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent text-gray-200">
-              <TableHead className="w-[250px]">Name</TableHead>
-              <TableHead>Contact</TableHead>
+              <TableHead className="w-[180px] sm:w-[250px]">Name</TableHead>
+              <TableHead className="hidden sm:table-cell">Contact</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="w-[60px] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -99,13 +99,16 @@ const GuestList = ({
               guests.map((guest) => (
                 <TableRow key={guest._id} className="hover:bg-gray-900/40">
                   <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="font-medium">{guest.name}</div>
+                    <div className="font-medium truncate max-w-[150px] sm:max-w-full">
+                      {guest.name}
+                      <div className="text-xs text-gray-400 sm:hidden truncate">
+                        {guest.email}
+                      </div>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <div>
-                      <div className="text-sm">{guest.email}</div>
+                  <TableCell className="hidden sm:table-cell">
+                    <div className="text-sm truncate max-w-[200px]">
+                      {guest.email}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -132,11 +135,11 @@ const GuestList = ({
         </Table>
       </div>
 
-      <CardFooter className="flex justify-between mt-4">
-        <div className="text-sm text-gray-300">
+      <CardFooter className="flex flex-col sm:flex-row justify-between items-center gap-2 mt-4">
+        <div className="text-sm text-gray-300 order-2 sm:order-1">
           Showing {guests.length} of {totalGuests} guests
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-1 order-1 sm:order-2">
           <Button
             variant="outline"
             onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}

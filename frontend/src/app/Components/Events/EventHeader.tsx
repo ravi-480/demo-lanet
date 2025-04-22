@@ -8,9 +8,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/store/store";
 import { deleteEvent } from "@/store/eventSlice";
 import { useRouter } from "next/navigation";
-
 import { useState } from "react";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,51 +25,62 @@ const EventHeader = ({ event }: { event: IEvent }) => {
   const formattedDate = formatDate(event.date.toString());
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
+
   const handleDelete = () => {
     dispatch(deleteEvent(event._id))
       .unwrap()
       .then(() => {
-        toast.success("Event Deleted successfuly"), router.push("/events");
+        toast.success("Event Deleted successfully");
+        router.push("/events");
       })
       .catch((err) => {
-        toast.error("error", err);
+        toast.error("Error deleting event", err);
       });
   };
 
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="flex px-17 py-5 bg-gray-900 border mx-auto w-[95%] justify-between rounded-lg">
-      <div className="">
-        <div className="flex gap-3 items-center mb-3">
-          <h1 className="text-2xl text-white font-bold">{event.name}</h1>
-          <p className="bg-cyan-700/50 text-sm px-2 py-1 rounded-3xl ">
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 px-4 sm:px-8 py-5 bg-gray-900 border mx-auto w-[95%] rounded-lg">
+      {/* Left Section */}
+      <div className="flex flex-col space-y-2">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-xl sm:text-2xl text-white font-bold">
+            {event.name}
+          </h1>
+          <p className="bg-cyan-700/50 text-sm px-2 py-1 rounded-3xl">
             {getEventStatus(event.date)}
           </p>
         </div>
-        <div className="flex gap-3 mt-2 text-gray-300">
-          <Calendar />
+
+        <div className="flex items-center gap-2 text-gray-300 text-sm">
+          <Calendar size={16} />
           <p>{formattedDate}</p>
         </div>
-        <div className="flex gap-3 mt-2 text-gray-300">
-          <LocateIcon />
+
+        <div className="flex items-center gap-2 text-gray-300 text-sm">
+          <LocateIcon size={16} />
           <p>{event.location}, 123 Beach Road</p>
         </div>
 
-        <div className="mt-2">
+        <div>
           <Link href={`${event._id}/edit`}>
-            <Button className="cursor-pointer ">Edit Event</Button>
+            <Button className="mt-2 w-full sm:w-auto">Edit Event</Button>
           </Link>
         </div>
       </div>
 
-      <Button
-        onClick={() => setOpen(true)}
-        className="bg-red-700 hover:bg-red-900 cursor-pointer"
-      >
-        Delete <Trash />
-      </Button>
+      {/* Right Section - Delete Button */}
+      <div className="self-end sm:self-auto">
+        <Button
+          onClick={() => setOpen(true)}
+          className="bg-red-700 hover:bg-red-900 w-full sm:w-auto"
+        >
+          Delete <Trash className="ml-2" size={16} />
+        </Button>
+      </div>
 
+      {/* Confirmation Dialog */}
       <AlertDialog open={open}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -85,13 +94,13 @@ const EventHeader = ({ event }: { event: IEvent }) => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel
-              className="hover:bg-none text-black cursor-pointer"
+              className="text-black cursor-pointer"
               onClick={() => setOpen(false)}
             >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className="cursor-pointer bg-cyan-600 hover:bg-cyan-700"
+              className="bg-cyan-600 hover:bg-cyan-700 cursor-pointer"
               onClick={handleDelete}
             >
               Continue

@@ -41,12 +41,7 @@ const eventSchema = new mongoose.Schema(
       default: "upcoming",
     },
 
-    vendorsInSplit: {
-      type: [Schema.Types.ObjectId],
-      ref: "Vendor",
-      default: [],
-    },
-
+  
     includedInSplit: {
       type: [
         {

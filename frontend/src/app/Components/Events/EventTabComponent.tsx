@@ -13,7 +13,7 @@ export default function EventTabComponent({ id }: { id: string }) {
   const event = useSelector((state: RootState) => state.event.singleEvent);
 
   if (!event) {
-    return <p className="text-white text-center py-4">No event loaded.</p>;
+    return <p className="text-center py-4">No event loaded.</p>;
   }
 
   const allowedCategories =
@@ -27,14 +27,14 @@ export default function EventTabComponent({ id }: { id: string }) {
   ];
 
   return (
-    <div className="w-[95%] bg-gray-900 border mt-4 border-b rounded-2xl p-5 mx-auto">
-      <Tabs className="" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="flex gap-6 border-b-2 border-gray-300">
+    <div className="w-full sm:w-[95%] bg-gray-900 border mt-2 sm:mt-4 border-b rounded-lg sm:rounded-2xl p-3 sm:p-5 mx-auto">
+      <Tabs className="w-full" value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="flex w-full gap-2 sm:gap-6 border-b-2 border-gray-300 overflow-x-auto">
           {tabs.map(({ value, label }) => (
             <TabsTrigger
               key={value}
               value={value}
-              className={` cursor-pointer relative px-4 py-2 text-lg transition-all
+              className={`cursor-pointer relative px-2 sm:px-4 py-1 sm:py-2 text-base sm:text-lg transition-all whitespace-nowrap
                 ${activeTab === value ? "text-cyan-400" : "text-gray-400"}
                 after:absolute after:bottom-[-1px] after:border-cyan-400 after:left-0 after:w-full after:h-[3px]
                 after:bg-cyan-700 after:transition-transform
@@ -46,11 +46,11 @@ export default function EventTabComponent({ id }: { id: string }) {
           ))}
         </TabsList>
 
-        <TabsContent value="overview" className="p-4">
+        <TabsContent value="overview" className="p-2 sm:p-4">
           <EventOverView event={event} />
         </TabsContent>
 
-        <TabsContent value="vendors" className="p-4">
+        <TabsContent value="vendors" className="p-2 sm:p-4">
           <SearchVendor
             noOfDay={event.durationInDays}
             eventId={event._id}

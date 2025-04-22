@@ -21,8 +21,12 @@ const ACCESS_TOKEN_EXPIRY = "1h";
 const REFRESH_TOKEN_EXPIRY = "7d";
 
 // Generate tokens
-export const generateAccessToken = (userId: string, email: string): string => {
-  return jwt.sign({ id: userId, email }, JWT_ACCESS_SECRET, {
+export const generateAccessToken = (
+  userId: string,
+  email: string,
+  name: string
+): string => {
+  return jwt.sign({ id: userId, email, name }, JWT_ACCESS_SECRET, {
     expiresIn: ACCESS_TOKEN_EXPIRY,
   });
 };
@@ -76,7 +80,11 @@ export const login = async (
   }
 
   // Generate tokens
-  const accessToken = generateAccessToken(user._id.toString(), user.email);
+  const accessToken = generateAccessToken(
+    user._id.toString(),
+    user.email,
+    user.name
+  );
   const refreshToken = generateRefreshToken(user._id.toString());
 
   // Store refresh token in database
@@ -109,7 +117,11 @@ export const refreshAccessToken = async (
     }
 
     // Generate new tokens
-    const accessToken = generateAccessToken(user._id.toString(), user.email);
+    const accessToken = generateAccessToken(
+      user._id.toString(),
+      user.email,
+      user.name
+    );
     const refreshToken = generateRefreshToken(user._id.toString());
 
     // Update refresh token in database
@@ -202,10 +214,3 @@ export const resetPassword = async (
 
   await user.save();
 };
-
-
-
-
-
-
-

@@ -209,27 +209,88 @@ export const removeSingleGuest = asyncHandler(
           .json({ success: false, message: "Invalid Guest ID" });
       }
 
+      // 1. Delete guest
       const guest = await Guest.findByIdAndDelete(guestId);
-
       if (!guest) {
         return res
           .status(404)
           .json({ success: false, message: "Guest not found" });
       }
 
-      // Decrement guest count in event
-      await Event.findByIdAndUpdate(guest.eventId, {
-        $inc: { noOfGuestAdded: -1 },
+      // 2. Decrement guest count on event
+      const updatedEvent = await Event.findByIdAndUpdate(
+        guest.eventId,
+        { $inc: { noOfGuestAdded: -1 } },
+        { new: true }
+      );
+
+      if (!updatedEvent) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Associated event not found" });
+      }
+
+      const updatedGuestCount = updatedEvent.noOfGuestAdded;
+
+      // 3. Update vendors with pricingUnit 'per plate'
+      const vendorsToUpdate = await Vendor.find({
+        event: guest.eventId,
+        pricingUnit: "per plate",
       });
+
+      const updatePromises = vendorsToUpdate.map((vendor) => {
+        const pricePerPlate = vendor.price / vendor.numberOfGuests;
+
+        const newPrice = Math.round(pricePerPlate * updatedGuestCount);
+
+        return Vendor.findByIdAndUpdate(
+          vendor._id,
+          {
+            price: newPrice,
+            numberOfGuests: updatedGuestCount,
+          },
+          { new: true }
+        );
+      });
+
+      await Promise.all(updatePromises);
 
       return res.status(200).json({
         success: true,
-        message: "Guest removed successfully",
+        message: "Guest removed successfully and vendor prices updated.",
       });
     } catch (error) {
       console.error("Error removing guest:", error);
       return res.status(500).json({ success: false, message: "Server error" });
     }
+  }
+);
+
+export const removeAllGuestOrVendor = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id, query } = req.body;
+
+    if (!id || !query) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+    console.log(query);
+
+    if (query === "guest") {
+      await Guest.deleteMany({ eventId: id });
+      await Event.findByIdAndUpdate(id, { noOfGuestAdded: 0 });
+      return res
+        .status(200)
+        .json({ message: "All guests removed successfully" });
+    }
+
+    if (query === "vendor") {
+      await Vendor.deleteMany({ event: id });
+      return res
+        .status(200)
+        .json({ message: "All vendors removed successfully" });
+    }
+
+    return res.status(400).json({ message: "Invalid query type" });
   }
 );
 
@@ -442,7 +503,6 @@ export const responseInvite = asyncHandler(
       return res.status(200).json({
         success: true,
         message: `RSVP ${guest.status}`,
-    
       });
     } catch (error) {
       console.error("Error processing RSVP response:", error);

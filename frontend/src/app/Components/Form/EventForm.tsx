@@ -20,14 +20,20 @@ import { z } from "zod";
 import { eventTypeOptions, IEvent } from "@/Interface/interface";
 
 const eventFormSchema = z.object({
-  name: z.string().min(1, { message: "Event name is required" }),
+  name: z.string().min(1, { message: "Event name is required" }).max(40),
   date: z.string().min(1, { message: "Event Date is required " }),
-  location: z.string().min(1, { message: "Event location is required" }),
-  description: z.string().min(1, { message: "Description is required" }),
+  location: z
+    .string()
+    .min(3, { message: "Event location is required" })
+    .max(20),
+  description: z
+    .string()
+    .min(1, { message: "Description is required" })
+    .max(200),
   budget: z.coerce.number().min(0, { message: "Budget must be positive" }),
   guestLimit: z.coerce
     .number()
-    .min(0, { message: "Number of guest atleast 1" }),
+    .min(1, { message: "Number of guest atleast 1" }),
   eventType: z.string().min(1, { message: "Event type is required" }),
   durationInDays: z.coerce.number().min(1, { message: "Duration is required" }),
 });
@@ -115,7 +121,13 @@ const EventForm: React.FC<EventFormProps> = ({
           <Label className="mb-2" htmlFor="date">
             Event Date
           </Label>
-          <Input {...register("date")} id="date" type="datetime-local" />
+          <Input
+            min={new Date().toISOString().slice(0, 16)}
+            className="text-white [&::-webkit-calendar-picker-indicator]:invert"
+            {...register("date")}
+            id="date"
+            type="datetime-local"
+          />
           {errors.date && (
             <p className="text-red-500 text-sm">{errors.date.message}</p>
           )}
@@ -135,7 +147,12 @@ const EventForm: React.FC<EventFormProps> = ({
           <Label className="mb-2" htmlFor="image">
             Upload Image
           </Label>
-          <Input type="file" accept="image/*" onChange={handleImageChange} />
+          <Input
+            type="file"
+            accept="image/jpeg, image/png, image/webp"
+            className="file:text-white  "
+            onChange={handleImageChange}
+          />
           {imagePreview && (
             <div className="mt-2">
               <img

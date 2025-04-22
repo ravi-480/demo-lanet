@@ -4,7 +4,7 @@ import { isSameDay, parseISO, isFuture } from "date-fns";
 import { useSelector } from "react-redux";
 
 const EventCalendar = () => {
-  const events = useSelector(selectEvents);
+  const events = useSelector(selectEvents) || [];
 
   const dataArr = events
     .map((event) => {
@@ -18,16 +18,19 @@ const EventCalendar = () => {
     .filter((eventDate) => eventDate && isFuture(eventDate));
 
   return (
-    <Calendar
-      modifiers={{
-        darken: (day) => dataArr.some((darkDate) => isSameDay(day, darkDate!)),
-      }}
-      modifiersClassNames={{
-        darken:
-          "text-gray-100 bg-cyan-300/50 hover:bg-cyan-300/40 hover:text-white rounded-5xl",
-      }}
-      className="rounded-lg border "
-    />
+    <div className="w-full lg:w-auto h-full flex-shrink-0 lg:min-w-[320px]">
+      <Calendar
+        modifiers={{
+          darken: (day) =>
+            dataArr.some((darkDate) => isSameDay(day, darkDate!)),
+        }}
+        modifiersClassNames={{
+          darken:
+            "text-gray-100 bg-cyan-300/50 hover:bg-cyan-300/40 hover:text-white rounded-5xl",
+        }}
+        className="rounded-lg border border-gray-400 w-full  h-93"
+      />
+    </div>
   );
 };
 
