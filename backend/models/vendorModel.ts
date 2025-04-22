@@ -21,11 +21,13 @@ const vendorSchema = new Schema(
     category: { type: String, required: true },
     numberOfGuests: { type: Number, default: 1 },
     isIncludedInSplit: { type: Boolean, default: false },
+    minGuestLimit: { type: Number }, // Added this field for minimum guest requirement
     addedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
+    days: { type: Number }, // Added days field for per day pricing
   },
   { timestamps: true }
 );

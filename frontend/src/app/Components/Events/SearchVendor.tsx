@@ -16,6 +16,13 @@ import { eventVendorMapping, getRandomPrice } from "@/StaticData/Static";
 import { SearchVendorProps } from "@/Interface/interface";
 import { Input } from "@/components/ui/input";
 
+// Function to generate random min guest limit for catering vendors
+const generateMinGuestLimit = () => {
+  // Random values of 10, 20, or 40
+  const possibleLimits = [10, 20, 40];
+  return possibleLimits[Math.floor(Math.random() * possibleLimits.length)];
+};
+
 const SearchVendor = ({
   eventType,
   noOfDay,
@@ -42,6 +49,9 @@ const SearchVendor = ({
     const recommended = !!matchedCategory;
     const isCatering = matchedCategory?.toLowerCase() === "catering";
 
+    // Generate minimum guest limit only for catering vendors
+    const minGuestLimit = isCatering ? generateMinGuestLimit() : undefined;
+
     return {
       ...vendor,
       price: getRandomPrice(matchedCategory || "default", !recommended),
@@ -54,6 +64,7 @@ const SearchVendor = ({
           ? "per plate"
           : getPricingUnit(matchedCategory)
         : "flat rate",
+      minGuestLimit, // Add the minimum guest limit to the vendor object
     };
   };
 
@@ -145,6 +156,8 @@ const SearchVendor = ({
                 numberOfGuests={vendor.numberOfGuests}
                 category={vendor.category}
                 pricingUnit={vendor.pricingUnit}
+                minGuestLimit={vendor.minGuestLimit}
+                noOfDay={noOfDay}
               />
             ))}
           </div>

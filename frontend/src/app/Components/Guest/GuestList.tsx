@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +19,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { CardFooter } from "@/components/ui/card";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/store/store";
@@ -29,6 +39,7 @@ import {
 } from "@/store/rsvpSlice";
 import { toast } from "sonner";
 import { Guest } from "@/Interface/interface";
+import { VendorAlertDialog } from "./AlertCard";
 
 interface GuestListProps {
   guests: Guest[];
@@ -52,17 +63,24 @@ const GuestList = ({
   onEdit,
 }: GuestListProps) => {
   const dispatch = useDispatch<AppDispatch>();
+  const [showMinGuestAlert, setShowMinGuestAlert] = useState(false);
+  const [violatingVendors, setViolatingVendors] = useState<any[]>([]);
+  const [guestToRemove, setGuestToRemove] = useState<string>("");
 
   const handleRemoveGuest = async (guestId: string) => {
-    if (confirm("Are you sure you want to remove this guest?")) {
-      try {
-        await dispatch(removeSingleGuest(guestId));
-        toast.success("Guest removed successfully");
-        dispatch(fetchGuests(eventId));
-      } catch (error) {
-        toast.error("Failed to remove guest");
-        console.error(error);
+    try {
+      const response = await dispatch(removeSingleGuest(guestId)).unwrap();
+
+      toast.success(response.message || "Guest removed successfully");
+      dispatch(fetchGuests(eventId));
+
+      if (response.violatingVendors?.length > 0) {
+        setViolatingVendors(response.violatingVendors);
+        setShowMinGuestAlert(true);
       }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to remove guest");
+      console.error(error);
     }
   };
 
@@ -162,6 +180,12 @@ const GuestList = ({
           </Button>
         </div>
       </CardFooter>
+
+      <VendorAlertDialog
+        open={showMinGuestAlert}
+        setOpen={setShowMinGuestAlert}
+        vendors={violatingVendors}
+      />
     </>
   );
 };

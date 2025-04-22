@@ -26,7 +26,7 @@ export const getVendor = asyncHandler(async (req: Request, res: Response) => {
       q: query,
       location,
       api_key:
-        "6e635493e84ba85b663b0d0d53dd22c431b99f142910ea8064a5f7bba23f896f",
+        "b3bccdaf11dd046d844638f975547d22bc9d21ef313c4e6917b8a6f1615b52cd",
     },
   });
 
@@ -131,7 +131,6 @@ export const addVendorInSplitOrRemove = asyncHandler(
     if (!vendor) return res.status(404).json({ message: "Event not found" });
 
     vendor.isIncludedInSplit = !vendor.isIncludedInSplit;
-
 
     await vendor.save();
 

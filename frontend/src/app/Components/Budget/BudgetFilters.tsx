@@ -8,7 +8,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Filter, Search } from "lucide-react";
-import React, { useState } from "react";
 
 const BudgetFilters = ({
   searchFilter,
@@ -31,12 +30,12 @@ const BudgetFilters = ({
 
       <div className="flex gap-2">
         <Select
-        defaultValue="status"
+          defaultValue="status"
           value={priceSortOrder}
           onValueChange={(value) => setPriceSortOrder(value)}
         >
           <SelectTrigger className="w-[130px] h-9 text-white">
-            <SelectValue   placeholder="Sort by Price" />
+            <SelectValue placeholder="Sort by Price" />
           </SelectTrigger>
           <SelectContent className="bg-white mt-9  w-25 p-4 rounded-lg gap-4">
             <SelectItem className="hover:bg-gray-200" value="lowToHigh">

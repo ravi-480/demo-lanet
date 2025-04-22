@@ -13,6 +13,8 @@ import GuestStats from "./GuestStatCard";
 import GuestFilters from "./GuestFilter";
 import { Guest } from "@/Interface/interface";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { VendorAlertDialog } from "./AlertCard";
 
 const GuestManagement = ({ eventId }: { eventId: string }) => {
   const [isAddGuestOpen, setIsAddGuestOpen] = useState(false);
@@ -20,6 +22,8 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
   const [searchFilter, setSearchFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [editGuest, setEditGuest] = useState<Guest | null>(null);
+  const [showMinGuestAlert, setShowMinGuestAlert] = useState(false);
+  const [preservedVendors, setPreservedVendors] = useState<any[]>([]);
   const guestsPerPage = 10;
 
   const dispatch = useDispatch<AppDispatch>();
@@ -51,13 +55,29 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
   const indexOfFirst = indexOfLast - guestsPerPage;
   const currentGuests = filteredGuests.slice(indexOfFirst, indexOfLast);
 
-  const RemoveAllGuest = () => {
+  const RemoveAllGuest = async () => {
     if (
       confirm(
         "Are you sure you want to remove ALL guests? This cannot be undone."
       )
     ) {
-      dispatch(removeAllGuest({ id: eventId, query: "guest" }));
+      try {
+        const result = await dispatch(
+          removeAllGuest({ id: eventId, query: "guest" })
+        ).unwrap();
+
+        if (result.preservedVendors && result.preservedVendors.length > 0) {
+          setPreservedVendors(result.preservedVendors);
+          setShowMinGuestAlert(true);
+          toast.info(
+            "All guests removed. Some vendor budgets were preserved due to minimum guest requirements."
+          );
+        } else {
+          toast.success("All guests removed successfully");
+        }
+      } catch (error: any) {
+        toast.error(error.message || "Failed to remove all guests");
+      }
     }
   };
 
@@ -138,6 +158,12 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
           />
         </CardContent>
       </Card>
+
+      <VendorAlertDialog
+        open={showMinGuestAlert}
+        setOpen={setShowMinGuestAlert}
+        vendors={preservedVendors}
+      />
     </div>
   );
 };

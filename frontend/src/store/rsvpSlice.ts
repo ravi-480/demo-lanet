@@ -63,15 +63,22 @@ export const removeAllGuest = createAsyncThunk(
   "rsvp/remove-guest",
   async (data: { id: string; query: string }, { rejectWithValue }) => {
     try {
-      console.log(data);
-
       const response = await axios.delete(
         `http://localhost:5000/api/guest/removeAllGuestOrVendor`,
         { data, withCredentials: true }
       );
+      // Return the full response data which may include preservedVendors
+      return response.data;
     } catch (error: any) {
+      // If the response includes violatingVendors, pass that along
+      if (error.response?.data?.violatingVendors) {
+        return rejectWithValue({
+          message: error.response.data.message,
+          violatingVendors: error.response.data.violatingVendors,
+        });
+      }
       return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch guest list"
+        error.response?.data?.message || "Failed to remove guests"
       );
     }
   }
@@ -112,6 +119,13 @@ export const removeSingleGuest = createAsyncThunk(
       );
       return response.data;
     } catch (error: any) {
+      // If the error includes violatingVendors, pass that along
+      if (error.response?.data?.violatingVendors) {
+        return rejectWithValue({
+          message: error.response.data.message,
+          violatingVendors: error.response.data.violatingVendors,
+        });
+      }
       return rejectWithValue(
         error.response?.data?.message || "Failed to remove guest"
       );
@@ -156,7 +170,7 @@ export const sendInviteAll = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response.data.message || "Failed to send mail to all"
+        error.response?.data?.message || "Failed to send mail to all"
       );
     }
   }
@@ -175,7 +189,7 @@ export const sendReminder = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response.data.message || "Failed to send reminder mail"
+        error.response?.data?.message || "Failed to send reminder mail"
       );
     }
   }
@@ -229,7 +243,10 @@ const rsvpSlice = createSlice({
       })
       .addCase(addSingleGuest.rejected, (state, action) => {
         state.loading = false;
-        state.error = (action.payload as string) || "Failed to add Guest";
+        state.error =
+          typeof action.payload === "string"
+            ? action.payload
+            : "Failed to add Guest";
       })
 
       .addCase(removeSingleGuest.pending, (state) => {
@@ -238,12 +255,17 @@ const rsvpSlice = createSlice({
       })
       .addCase(removeSingleGuest.fulfilled, (state, action) => {
         state.loading = false;
-        state.rsvpData = state.rsvpData.filter(
-          (guest) => guest._id !== action.payload.guestId
-        );
+        // If the backend returns a guestId, use it
+        if (action.payload.guestId) {
+          state.rsvpData = state.rsvpData.filter(
+            (guest) => guest._id !== action.payload.guestId
+          );
+        }
+        // We'll let the component handle refreshing the list with fetchGuests instead
       })
       .addCase(removeSingleGuest.rejected, (state, action) => {
         state.loading = false;
+        // Handle complex error objects or string errors
         state.error = (action.payload as string) || "Failed to remove guest";
       })
 
@@ -289,18 +311,19 @@ const rsvpSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // remove
+      // remove all guests
       .addCase(removeAllGuest.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(removeAllGuest.fulfilled, (state) => {
+      .addCase(removeAllGuest.fulfilled, (state, action) => {
         state.loading = false;
         state.rsvpData = []; // clear guest list on success
       })
       .addCase(removeAllGuest.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error =
+          (action.payload as string) || "Failed to remove all guests";
       });
   },
 });

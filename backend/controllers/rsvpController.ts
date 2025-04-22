@@ -84,31 +84,48 @@ export const addGuestFromFile = asyncHandler(
         await Guest.insertMany(newGuests);
       }
 
-      // Update event with total guest count
+      // Get total guests and calculate if over limit
       const totalGuests = existingGuests.length + newGuests.length;
-      await Event.findByIdAndUpdate(eventId, { noOfGuestAdded: totalGuests });
-
-      // Check if guest limit is exceeded
+      const previousGuestCount = event.noOfGuestAdded || 0;
       const guestLimit = event.guestLimit || 0;
+
+      // Calculate guests over limit
       const guestsOverLimit = Math.max(0, totalGuests - guestLimit);
 
-      // Update per-plate vendors in one operation
-      const vendors = await Vendor.find({
-        event: eventId,
-        pricingUnit: "per plate",
-      });
+      // This is used for per-plate pricing adjustments
+      const previousGuestsOverLimit = Math.max(
+        0,
+        previousGuestCount - guestLimit
+      );
+      const newGuestsOverLimit = guestsOverLimit - previousGuestsOverLimit;
 
-      if (vendors.length > 0) {
-        const vendorUpdates = vendors.map((vendor) => {
-          const perPlatePrice =
-            (vendor.price || 0) / (vendor.numberOfGuests || 1);
-          return Vendor.findByIdAndUpdate(vendor._id, {
-            price: perPlatePrice * totalGuests,
-            numberOfGuests: totalGuests,
-          });
+      // Update event with total guest count
+      await Event.findByIdAndUpdate(eventId, { noOfGuestAdded: totalGuests });
+
+      // Only update per-plate vendors if there are new guests over the limit
+      if (newGuestsOverLimit > 0) {
+        const vendors = await Vendor.find({
+          event: eventId,
+          pricingUnit: "per plate",
         });
 
-        await Promise.all(vendorUpdates);
+        if (vendors.length > 0) {
+          const vendorUpdates = vendors.map((vendor) => {
+            const perPlatePrice =
+              (vendor.price || 0) / (vendor.numberOfGuests || 1);
+
+            // Only update pricing for the additional guests over limit
+            const newPrice = vendor.price + perPlatePrice * newGuestsOverLimit;
+            const newGuestCount = vendor.numberOfGuests + newGuestsOverLimit;
+
+            return Vendor.findByIdAndUpdate(vendor._id, {
+              price: newPrice,
+              numberOfGuests: newGuestCount,
+            });
+          });
+
+          await Promise.all(vendorUpdates);
+        }
       }
 
       // Send notification if guest limit exceeded
@@ -133,8 +150,14 @@ export const addGuestFromFile = asyncHandler(
         success: true,
         message: `Guests added: ${newGuests.length}, Duplicates skipped: ${duplicateCount}`,
         totalGuests,
-        ...(guestsOverLimit > 0 && { guestsOverLimit }),
-        ...(vendors.length > 0 && { vendorsUpdated: vendors.length }),
+        ...(guestsOverLimit > 0 && {
+          guestsOverLimit,
+          newGuestsOverLimit,
+        }),
+        ...(newGuestsOverLimit > 0 && {
+          vendorsUpdated: true,
+          pricingUpdatedForGuests: newGuestsOverLimit,
+        }),
       });
     } catch (error) {
       console.error("Error in addGuestFromFile:", error);
@@ -209,51 +232,74 @@ export const removeSingleGuest = asyncHandler(
           .json({ success: false, message: "Invalid Guest ID" });
       }
 
-      // 1. Delete guest
-      const guest = await Guest.findByIdAndDelete(guestId);
+      const guest = await Guest.findById(guestId);
       if (!guest) {
         return res
           .status(404)
           .json({ success: false, message: "Guest not found" });
       }
 
-      // 2. Decrement guest count on event
-      const updatedEvent = await Event.findByIdAndUpdate(
-        guest.eventId,
-        { $inc: { noOfGuestAdded: -1 } },
-        { new: true }
-      );
-
-      if (!updatedEvent) {
+      const event = await Event.findById(guest.eventId);
+      if (!event) {
         return res
           .status(404)
           .json({ success: false, message: "Associated event not found" });
       }
 
-      const updatedGuestCount = updatedEvent.noOfGuestAdded;
-
-      // 3. Update vendors with pricingUnit 'per plate'
-      const vendorsToUpdate = await Vendor.find({
+      const updatedGuestCount = event.noOfGuestAdded - 1;
+      const cateringVendors = await Vendor.find({
         event: guest.eventId,
         pricingUnit: "per plate",
       });
 
-      const updatePromises = vendorsToUpdate.map((vendor) => {
-        const pricePerPlate = vendor.price / vendor.numberOfGuests;
+      await Guest.findByIdAndDelete(guestId);
+      await Event.findByIdAndUpdate(
+        guest.eventId,
+        { $inc: { noOfGuestAdded: -1 } },
+        { new: true }
+      );
 
-        const newPrice = Math.round(pricePerPlate * updatedGuestCount);
+      const violatingVendors: any[] = [];
 
-        return Vendor.findByIdAndUpdate(
-          vendor._id,
-          {
-            price: newPrice,
-            numberOfGuests: updatedGuestCount,
-          },
-          { new: true }
-        );
+      const updatePromises = cateringVendors.map(async (vendor) => {
+        if (vendor.minGuestLimit && updatedGuestCount < vendor.minGuestLimit) {
+          // Vendor is violating the min guest requirement
+          violatingVendors.push({
+            id: vendor._id,
+            title: vendor.title,
+            minGuestLimit: vendor.minGuestLimit,
+          });
+
+          return Vendor.findByIdAndUpdate(
+            vendor._id,
+            { numberOfGuests: vendor.numberOfGuests }, // preserve original guest count
+            { new: true }
+          );
+        } else {
+          const pricePerPlate = vendor.price / vendor.numberOfGuests;
+          const newPrice = Math.round(pricePerPlate * updatedGuestCount);
+
+          return Vendor.findByIdAndUpdate(
+            vendor._id,
+            {
+              price: newPrice,
+              numberOfGuests: updatedGuestCount,
+            },
+            { new: true }
+          );
+        }
       });
 
       await Promise.all(updatePromises);
+
+      if (violatingVendors.length > 0) {
+        return res.status(200).json({
+          success: true,
+          message:
+            "Guest removed, but vendor budgets were preserved due to guest limit.",
+          violatingVendors,
+        });
+      }
 
       return res.status(200).json({
         success: true,
@@ -276,18 +322,48 @@ export const removeAllGuestOrVendor = asyncHandler(
     console.log(query);
 
     if (query === "guest") {
+      const cateringVendors = await Vendor.find({
+        event: id,
+        pricingUnit: "per plate",
+        minGuestLimit: { $exists: true, $ne: null },
+      });
+
+      // Delete all guests
       await Guest.deleteMany({ eventId: id });
       await Event.findByIdAndUpdate(id, { noOfGuestAdded: 0 });
+
+      // Keep track of vendors with minimum requirements that were preserved
+      const preservedVendors = [];
+
+      if (cateringVendors.length > 0) {
+        for (const vendor of cateringVendors) {
+          // Update the numberOfGuests field but leave price unchanged
+          await Vendor.findByIdAndUpdate(vendor._id, { numberOfGuests: 0 });
+          preservedVendors.push({
+            id: vendor._id,
+            title: vendor.title,
+            minGuestLimit: vendor.minGuestLimit,
+          });
+        }
+
+        return res.status(200).json({
+          success: true,
+          message:
+            "All guests removed successfully. Some vendor budgets were preserved due to minimum guest requirements.",
+          preservedVendors,
+        });
+      }
+
       return res
         .status(200)
-        .json({ message: "All guests removed successfully" });
+        .json({ success: true, message: "All guests removed successfully" });
     }
 
     if (query === "vendor") {
       await Vendor.deleteMany({ event: id });
       return res
         .status(200)
-        .json({ message: "All vendors removed successfully" });
+        .json({ success: true, message: "All vendors removed successfully" });
     }
 
     return res.status(400).json({ message: "Invalid query type" });

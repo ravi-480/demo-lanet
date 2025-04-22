@@ -33,7 +33,8 @@ type VendorCardProps = {
   eventId?: string;
   noOfAddedGuest: number;
   addedBy?: string;
-  noOfDay?: number; // Added prop for event duration in days
+  noOfDay?: number;
+  minGuestLimit?: number; // New prop for minimum guest requirement
 };
 
 const getPriceUnitLabel = (category: string) => {
@@ -58,7 +59,8 @@ const VendorCard = ({
   numberOfGuests = 50,
   eventId,
   addedBy,
-  noOfDay = 1, // Default to 1 day if not provided
+  noOfDay = 1,
+  minGuestLimit, // Default will be undefined
 }: VendorCardProps) => {
   const [showDetails, setShowDetails] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
@@ -70,6 +72,11 @@ const VendorCard = ({
 
   const checkNoOfGuest =
     noOfAddedGuest > numberOfGuests ? noOfAddedGuest : numberOfGuests;
+
+  const isBelowMinGuestLimit =
+    category.toLowerCase() === "catering" &&
+    typeof minGuestLimit === "number" &&
+    checkNoOfGuest < minGuestLimit;
 
   // Calculate total estimate based on pricing unit
   const totalEstimate =
@@ -89,10 +96,21 @@ const VendorCard = ({
           noOfDay > 1 ? "s" : ""
         })`
       );
+    } else if (isBelowMinGuestLimit) {
+      setError(
+        `This vendor requires a minimum of ${minGuestLimit} guests (you have ${checkNoOfGuest})`
+      );
     } else {
       setError(null);
     }
-  }, [units, priceUnit, noOfDay]);
+  }, [
+    units,
+    priceUnit,
+    noOfDay,
+    isBelowMinGuestLimit,
+    minGuestLimit,
+    checkNoOfGuest,
+  ]);
 
   const dispatch = useDispatch<AppDispatch>();
 
@@ -103,6 +121,13 @@ const VendorCard = ({
     if (priceUnit === "per day" && Number(units) > noOfDay) {
       toast.error(
         `Cannot book for more than the event duration (${noOfDay} days)`
+      );
+      return;
+    }
+
+    if (isBelowMinGuestLimit) {
+      toast.error(
+        `This vendor requires a minimum of ${minGuestLimit} guests (you have ${checkNoOfGuest})`
       );
       return;
     }
@@ -132,7 +157,8 @@ const VendorCard = ({
       category,
       numberOfGuests: checkNoOfGuest,
       addedBy,
-      days: priceUnit === "per day" ? Number(units) : undefined, // Add days information for per day pricing
+      days: priceUnit === "per day" ? Number(units) : undefined,
+      minGuestLimit: minGuestLimit, // Store this in the vendor data for reference
     };
 
     const data = await dispatch(createVendor(vendorData));
@@ -173,6 +199,11 @@ const VendorCard = ({
           </div>
           <div className="text-sm text-gray-500">
             Est. ₹{price.toLocaleString()} {priceUnit}
+            {minGuestLimit && category.toLowerCase() === "catering" && (
+              <span className="ml-2 text-xs text-blue-500">
+                Min. {minGuestLimit} guests required
+              </span>
+            )}
           </div>
         </CardContent>
 
@@ -184,8 +215,14 @@ const VendorCard = ({
           >
             {showDetails ? "Hide Details" : "See Full Details"}
           </Button>
-          <Button onClick={() => setShowDialog(true)} size="sm">
-            Add Vendor
+          <Button
+            onClick={() => setShowDialog(true)}
+            size="sm"
+            disabled={isBelowMinGuestLimit}
+          >
+            {isBelowMinGuestLimit
+              ? `Min ${minGuestLimit} guests required`
+              : "Add Vendor"}
           </Button>
         </CardFooter>
 
@@ -197,6 +234,11 @@ const VendorCard = ({
             <div>
               <strong>Hours:</strong> {vendor.hours || "Contact for details"}
             </div>
+            {category.toLowerCase() === "catering" && minGuestLimit && (
+              <div>
+                <strong>Minimum Guests:</strong> {minGuestLimit}
+              </div>
+            )}
             {vendor.links?.directions && (
               <div>
                 <a
@@ -271,10 +313,17 @@ const VendorCard = ({
                 </p>
               </>
             ) : priceUnit === "per plate" ? (
-              <p>
-                Approx cost for <strong>{checkNoOfGuest}</strong> guests:
-                <strong> ₹{totalEstimate.toLocaleString()}</strong>
-              </p>
+              <>
+                <p>
+                  Approx cost for <strong>{checkNoOfGuest}</strong> guests:
+                  <strong> ₹{totalEstimate.toLocaleString()}</strong>
+                </p>
+                {minGuestLimit && category.toLowerCase() === "catering" && (
+                  <p className="text-xs text-blue-500">
+                    Minimum requirement: {minGuestLimit} guests
+                  </p>
+                )}
+              </>
             ) : (
               <p>
                 Flat rate cost:

@@ -60,6 +60,7 @@ export default function EventTabComponent({ id }: { id: string }) {
             eventType={event.eventType}
             allowedCategories={allowedCategories}
             eventLocation={event.location}
+            
           />
         </TabsContent>
       </Tabs>
