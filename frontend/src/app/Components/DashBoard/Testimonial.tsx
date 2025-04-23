@@ -1,5 +1,7 @@
+"use client"
 import { testimonials2 } from "@/StaticData/Static";
 import React, { useState } from "react";
+import Image from "next/image";
 
 const Testimonials: React.FC = () => {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
@@ -22,10 +24,12 @@ const Testimonials: React.FC = () => {
               <div key={testimonial.id} className="w-full flex-shrink-0 px-4">
                 <div className="bg-gray-800 rounded-lg p-6">
                   <div className="flex items-center mb-4">
-                    <img
+                    <Image
                       src={testimonial.image}
                       alt={testimonial.name}
                       className="w-12 h-12 rounded-full mr-4"
+                      width={80}
+                      height={20}
                     />
                     <div>
                       <h3 className="font-medium text-gray-300">

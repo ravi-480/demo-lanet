@@ -1,10 +1,10 @@
-"use client";
 
 import Budget from "../../Components/DashBoard/Budget";
 import Testimonials from "../../Components/DashBoard/Testimonial";
 import EventDisplay from "../../Components/DashBoard/EventDisplay";
 import Welcome from "../../Components/DashBoard/Welcome";
 import EventCalendar from "@/app/Components/DashBoard/EventCalendar";
+import dynamic from 'next/dynamic';
 
 const Dashboard = () => {
   return (

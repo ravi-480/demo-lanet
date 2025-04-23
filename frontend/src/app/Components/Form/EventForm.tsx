@@ -18,6 +18,7 @@ import { useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 import { z } from "zod";
 import { eventTypeOptions, IEvent } from "@/Interface/interface";
+import Image from "next/image";
 
 const eventFormSchema = z.object({
   name: z.string().min(1, { message: "Event name is required" }).max(40),
@@ -155,7 +156,7 @@ const EventForm: React.FC<EventFormProps> = ({
           />
           {imagePreview && (
             <div className="mt-2">
-              <img
+              <Image
                 src={imagePreview}
                 alt="Preview"
                 className="max-h-48 border rounded"

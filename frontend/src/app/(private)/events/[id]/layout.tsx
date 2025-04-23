@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { cookies } from "next/headers";
-import { notFound, redirect } from "next/navigation";
+import {  redirect } from "next/navigation";
 import ErrorMessage from "@/app/Components/Error/ErrorMessage";
 
 export default async function EventLayout({

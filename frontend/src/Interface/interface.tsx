@@ -242,17 +242,6 @@ export interface Guest {
   eventId: string;
 }
 
-export interface SearchVendorProps {
-  eventType: string;
-  allowedCategories: string[];
-  noOfGuest: number;
-  noOfDay: number;
-  eventId: string;
-  addedBy: string;
-  eventLocation: string;
-  noOfAddedGuest: number;
-}
-
 export enum EventTypeEnum {
   Wedding = "Wedding",
   Birthday = "Birthday",
@@ -275,3 +264,69 @@ export const eventTypeOptions = Object.entries(EventTypeEnum).map(
     value: key.toLowerCase(),
   })
 );
+
+export interface INotification {
+  _id: string;
+  userId: string;
+  eventId: string;
+  message: string;
+  type: "response" | "payment" | "reminder" | "message";
+  status: "read" | "unread";
+  metadata: Record<string, any>;
+  createdAt: Date;
+}
+
+export type PricingUnit =
+  | "per plate"
+  | "per hour"
+  | "per day"
+  | "flat rate"
+  | "per setup";
+
+export interface VendorBase {
+  title: string;
+  address: string;
+  description?: string;
+  rating?: number;
+  reviews?: number;
+  thumbnail?: string;
+  type?: string;
+  hours?: string;
+  links?: {
+    website?: string;
+    directions?: string;
+  };
+  phone?: string;
+  place_id?: string;
+  placeId?: string;
+}
+
+export interface VendorWithPricing extends VendorBase {
+  price: number;
+  category: string;
+  pricingUnit: PricingUnit;
+  minGuestLimit?: number;
+}
+
+export interface VendorCardProps {
+  vendor: VendorWithPricing;
+  category: string;
+  pricingUnit?: PricingUnit;
+  numberOfGuests?: number;
+  eventId?: string;
+  noOfAddedGuest: number;
+  addedBy?: string;
+  noOfDay?: number;
+  minGuestLimit?: number;
+}
+
+export interface SearchVendorProps {
+  eventType: string;
+  noOfDay: number;
+  allowedCategories: string[];
+  noOfGuest: number;
+  addedBy?: string;
+  eventLocation: string;
+  noOfAddedGuest: number;
+  eventId?: string;
+}

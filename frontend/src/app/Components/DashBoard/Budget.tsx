@@ -1,3 +1,5 @@
+"use client"
+
 import { getVendorByUser, vendorByUser } from "@/store/vendorSlice";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -50,9 +52,6 @@ const Budget = () => {
         <p className="text-sm text-gray-300 mb-4">
           You haven't added any expenses yet. Start by adding your first one.
         </p>
-        <Link href="/">
-          <Button>Add Expense</Button>
-        </Link>
       </div>
     );
   }
@@ -67,7 +66,7 @@ const Budget = () => {
   );
 
   return (
-    <div >
+    <div>
       <h1 className="pl-4 mb-2">Recent Expenses</h1>
       <div className="border border-gray-400 p-4 rounded-lg">
         <Table className="table-fixed w-full">

@@ -1,5 +1,12 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import { useDispatch } from "react-redux";
+import { toast } from "sonner";
+import { AppDispatch } from "@/store/store";
+import { createVendor } from "@/store/vendorSlice";
+
 import {
   Card,
   CardHeader,
@@ -9,8 +16,6 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
-import Image from "next/image";
 import {
   Dialog,
   DialogContent,
@@ -20,36 +25,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useDispatch } from "react-redux";
-import { createVendor } from "@/store/vendorSlice";
-import { AppDispatch } from "@/store/store";
-import { toast } from "sonner";
 
-type VendorCardProps = {
-  vendor: any;
-  category: string;
-  pricingUnit?: string;
-  numberOfGuests?: number;
-  eventId?: string;
-  noOfAddedGuest: number;
-  addedBy?: string;
-  noOfDay?: number;
-  minGuestLimit?: number; // New prop for minimum guest requirement
-};
-
-const getPriceUnitLabel = (category: string) => {
-  const pricingMap: Record<string, string> = {
-    catering: "per plate",
-    photography: "per hour",
-    music: "per hour",
-    decoration: "flat rate",
-    venue: "per day",
-    videography: "per hour",
-    "lighting/sound": "per setup",
-  };
-
-  return pricingMap[category.toLowerCase()] || "price";
-};
+import {
+  calculateTotalEstimate,
+  checkMinimumGuestRequirement,
+} from "@/utils/vendorUtils";
+import { VendorCardProps } from "@/Interface/interface";
 
 const VendorCard = ({
   vendor,
@@ -60,33 +41,31 @@ const VendorCard = ({
   eventId,
   addedBy,
   noOfDay = 1,
-  minGuestLimit, // Default will be undefined
+  minGuestLimit,
 }: VendorCardProps) => {
   const [showDetails, setShowDetails] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [units, setUnits] = useState("1");
   const [error, setError] = useState<string | null>(null);
+  const dispatch = useDispatch<AppDispatch>();
 
-  const priceUnit = pricingUnit || getPriceUnitLabel(category);
-  const price = vendor.price || Math.floor(Math.random() * 500 + 100);
+  const priceUnit = vendor.pricingUnit || pricingUnit;
+  const price = vendor.price;
+  const checkNoOfGuest = Math.max(noOfAddedGuest, numberOfGuests);
 
-  const checkNoOfGuest =
-    noOfAddedGuest > numberOfGuests ? noOfAddedGuest : numberOfGuests;
-
-  const isBelowMinGuestLimit =
-    category.toLowerCase() === "catering" &&
-    typeof minGuestLimit === "number" &&
-    checkNoOfGuest < minGuestLimit;
+  const isBelowMinGuestLimit = checkMinimumGuestRequirement(
+    category,
+    checkNoOfGuest,
+    minGuestLimit
+  );
 
   // Calculate total estimate based on pricing unit
-  const totalEstimate =
-    priceUnit === "per hour"
-      ? Number(units) * price
-      : priceUnit === "per plate"
-      ? price * checkNoOfGuest
-      : priceUnit === "per day"
-      ? Number(units) * price
-      : price;
+  const totalEstimate = calculateTotalEstimate(
+    priceUnit,
+    price,
+    Number(units),
+    checkNoOfGuest
+  );
 
   // Validate units when it changes or dialog opens
   useEffect(() => {
@@ -112,8 +91,6 @@ const VendorCard = ({
     checkNoOfGuest,
   ]);
 
-  const dispatch = useDispatch<AppDispatch>();
-
   const handleConfirmAdd = async () => {
     if (!eventId || !addedBy) return;
 
@@ -132,15 +109,6 @@ const VendorCard = ({
       return;
     }
 
-    const adjustedPrice =
-      priceUnit === "per hour"
-        ? Number(units) * price
-        : priceUnit === "per plate"
-        ? price * checkNoOfGuest
-        : priceUnit === "per day"
-        ? Number(units) * price
-        : price;
-
     const vendorData = {
       event: eventId,
       title: vendor.title || "Untitled",
@@ -152,13 +120,13 @@ const VendorCard = ({
       directionsLink: vendor.links?.directions || "",
       placeId: vendor.place_id || vendor.placeId || "",
       phone: vendor.phone || "",
-      price: adjustedPrice,
+      price: totalEstimate,
       pricingUnit: priceUnit,
       category,
       numberOfGuests: checkNoOfGuest,
       addedBy,
       days: priceUnit === "per day" ? Number(units) : undefined,
-      minGuestLimit: minGuestLimit, // Store this in the vendor data for reference
+      minGuestLimit,
     };
 
     const data = await dispatch(createVendor(vendorData));
@@ -170,6 +138,68 @@ const VendorCard = ({
       toast.error(`Error: ${data.payload}`);
     }
   };
+
+  // Extracted dialog content component for clarity
+  const renderDialogContent = () => (
+    <div className="space-y-2 text-sm">
+      <p>
+        <strong>{vendor.title}</strong> – ₹{price.toLocaleString()} {priceUnit}
+      </p>
+
+      {priceUnit === "per hour" ? (
+        <>
+          <Label htmlFor="units">Enter hours</Label>
+          <Input
+            id="units"
+            type="number"
+            value={units}
+            onChange={(e) => setUnits(e.target.value)}
+            min={1}
+          />
+          <p className="text-muted-foreground">
+            Estimated Total: ₹{totalEstimate.toLocaleString()}
+          </p>
+        </>
+      ) : priceUnit === "per day" ? (
+        <>
+          <Label htmlFor="units">Enter days</Label>
+          <Input
+            id="units"
+            type="number"
+            value={units}
+            onChange={(e) => setUnits(e.target.value)}
+            min={1}
+            max={noOfDay}
+            className={error ? "border-red-500" : ""}
+          />
+          {error && <p className="text-red-500 text-xs">{error}</p>}
+          <p className="text-muted-foreground">
+            Estimated Total: ₹{totalEstimate.toLocaleString()}
+          </p>
+          <p className="text-xs text-blue-500">
+            Note: Event duration is {noOfDay} day{noOfDay > 1 ? "s" : ""}
+          </p>
+        </>
+      ) : priceUnit === "per plate" ? (
+        <>
+          <p>
+            Approx cost for <strong>{checkNoOfGuest}</strong> guests:
+            <strong> ₹{totalEstimate.toLocaleString()}</strong>
+          </p>
+          {minGuestLimit && category.toLowerCase() === "catering" && (
+            <p className="text-xs text-blue-500">
+              Minimum requirement: {minGuestLimit} guests
+            </p>
+          )}
+        </>
+      ) : (
+        <p>
+          Flat rate cost:
+          <strong> ₹{totalEstimate.toLocaleString()}</strong>
+        </p>
+      )}
+    </div>
+  );
 
   return (
     <>
@@ -272,65 +302,7 @@ const VendorCard = ({
           <DialogHeader>
             <DialogTitle>Add Vendor Confirmation</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2 text-sm">
-            <p>
-              <strong>{vendor.title}</strong> – ₹{price.toLocaleString()}{" "}
-              {priceUnit}
-            </p>
-
-            {priceUnit === "per hour" ? (
-              <>
-                <Label htmlFor="units">Enter hours</Label>
-                <Input
-                  id="units"
-                  type="number"
-                  value={units}
-                  onChange={(e) => setUnits(e.target.value)}
-                  min={1}
-                />
-                <p className="text-muted-foreground">
-                  Estimated Total: ₹{totalEstimate.toLocaleString()}
-                </p>
-              </>
-            ) : priceUnit === "per day" ? (
-              <>
-                <Label htmlFor="units">Enter days</Label>
-                <Input
-                  id="units"
-                  type="number"
-                  value={units}
-                  onChange={(e) => setUnits(e.target.value)}
-                  min={1}
-                  max={noOfDay}
-                  className={error ? "border-red-500" : ""}
-                />
-                {error && <p className="text-red-500 text-xs">{error}</p>}
-                <p className="text-muted-foreground">
-                  Estimated Total: ₹{totalEstimate.toLocaleString()}
-                </p>
-                <p className="text-xs text-blue-500">
-                  Note: Event duration is {noOfDay} day{noOfDay > 1 ? "s" : ""}
-                </p>
-              </>
-            ) : priceUnit === "per plate" ? (
-              <>
-                <p>
-                  Approx cost for <strong>{checkNoOfGuest}</strong> guests:
-                  <strong> ₹{totalEstimate.toLocaleString()}</strong>
-                </p>
-                {minGuestLimit && category.toLowerCase() === "catering" && (
-                  <p className="text-xs text-blue-500">
-                    Minimum requirement: {minGuestLimit} guests
-                  </p>
-                )}
-              </>
-            ) : (
-              <p>
-                Flat rate cost:
-                <strong> ₹{totalEstimate.toLocaleString()}</strong>
-              </p>
-            )}
-          </div>
+          {renderDialogContent()}
           <DialogFooter>
             <Button onClick={handleConfirmAdd} disabled={!!error}>
               Confirm Add

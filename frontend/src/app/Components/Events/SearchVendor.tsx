@@ -10,23 +10,19 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
-
-import VendorCard from "./VendorCard";
-import { eventVendorMapping, getRandomPrice } from "@/StaticData/Static";
-import { SearchVendorProps } from "@/Interface/interface";
 import { Input } from "@/components/ui/input";
 
-// Function to generate random min guest limit for catering vendors
-const generateMinGuestLimit = () => {
-  // Random values of 10, 20, or 40
-  const possibleLimits = [10, 20, 40];
-  return possibleLimits[Math.floor(Math.random() * possibleLimits.length)];
-};
+import VendorCard from "./VendorCard";
+import { getRandomPrice } from "@/StaticData/Static";
+import { enrichVendor } from "@/utils/vendorUtils";
+import { SearchVendorProps } from "@/Interface/interface";
+
+// Sort options
+type SortOption = "lowToHigh" | "highToLow" | "rating" | "";
 
 const SearchVendor = ({
   eventType,
   noOfDay,
-  allowedCategories,
   noOfGuest,
   addedBy,
   eventLocation,
@@ -38,35 +34,7 @@ const SearchVendor = ({
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [sortOption, setSortOption] = useState("");
-
-  const getPricingUnit = (category: string) =>
-    eventVendorMapping[eventType as keyof typeof eventVendorMapping]?.find(
-      (item) => item.category.toLowerCase() === category.toLowerCase()
-    )?.pricingUnit || "flat rate";
-
-  const enrichVendor = (vendor: any, matchedCategory: string | null) => {
-    const recommended = !!matchedCategory;
-    const isCatering = matchedCategory?.toLowerCase() === "catering";
-
-    // Generate minimum guest limit only for catering vendors
-    const minGuestLimit = isCatering ? generateMinGuestLimit() : undefined;
-
-    return {
-      ...vendor,
-      price: getRandomPrice(matchedCategory || "default", !recommended),
-      category: recommended ? matchedCategory : "Premium Service",
-      numberOfGuests: isCatering ? noOfGuest : 0,
-      pricingUnit: recommended
-        ? matchedCategory === "photography"
-          ? "per hour"
-          : matchedCategory === "catering"
-          ? "per plate"
-          : getPricingUnit(matchedCategory)
-        : "flat rate",
-      minGuestLimit, // Add the minimum guest limit to the vendor object
-    };
-  };
+  const [sortOption, setSortOption] = useState<SortOption>("");
 
   const fetchVendors = async (pageNum = 1) => {
     setLoading(true);
@@ -79,7 +47,7 @@ const SearchVendor = ({
       const data = await res.json();
 
       const enrichedVendors = (data.vendors || []).map((vendor: any) =>
-        enrichVendor(vendor, searchTerm)
+        enrichVendor(vendor, searchTerm, getRandomPrice, noOfGuest, eventType)
       );
 
       setVendors(enrichedVendors);
@@ -91,41 +59,97 @@ const SearchVendor = ({
     }
   };
 
-  const sortedVendors = [...vendors].sort((a, b) => {
-    if (sortOption === "lowToHigh") return a.price - b.price;
-    if (sortOption === "highToLow") return b.price - a.price;
-    if (sortOption === "rating") return b.rating - a.rating;
-    return 0;
-  });
+  // Sort vendors based on selected option
+  const getSortedVendors = () => {
+    return [...vendors].sort((a, b) => {
+      if (sortOption === "lowToHigh") return a.price - b.price;
+      if (sortOption === "highToLow") return b.price - a.price;
+      if (sortOption === "rating") return b.rating - a.rating;
+      return 0;
+    });
+  };
+
+  // Render functions for better organization
+  const renderSearchBar = () => (
+    <div className="flex items-center gap-2">
+      <Input
+        placeholder={`Search vendors for ${eventType}...`}
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+      <Button onClick={() => fetchVendors()}>Search</Button>
+    </div>
+  );
+
+  const renderSortOptions = () => (
+    <div className="flex items-center gap-4">
+      <span className="text-sm text-muted-foreground">Sort by:</span>
+      <Select
+        onValueChange={(value) => setSortOption(value as SortOption)}
+        value={sortOption}
+      >
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Select filter" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="lowToHigh">Price: Low to High</SelectItem>
+          <SelectItem value="highToLow">Price: High to Low</SelectItem>
+          <SelectItem value="rating">Best Rated</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  );
+
+  const renderPagination = () => (
+    <div className="flex justify-center items-center gap-4 mt-4">
+      <Button
+        onClick={() => fetchVendors(page - 1)}
+        disabled={page === 1}
+        variant="secondary"
+      >
+        Prev
+      </Button>
+      <span className="text-sm text-gray-300">Page {page}</span>
+      <Button
+        onClick={() => fetchVendors(page + 1)}
+        disabled={!hasMore}
+        variant="secondary"
+      >
+        Next
+      </Button>
+    </div>
+  );
+
+  const renderVendorGrid = () => {
+    const sortedVendors = getSortedVendors();
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {sortedVendors.map((vendor, idx) => (
+          <VendorCard
+            key={idx}
+            vendor={vendor}
+            eventId={eventId}
+            addedBy={addedBy}
+            noOfAddedGuest={noOfAddedGuest}
+            numberOfGuests={vendor.numberOfGuests}
+            category={vendor.category}
+            pricingUnit={vendor.pricingUnit}
+            minGuestLimit={vendor.minGuestLimit}
+            noOfDay={noOfDay}
+          />
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-4">
       {/* Search input */}
-      <div className="flex items-center gap-2">
-        <Input
-          placeholder={`Search vendors for ${eventType}...`}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <Button onClick={() => fetchVendors()}>Search</Button>
-      </div>
+      {renderSearchBar()}
 
       {/* Sort dropdown */}
-      {vendors.length > 0 && (
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-muted-foreground">Sort by:</span>
-          <Select onValueChange={setSortOption} value={sortOption}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select filter" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="lowToHigh">Price: Low to High</SelectItem>
-              <SelectItem value="highToLow">Price: High to Low</SelectItem>
-              <SelectItem value="rating">Best Rated</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      )}
+      {vendors.length > 0 && renderSortOptions()}
 
       {/* Loader */}
       {loading && (
@@ -145,41 +169,8 @@ const SearchVendor = ({
       {/* Vendors grid */}
       {!loading && vendors.length > 0 && (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {sortedVendors.map((vendor, idx) => (
-              <VendorCard
-                key={idx}
-                vendor={vendor}
-                eventId={eventId}
-                addedBy={addedBy}
-                noOfAddedGuest={noOfAddedGuest}
-                numberOfGuests={vendor.numberOfGuests}
-                category={vendor.category}
-                pricingUnit={vendor.pricingUnit}
-                minGuestLimit={vendor.minGuestLimit}
-                noOfDay={noOfDay}
-              />
-            ))}
-          </div>
-
-          {/* Pagination */}
-          <div className="flex justify-center items-center gap-4 mt-4">
-            <Button
-              onClick={() => fetchVendors(page - 1)}
-              disabled={page === 1}
-              variant="secondary"
-            >
-              Prev
-            </Button>
-            <span className="text-sm text-gray-300">Page {page}</span>
-            <Button
-              onClick={() => fetchVendors(page + 1)}
-              disabled={!hasMore}
-              variant="secondary"
-            >
-              Next
-            </Button>
-          </div>
+          {renderVendorGrid()}
+          {renderPagination()}
         </>
       )}
     </div>

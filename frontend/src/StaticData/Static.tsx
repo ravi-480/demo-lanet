@@ -1,6 +1,3 @@
-import { Testimonial } from "@/Interface/interface";
-// import { SliderImage } from "@/Types/type";
-
 const images = [
   {
     id: "home-image-1",
@@ -38,7 +35,7 @@ export const featureSections = [
   },
 ];
 
-export const testimonials: Testimonial[] = [
+export const testimonials = [
   {
     id: 1,
     quote:
@@ -92,39 +89,46 @@ export const faqData = [
   },
 ];
 
-export const socialLinks = [
-  { href: "#", icon: "FacebookOutlined" },
-  { href: "#", icon: "TwitterOutlined" },
-  { href: "#", icon: "InstagramOutlined" },
-  { href: "#", icon: "LinkedinOutlined" },
+export const testimonials2 = [
+  {
+    id: "t1",
+    name: "Sarah Johnson",
+    image: "/images/testimonial.png",
+    rating: 5,
+    quote:
+      "EventWise helped me stay under budget while planning my dream wedding!",
+    eventType: "Wedding",
+  },
+  {
+    id: "t2",
+    name: "Michael Rodriguez",
+    image: "/images/testimonial.png",
+    rating: 5,
+    quote:
+      "Our company conference was a huge success thanks to the organization tools.",
+    eventType: "Corporate Conference",
+  },
+  {
+    id: "t3",
+    name: "Emily Chen",
+    image: "/images/testimonial.png",
+    rating: 4,
+    quote: "The vendor recommendations saved me hours of research time.",
+    eventType: "Charity Gala",
+  },
 ];
-
-export const quickLinks = [
-  "Home",
-  "Features",
-  "Pricing",
-  "Testimonials",
-  "Blog",
-];
-
-export const supportLinks = [
-  "Help Center",
-  "Community",
-  "Privacy Policy",
-  "Terms of Service",
-  "Contact Us",
-];
-
-export const contactInfo = {
-  email: "info@eventwise.com",
-  phone: "+1 (800) 123-4567",
-  address: "123 Event Street, Suite 200, San Francisco, CA 94107",
-};
 
 export default images;
 
-export function formatDate(isoString: string): string {
-  const date = new Date(isoString);
+export function formatSimpleDate(dateString: string | Date) {
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "Invalid date";
+  return date.toLocaleDateString("en-GB");
+}
+
+export function formatFullDateWithTime(dateString: string): string {
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "Invalid date";
 
   const day = date.getDate().toString().padStart(2, "0");
   const month = (date.getMonth() + 1).toString().padStart(2, "0");
@@ -241,34 +245,4 @@ export const tabs = [
   { id: "all", label: "All" },
   { id: "upcoming", label: "Upcoming" },
   { id: "past", label: "Past" },
-  { id: "draft", label: "Drafts" },
-];
-
-export const testimonials2 = [
-  {
-    id: "t1",
-    name: "Sarah Johnson",
-    image: "/images/testimonial.png",
-    rating: 5,
-    quote:
-      "EventWise helped me stay under budget while planning my dream wedding!",
-    eventType: "Wedding",
-  },
-  {
-    id: "t2",
-    name: "Michael Rodriguez",
-    image: "/images/testimonial.png",
-    rating: 5,
-    quote:
-      "Our company conference was a huge success thanks to the organization tools.",
-    eventType: "Corporate Conference",
-  },
-  {
-    id: "t3",
-    name: "Emily Chen",
-    image: "/images/testimonial.png",
-    rating: 4,
-    quote: "The vendor recommendations saved me hours of research time.",
-    eventType: "Charity Gala",
-  },
 ];

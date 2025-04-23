@@ -1,30 +1,87 @@
 "use client";
 
-import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useState, useMemo, memo, Suspense } from "react";
+import { useSelector, shallowEqual } from "react-redux";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import EventOverView from "./EventOverView";
-import SearchVendor from "./SearchVendor";
+import dynamic from "next/dynamic";
 import { eventVendorMapping } from "@/StaticData/Static";
 import { RootState } from "@/store/store";
 
-export default function EventTabComponent({ id }: { id: string }) {
+// Use dynamic imports with loading states
+const EventOverView = dynamic(() => import("./EventOverView"), {
+  loading: () => (
+    <div className="h-64 w-full bg-gray-800 animate-pulse rounded-lg"></div>
+  ),
+  ssr: false,
+});
+
+const SearchVendor = dynamic(() => import("./SearchVendor"), {
+  loading: () => (
+    <div className="p-4 text-gray-400">
+      <div className="h-12 w-full bg-gray-800 animate-pulse rounded-lg mb-4"></div>
+      <div className="h-64 w-full bg-gray-800 animate-pulse rounded-lg"></div>
+    </div>
+  ),
+  ssr: false,
+});
+
+// Using memo to prevent unnecessary re-renders
+const EventTabComponent = memo(({ id }: { id: string }) => {
   const [activeTab, setActiveTab] = useState("overview");
-  const event = useSelector((state: RootState) => state.event.singleEvent);
+
+  // Use shallowEqual for performance optimization
+  const event = useSelector(
+    (state: RootState) => state.event.singleEvent,
+    shallowEqual
+  );
+
+  const allowedCategories = useMemo(() => {
+    return (
+      eventVendorMapping[
+        event?.eventType as keyof typeof eventVendorMapping
+      ]?.map((c) => c.category) || []
+    );
+  }, [event?.eventType]);
+
+  const tabs = useMemo(
+    () => [
+      { value: "overview", label: "Overview" },
+      { value: "vendors", label: "Vendors" },
+    ],
+    []
+  );
 
   if (!event) {
-    return <p className="text-center py-4">No event loaded.</p>;
+    return (
+      <div role="alert" className="text-center py-4 text-white">
+        No event loaded.
+      </div>
+    );
   }
 
-  const allowedCategories =
-    eventVendorMapping[event.eventType as keyof typeof eventVendorMapping]?.map(
-      (c) => c.category
-    ) || [];
-
-  const tabs = [
-    { value: "overview", label: "Overview" },
-    { value: "vendors", label: "Vendors" },
-  ];
+  // Define vendor props to avoid recalculation in render
+  const vendorProps = useMemo(
+    () => ({
+      noOfDay: event.durationInDays,
+      eventId: event._id,
+      noOfAddedGuest: event.noOfGuestAdded,
+      addedBy: event.creator,
+      noOfGuest: event.guestLimit,
+      eventType: event.eventType,
+      allowedCategories,
+      eventLocation: event.location,
+    }),
+    [
+      event.durationInDays,
+      event._id,
+      event.noOfGuestAdded,
+      event.creator,
+      event.guestLimit,
+      event.eventType,
+      allowedCategories,
+      event.location,
+    ]
+  );
 
   return (
     <div className="w-full sm:w-[95%] bg-gray-900 border mt-2 sm:mt-4 border-b rounded-lg sm:rounded-2xl p-3 sm:p-5 mx-auto">
@@ -34,12 +91,10 @@ export default function EventTabComponent({ id }: { id: string }) {
             <TabsTrigger
               key={value}
               value={value}
-              className={`cursor-pointer relative px-2 sm:px-4 py-1 sm:py-2 text-base sm:text-lg transition-all whitespace-nowrap
-                ${activeTab === value ? "text-cyan-400" : "text-gray-400"}
-                after:absolute after:bottom-[-1px] after:border-cyan-400 after:left-0 after:w-full after:h-[3px]
-                after:bg-cyan-700 after:transition-transform
-                ${activeTab === value ? "after:scale-x-100" : "after:scale-x-0"}
-              `}
+              aria-label={`View ${label}`}
+              className={`cursor-pointer relative px-2 sm:px-4 py-1 sm:py-2 text-base sm:text-lg transition-all whitespace-nowrap ${
+                activeTab === value ? "text-cyan-400" : "text-gray-400"
+              }`}
             >
               {label}
             </TabsTrigger>
@@ -47,23 +102,30 @@ export default function EventTabComponent({ id }: { id: string }) {
         </TabsList>
 
         <TabsContent value="overview" className="p-2 sm:p-4">
-          <EventOverView event={event} />
+          <Suspense
+            fallback={
+              <div className="h-64 w-full bg-gray-800 animate-pulse rounded-lg"></div>
+            }
+          >
+            <EventOverView event={event} />
+          </Suspense>
         </TabsContent>
 
         <TabsContent value="vendors" className="p-2 sm:p-4">
-          <SearchVendor
-            noOfDay={event.durationInDays}
-            eventId={event._id}
-            noOfAddedGuest={event.noOfGuestAdded}
-            addedBy={event.creator}
-            noOfGuest={event.guestLimit}
-            eventType={event.eventType}
-            allowedCategories={allowedCategories}
-            eventLocation={event.location}
-            
-          />
+          {activeTab === "vendors" && (
+            <Suspense
+              fallback={
+                <div className="h-64 w-full bg-gray-800 animate-pulse rounded-lg"></div>
+              }
+            >
+              <SearchVendor {...vendorProps} />
+            </Suspense>
+          )}
         </TabsContent>
       </Tabs>
     </div>
   );
-}
+});
+
+EventTabComponent.displayName = "EventTabComponent";
+export default EventTabComponent;

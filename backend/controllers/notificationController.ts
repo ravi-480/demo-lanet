@@ -67,11 +67,15 @@ export const getNotificationForUser = asyncHandler(
   async (req: Request, res: Response): Promise<any> => {
     try {
       const userId = req.query.userId as string;
+
       if (!userId) {
         throw new ApiError(400, "User Id is required");
       }
 
-      const notifications = await Notification.find({ userId })
+      const notifications = await Notification.find({
+        userId,
+        status: "unread",
+      })
         .sort({ createdAt: -1 })
         .limit(20);
 

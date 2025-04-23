@@ -18,14 +18,14 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-
-
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-gray-950 text-white`}>
+      <body
+        className={`${inter.className} bg-gray-950 text-white min-h-screen flex flex-col`}
+      >
         <ReduxProvider>
           <Header />
-          {children}
+          <main className="flex-1">{children}</main>
           <Toaster richColors />
           <Footer />
         </ReduxProvider>

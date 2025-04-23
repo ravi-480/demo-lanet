@@ -1,4 +1,3 @@
-"use client";
 
 import FaqSection from "./Components/Home/FaqSection/FaqSection";
 import FeatureSections from "./Components/Home/FeaturedSection/FeatureSections";
