@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { Loader } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,7 +15,6 @@ import { getRandomPrice } from "@/StaticData/Static";
 import { enrichVendor } from "@/utils/vendorUtils";
 import { SearchVendorProps } from "@/Interface/interface";
 
-// Sort options
 type SortOption = "lowToHigh" | "highToLow" | "rating" | "";
 
 const SearchVendor = ({
@@ -36,6 +33,7 @@ const SearchVendor = ({
   const [hasMore, setHasMore] = useState(true);
   const [sortOption, setSortOption] = useState<SortOption>("");
 
+  // Fetch vendors based on search term
   const fetchVendors = async (pageNum = 1) => {
     setLoading(true);
     setPage(pageNum);
@@ -59,7 +57,12 @@ const SearchVendor = ({
     }
   };
 
-  // Sort vendors based on selected option
+  // Handle search on submit (Enter press)
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchVendors(); // Trigger search on submit
+  };
+
   const getSortedVendors = () => {
     return [...vendors].sort((a, b) => {
       if (sortOption === "lowToHigh") return a.price - b.price;
@@ -69,16 +72,22 @@ const SearchVendor = ({
     });
   };
 
-  // Render functions for better organization
   const renderSearchBar = () => (
-    <div className="flex items-center gap-2">
+    <form onSubmit={handleSearchSubmit} className="flex items-center gap-2">
       <Input
         placeholder={`Search vendors for ${eventType}...`}
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            handleSearchSubmit(e); // Trigger search on Enter
+          }
+        }}
       />
-      <Button onClick={() => fetchVendors()}>Search</Button>
-    </div>
+      <Button type="submit" disabled={!searchTerm}>
+        Search
+      </Button>
+    </form>
   );
 
   const renderSortOptions = () => (
@@ -122,7 +131,6 @@ const SearchVendor = ({
 
   const renderVendorGrid = () => {
     const sortedVendors = getSortedVendors();
-
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {sortedVendors.map((vendor, idx) => (
@@ -159,12 +167,12 @@ const SearchVendor = ({
         </div>
       )}
 
-      {/* No vendors */}
+      {/* No vendors
       {!loading && vendors.length === 0 && searchTerm && (
         <div className="text-center py-8 text-gray-500">
           No vendors found matching "{searchTerm}"
         </div>
-      )}
+      )} */}
 
       {/* Vendors grid */}
       {!loading && vendors.length > 0 && (

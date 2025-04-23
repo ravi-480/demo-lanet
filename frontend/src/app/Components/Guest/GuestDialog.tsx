@@ -82,7 +82,11 @@ const GuestDialog = ({
           await dispatch(fetchGuests(eventId));
           handleClose();
         } else {
-          toast.error("Failed to update guest");
+          toast.error(
+            typeof result.payload === "string"
+              ? result.payload
+              : "Failed to add guest"
+          );
         }
       } else {
         const result = await dispatch(addSingleGuest({ ...data, eventId }));
@@ -91,10 +95,14 @@ const GuestDialog = ({
           await dispatch(fetchGuests(eventId));
           handleClose();
         } else {
-          toast.error("Failed to add guest");
+          toast.error(
+            typeof result.payload === "string"
+              ? result.payload
+              : "Failed to add guest"
+          );
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       toast.error("An error occurred");
       console.error(error);
     }
@@ -187,7 +195,7 @@ const GuestDialog = ({
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={handleClose}>
+            <Button type="button" className="bg-white text-black hover:bg-gray-200" onClick={handleClose}>
               Cancel
             </Button>
             <Button type="submit">

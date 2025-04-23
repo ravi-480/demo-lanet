@@ -1,3 +1,15 @@
+import { useDispatch } from "react-redux";
+import { MoreHorizontal } from "lucide-react";
+import { toast } from "sonner";
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -7,41 +19,73 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { addVendorInSplitOrRemove } from "@/store/splitSlice";
-import { AppDispatch } from "@/store/store";
-import { getVendorsByEvent, removeAddedVendor } from "@/store/vendorSlice";
-import { MoreHorizontal } from "lucide-react";
-import { useDispatch } from "react-redux";
-import { toast } from "sonner";
 
-const BudgetList = ({ items }: any) => {
+import { AppDispatch } from "@/store/store";
+import { addVendorInSplitOrRemove } from "@/store/splitSlice";
+import { getVendorsByEvent, removeAddedVendor } from "@/store/vendorSlice";
+
+interface VendorActionProps {
+  item: any;
+  onRemove: (id: string) => void;
+  handleAddOrRemoveFromSplit: (id: string) => void;
+}
+
+const VendorActions = ({
+  item,
+  onRemove,
+  handleAddOrRemoveFromSplit,
+}: VendorActionProps) => {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8">
+          <MoreHorizontal size={15} />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>Edit Details</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="text-gray-950"
+          onClick={() => handleAddOrRemoveFromSplit(item._id)}
+        >
+          {item.isIncludedInSplit ? "Remove Split" : "Add to Split"}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => onRemove(item._id)}
+          className="text-red-600"
+        >
+          Remove Vendor
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+const BudgetList = ({ items }: { items: any[] }) => {
   const dispatch = useDispatch<AppDispatch>();
+
   const handleRemoveVendor = async (vendorId: string) => {
-    if (confirm("Are you sure you want to remove this guest?")) {
+    if (confirm("Are you sure you want to remove this vendor?")) {
       try {
         await dispatch(removeAddedVendor(vendorId));
         toast.success("Vendor removed successfully");
-        dispatch(getVendorsByEvent(items[0].event));
+        if (items.length > 0) {
+          dispatch(getVendorsByEvent(items[0].event));
+        }
       } catch (error) {
-        toast.error("Failed to remove guest");
+        toast.error("Failed to remove vendor");
         console.error(error);
       }
     }
   };
 
-  const handleAddOrRemoveFromSplit = async (vendorId: string) => {
-
+  const handleAddOrRemoveFromSplit = (vendorId: string) => {
     dispatch(addVendorInSplitOrRemove(vendorId));
   };
-
 
   return (
     <div className="rounded-md border">
@@ -58,9 +102,9 @@ const BudgetList = ({ items }: any) => {
         </TableHeader>
         <TableBody>
           {items.length > 0 ? (
-            items.map((item: any, index: number) => (
+            items.map((item: any) => (
               <TableRow
-                key={item._id || index}
+                key={item._id}
                 className="text-gray-200 hover:bg-gray-900/50"
               >
                 <TableCell>
@@ -69,9 +113,7 @@ const BudgetList = ({ items }: any) => {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div>
-                    <div className="text-sm">{item.category}</div>
-                  </div>
+                  <div className="text-sm">{item.category}</div>
                 </TableCell>
                 <TableCell>₹ {item.price}</TableCell>
                 <TableCell>{item.pricingUnit}</TableCell>
@@ -87,9 +129,8 @@ const BudgetList = ({ items }: any) => {
                   )}
                 </TableCell>
                 <TableCell className="text-right">
-                  <GuestActions
+                  <VendorActions
                     item={item}
-                    // onEdit={onEdit}
                     handleAddOrRemoveFromSplit={handleAddOrRemoveFromSplit}
                     onRemove={handleRemoveVendor}
                   />
@@ -99,7 +140,7 @@ const BudgetList = ({ items }: any) => {
           ) : (
             <TableRow className="hover:bg-transparent">
               <TableCell
-                colSpan={4}
+                colSpan={6}
                 className="text-center text-gray-200 text-xl font-semibold py-6"
               >
                 No Vendors Found
@@ -109,45 +150,6 @@ const BudgetList = ({ items }: any) => {
         </TableBody>
       </Table>
     </div>
-  );
-};
-
-const GuestActions = ({
-  item,
-  onEdit,
-  onRemove,
-  handleAddOrRemoveFromSplit,
-}: any) => {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <MoreHorizontal size={15} />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>Edit Details</DropdownMenuItem>
-
-        <DropdownMenuSeparator />
-
-        <DropdownMenuItem
-          className="text-gray-950"
-          onClick={() => handleAddOrRemoveFromSplit(item._id)}
-        >
-          {item.isIncludedInSplit ? "Remove Split" : "Add to Split"}
-        </DropdownMenuItem>
-
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() => onRemove(item._id)}
-          className="text-red-600"
-        >
-          Remove Vendors
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 };
 

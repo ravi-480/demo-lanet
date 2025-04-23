@@ -15,20 +15,20 @@ interface VendorAlertProps {
 }
 
 export const VendorAlertDialog = ({ open, setOpen, vendors }: VendorAlertProps) => (
-  <AlertDialog open={open} onOpenChange={setOpen}>
+  <AlertDialog  open={open} onOpenChange={setOpen}>
     <AlertDialogContent>
       <AlertDialogHeader>
-        <AlertDialogTitle className="text-black">
+        <AlertDialogTitle className="text-gray-100">
           Catering Vendor Notice
         </AlertDialogTitle>
-        <AlertDialogDescription>
+        <AlertDialogDescription className="text-gray-200">
           Guests have been removed, but some catering vendor budgets were
           preserved due to minimum guest requirements:
         </AlertDialogDescription>
         <div className="space-y-3 mt-3">
           <ul className="list-disc pl-5 space-y-1">
             {vendors.map((vendor) => (
-              <li key={vendor.id} className="text-black">
+              <li key={vendor.id} className="text-gray-300">
                 <span className="font-medium">{vendor.title}</span>: Minimum{" "}
                 {vendor.minGuestLimit} guests required
               </li>

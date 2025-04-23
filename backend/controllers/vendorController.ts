@@ -148,13 +148,28 @@ export const addUserInSplit = asyncHandler(
     const { id, user } = req.body;
 
     const event = await Event.findById(id);
-    if (!event) return res.status(404).json({ message: "Event not found" });
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
 
-    event.includedInSplit = [...event.includedInSplit, user];
+    // Check if user with same email already exists
+    const alreadyIncluded = event.includedInSplit.some(
+      (u: any) => u.email === user.email
+    );
+
+    if (alreadyIncluded) {
+      return res
+        .status(400)
+        .json({ message: "User already included in split" });
+    }
+
+    event.includedInSplit.push(user);
     await event.save();
-    return res
-      .status(200)
-      .json({ success: true, message: "User added in split successfully" });
+
+    return res.status(200).json({
+      success: true,
+      message: "User added in split successfully",
+    });
   }
 );
 

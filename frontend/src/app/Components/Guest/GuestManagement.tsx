@@ -31,9 +31,10 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
   const guestsPerPage = 10;
 
   const dispatch = useDispatch<AppDispatch>();
-  const { rsvpData } = useSelector((state: RootState) => state.rsvp, 
-  (prev, next) => prev.rsvpData === next.rsvpData 
-);
+  const { rsvpData } = useSelector(
+    (state: RootState) => state.rsvp,
+    (prev, next) => prev.rsvpData === next.rsvpData
+  );
 
   useEffect(() => {
     if (eventId) {
@@ -100,15 +101,13 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <GuestUpload eventId={eventId} />
           <Suspense fallback={<div>Loading...</div>}>
-            {isAddGuestOpen && (
-              <GuestDialog
-                eventId={eventId}
-                isOpen={isAddGuestOpen}
-                setIsOpen={setIsAddGuestOpen}
-                editGuest={editGuest}
-                setEditGuest={setEditGuest}
-              />
-            )}
+            <GuestDialog
+              eventId={eventId}
+              isOpen={isAddGuestOpen}
+              setIsOpen={setIsAddGuestOpen}
+              editGuest={editGuest}
+              setEditGuest={setEditGuest}
+            />
           </Suspense>
         </div>
       </div>

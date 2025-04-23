@@ -147,7 +147,7 @@ export default function RSVPRespond() {
     !showRespondAgain
   ) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="min-h-screen flex items-center  justify-center bg-gray-100 p-4">
         <div className="bg-white rounded-lg shadow-md p-8 flex flex-col items-center max-w-md w-full">
           <div className="text-blue-500 mb-4">
             <Check />
@@ -172,8 +172,8 @@ export default function RSVPRespond() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+    <div className="min-h-screen bg-cyan-100 py-12 px-4">
+      <div className="max-w-md mx-auto mt-10 bg-gray-100  rounded-lg shadow-md overflow-hidden">
         <div className="p-6">
           <div className="mb-6">
             <p className="text-gray-700 mb-1">
@@ -199,7 +199,7 @@ export default function RSVPRespond() {
               Please let us know if you'll be attending.
             </p>
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} >
               <div className="mb-6">
                 <div className="flex flex-col space-y-3">
                   <button

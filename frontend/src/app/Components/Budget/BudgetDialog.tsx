@@ -1,15 +1,13 @@
 "use client";
 
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useDispatch } from "react-redux";
 import { PlusCircle } from "lucide-react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -18,11 +16,16 @@ import {
   DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 import { AppDispatch } from "@/store/store";
 import { fetchGuests } from "@/store/rsvpSlice";
-import { toast } from "sonner";
 import { addManualVendorExpense } from "@/store/vendorSlice";
 
 interface BudgetDialogProps {
@@ -30,6 +33,22 @@ interface BudgetDialogProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
 }
+
+interface ExpenseFormData {
+  title: string;
+  price: number;
+  status: string;
+}
+
+const EXPENSE_CATEGORIES = [
+  "Catering",
+  "Music",
+  "Photography",
+  "Decoration",
+  "Videography",
+  "Lighting & Sound",
+  "Other",
+];
 
 const BudgetDialog = ({ eventId, isOpen, setIsOpen }: BudgetDialogProps) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -41,7 +60,7 @@ const BudgetDialog = ({ eventId, isOpen, setIsOpen }: BudgetDialogProps) => {
     watch,
     setValue,
     formState: { errors },
-  } = useForm({
+  } = useForm<ExpenseFormData>({
     defaultValues: {
       title: "",
       price: 0,
@@ -49,7 +68,7 @@ const BudgetDialog = ({ eventId, isOpen, setIsOpen }: BudgetDialogProps) => {
     },
   });
 
-  const handleAddExpense = async (data: any) => {
+  const handleAddExpense = async (data: ExpenseFormData) => {
     try {
       const result = await dispatch(
         addManualVendorExpense({
@@ -58,6 +77,7 @@ const BudgetDialog = ({ eventId, isOpen, setIsOpen }: BudgetDialogProps) => {
           pricingUnit: "flat rate",
         })
       );
+
       if (addManualVendorExpense.fulfilled.match(result)) {
         toast.success("Vendor added successfully");
         await dispatch(fetchGuests(eventId));
@@ -81,9 +101,7 @@ const BudgetDialog = ({ eventId, isOpen, setIsOpen }: BudgetDialogProps) => {
       open={isOpen}
       onOpenChange={(open) => {
         setIsOpen(open);
-        if (!open) {
-          reset();
-        }
+        if (!open) reset();
       }}
     >
       <DialogTrigger asChild>
@@ -107,7 +125,7 @@ const BudgetDialog = ({ eventId, isOpen, setIsOpen }: BudgetDialogProps) => {
                 />
                 {errors.title && (
                   <p className="text-sm text-red-500 mt-1">
-                    {errors.title.message as string}
+                    {errors.title.message}
                   </p>
                 )}
               </div>
@@ -120,16 +138,18 @@ const BudgetDialog = ({ eventId, isOpen, setIsOpen }: BudgetDialogProps) => {
                   type="number"
                   placeholder="Enter price"
                   {...register("price", {
-                    required: "price is required",
+                    required: "Price is required",
+                    min: { value: 0, message: "Price must be positive" },
                   })}
                 />
                 {errors.price && (
                   <p className="text-sm text-red-500 mt-1">
-                    {errors.price.message as string}
+                    {errors.price.message}
                   </p>
                 )}
               </div>
             </div>
+
             <div className="grid grid-cols-4 items-center gap-4">
               <label className="text-right">Category</label>
               <div className="col-span-3">
@@ -141,15 +161,11 @@ const BudgetDialog = ({ eventId, isOpen, setIsOpen }: BudgetDialogProps) => {
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Catering">Catering</SelectItem>
-                    <SelectItem value="Music">Music</SelectItem>
-                    <SelectItem value="Photography">Photography</SelectItem>
-                    <SelectItem value="Decoration">Decoration</SelectItem>
-                    <SelectItem value="Videography">Videography</SelectItem>
-                    <SelectItem value="Lighting & Sound">
-                      Lighting & Sound
-                    </SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
+                    {EXPENSE_CATEGORIES.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

@@ -1,11 +1,6 @@
 import BudgetManagment from "@/app/Components/Budget/BudgetManagment";
+const BudgetPage = ({ params }: { params: { id: string } }) => (
+  <BudgetManagment eventId={params.id} />
+);
 
-const GuestPage = ({ params }: any) => {
-  return (
-    <div>
-      <BudgetManagment eventId={params.id} />
-    </div>
-  );
-};
-
-export default GuestPage;
+export default BudgetPage;

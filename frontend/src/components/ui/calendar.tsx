@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { DayPicker } from "react-day-picker"
+import * as React from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { DayPicker } from "react-day-picker";
 
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 
 function Calendar({
   className,
@@ -35,24 +35,24 @@ function Calendar({
           "text-gray-400 rounded-md w-8 sm:w-10 font-normal text-[0.8rem] flex-1",
         row: "flex w-full mt-2",
         cell: cn(
-          "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent flex-1",
+          "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 flex-1",
+          "[&:has([aria-selected])]:bg-transparent", // <- Override the white accent!
           props.mode === "range"
             ? "[&:has(>.day-range-end)]:rounded-r-md [&:has(>.day-range-start)]:rounded-l-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md"
             : "[&:has([aria-selected])]:rounded-md"
         ),
         day: cn(
-          buttonVariants({ variant: "ghost" }),
-          "h-8 w-8 sm:h-10 sm:w-10 p-0 font-normal aria-selected:opacity-100 text-white"
+          "h-8 w-8 sm:h-10 sm:w-10 p-0 font-normal text-white rounded-md transition-colors",
+          "hover:bg-cyan-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
         ),
         day_range_start:
           "day-range-start aria-selected:bg-primary aria-selected:text-primary-foreground",
         day_range_end:
           "day-range-end aria-selected:bg-primary aria-selected:text-primary-foreground",
         day_selected:
-          "bg-cyan-500 text-white hover:bg-cyan-600 hover:text-white focus:bg-cyan-500 focus:text-white",
+          "bg-cyan-500 text-white hover:bg-cyan-600 focus:ring-2 focus:ring-cyan-400",
         day_today: "bg-gray-700 text-white",
-        day_outside:
-          "day-outside text-gray-500 aria-selected:text-gray-500",
+        day_outside: "day-outside text-gray-500 aria-selected:text-gray-500",
         day_disabled: "text-gray-500 opacity-50",
         day_range_middle:
           "aria-selected:bg-accent aria-selected:text-accent-foreground",
@@ -72,4 +72,4 @@ function Calendar({
   );
 }
 
-export { Calendar }
+export { Calendar };

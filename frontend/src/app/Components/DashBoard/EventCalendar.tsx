@@ -63,7 +63,7 @@ const EventCalendar = () => {
           align="center"
           side="top"
           sideOffset={10}
-          className="w-72 bg-gray-800 text-white border-gray-700 shadow-lg z-50"
+          className="w-72 bg-gray-800 text-white border-gray-700  z-50"
         >
           {selectedDate && (
             <>
@@ -85,7 +85,9 @@ const EventCalendar = () => {
                   ))}
                 </ul>
               ) : (
-                <div className="text-sm text-gray-400">No events scheduled</div>
+                <div className="text-sm text-gray-400 index">
+                  No events scheduled
+                </div>
               )}
             </>
           )}
@@ -100,9 +102,9 @@ const EventCalendar = () => {
               }}
               modifiersClassNames={{
                 hasEvent:
-                  "text-gray-100 bg-cyan-300/50 hover:bg-cyan-300/40 hover:text-white rounded-md",
+                  "text-gray-100 bg-cyan-300 hover:bg-cyan-300/40 hover:text-white rounded-md",
               }}
-              className="rounded-lg border h-93 border-gray-400 w-full"
+              className="rounded-lg border h-91 border-gray-400 w-full"
               selected={selectedDate ?? undefined}
               onDayClick={handleDayClick}
               mode="single"

@@ -1,5 +1,6 @@
-import { Button } from "@/components/ui/button";
+import { Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -7,18 +8,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Filter, Search } from "lucide-react";
+
+interface BudgetFiltersProps {
+  searchFilter: string;
+  setSearchFilter: (value: string) => void;
+  priceSortOrder: "lowToHigh" | "highToLow";
+  setPriceSortOrder: (value: "lowToHigh" | "highToLow") => void;
+}
 
 const BudgetFilters = ({
   searchFilter,
   setSearchFilter,
   priceSortOrder,
   setPriceSortOrder,
-}: any) => {
+}: BudgetFiltersProps) => {
   return (
-    <div className="flex flex-col sm:flex-row gap-2 ">
+    <div className="flex flex-col sm:flex-row gap-2">
       <div className="relative">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500  " />
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
         <Input
           value={searchFilter}
           onChange={(e) => setSearchFilter(e.target.value)}
@@ -30,19 +37,20 @@ const BudgetFilters = ({
 
       <div className="flex gap-2">
         <Select
-          defaultValue="status"
           value={priceSortOrder}
-          onValueChange={(value) => setPriceSortOrder(value)}
+          onValueChange={(value: "lowToHigh" | "highToLow") =>
+            setPriceSortOrder(value)
+          }
         >
           <SelectTrigger className="w-[130px] h-9 text-white">
             <SelectValue placeholder="Sort by Price" />
           </SelectTrigger>
-          <SelectContent className="bg-white mt-9  w-25 p-4 rounded-lg gap-4">
+          <SelectContent className="bg-white mt-9 w-25 p-4 rounded-lg gap-4">
             <SelectItem className="hover:bg-gray-200" value="lowToHigh">
-              lowToHigh
+              Low to High
             </SelectItem>
             <SelectItem className="hover:bg-gray-200" value="highToLow">
-              highToLow
+              High to Low
             </SelectItem>
           </SelectContent>
         </Select>

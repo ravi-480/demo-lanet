@@ -80,11 +80,19 @@ const EventForm: React.FC<EventFormProps> = ({
   });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      const file = e.target.files[0];
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validImageTypes = ["image/jpeg", "image/png", "image/webp"];
+
+    if (!validImageTypes.includes(file.type)) {
+      alert("Only JPEG, PNG, or WEBP images are allowed.");
+      e.target.value = "";
+      return;
     }
+
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
   };
 
   const submitHandler = (data: EventFormValues) => {
@@ -157,6 +165,8 @@ const EventForm: React.FC<EventFormProps> = ({
           {imagePreview && (
             <div className="mt-2">
               <Image
+                width={300}
+                height={200}
                 src={imagePreview}
                 alt="Preview"
                 className="max-h-48 border rounded"

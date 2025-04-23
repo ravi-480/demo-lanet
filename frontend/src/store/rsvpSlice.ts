@@ -86,20 +86,18 @@ export const removeAllGuest = createAsyncThunk(
 
 // add guest manually
 export const addSingleGuest = createAsyncThunk(
-  "rsvp/addSingleGuest",
-  async (data: any, { rejectWithValue }) => {
+  "guest/add",
+  async (guestData: any, { rejectWithValue }) => {
     try {
       const response = await axios.post(
         "http://localhost:5000/api/guest/addSingleGuest",
-        data,
-        {
-          withCredentials: true,
-        }
+        guestData,
+        { withCredentials: true }
       );
       return response.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to add user details"
+        error.response?.data?.message || "Failed to add guest"
       );
     }
   }

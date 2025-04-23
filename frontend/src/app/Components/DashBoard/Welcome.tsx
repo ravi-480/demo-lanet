@@ -12,7 +12,6 @@ const Welcome = () => {
   const events = useSelector(selectEvents) || [];
   const val = getNoOfUpcomingEvent(events);
   const { user } = useSelector((state: RootState) => state.auth);
-  console.log("ravi", user);
 
   return (
     <div className="bg-gray-900 border border-gray-400 rounded-lg shadow-sm p-6 mb-6">

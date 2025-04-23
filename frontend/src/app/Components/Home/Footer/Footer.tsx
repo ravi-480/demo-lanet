@@ -10,7 +10,7 @@ const Footer = () => {
           </p>
         </div>
 
-        <div className="border-t border-gray-700 pt-6 text-center text-sm text-gray-500">
+        <div className="border-t border-gray-700 pt-6 text-center text-sm text-gray-400">
           © {new Date().getFullYear()} EventWise. All rights reserved.
         </div>
       </div>

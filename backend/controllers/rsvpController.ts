@@ -224,11 +224,27 @@ export const addSingleGuest = asyncHandler(
   async (req: Request, res: Response) => {
     try {
       const { eventId } = req.body;
-      
+
       if (!validateIdFormat(eventId)) {
         return res
           .status(400)
           .json({ success: false, message: "Invalid Event ID" });
+      }
+
+      console.log(req.body);
+
+      const existingGuest = await Guest.findOne({
+        eventId,
+        email: req.body.email,
+      });
+
+      console.log(existingGuest);
+
+      if (existingGuest) {
+        return res.status(400).json({
+          success: false,
+          message: "A guest with this email is already added to the event.",
+        });
       }
 
       // Get event details first
@@ -242,69 +258,69 @@ export const addSingleGuest = asyncHandler(
       const currentGuestCount = event.noOfGuestAdded || 0;
       const newGuestCount = currentGuestCount + 1;
       const guestLimit = event.guestLimit || 0;
-      
+
       // Create the guest
       const guest = await Guest.create(req.body);
-      
+
       // Update event guest count
       await Event.findByIdAndUpdate(eventId, {
         $inc: { noOfGuestAdded: 1 },
       });
-      
+
       // Check for per-plate vendors that need price updates
       const cateringVendors = await Vendor.find({
         event: eventId,
         pricingUnit: "per plate",
       });
-      
+
       // Track total additional cost for budget updates
       let totalAdditionalCost = 0;
       const updatedVendors = [];
-      
+
       // Process each vendor
       for (const vendor of cateringVendors) {
         // Calculate price per plate based on current settings
         const perPlatePrice = vendor.price / vendor.numberOfGuests;
-        
+
         // Update the vendor with new guest count and price
         const updatedPrice = vendor.price + perPlatePrice;
-        
+
         await Vendor.findByIdAndUpdate(vendor._id, {
           price: updatedPrice,
-          numberOfGuests: vendor.numberOfGuests + 1
+          numberOfGuests: vendor.numberOfGuests + 1,
         });
-        
+
         // Track price increase for budget update
         totalAdditionalCost += perPlatePrice;
-        
+
         updatedVendors.push({
           id: vendor._id,
           title: vendor.title,
           priceIncrease: perPlatePrice,
-          newPrice: updatedPrice
+          newPrice: updatedPrice,
         });
       }
-      
+
       // Update event budget spent if there's additional cost
       if (totalAdditionalCost > 0) {
         const currentBudgetSpent = event.budget?.spent || 0;
         const newBudgetSpent = currentBudgetSpent + totalAdditionalCost;
-        
+
         await Event.findByIdAndUpdate(
           eventId,
           { "budget.spent": newBudgetSpent },
           { new: true }
         );
       }
-      
+
       // Check if guest limit is exceeded
       let guestLimitExceeded = false;
       if (guestLimit > 0 && newGuestCount > guestLimit) {
         guestLimitExceeded = true;
-        
+
         // Create notification for exceeding guest limit
         const message = `Guest limit exceeded. Total: ${newGuestCount}, Limit: ${guestLimit}`;
-        
+
         await createNotification(
           event.creator.toString(),
           eventId,
@@ -327,7 +343,7 @@ export const addSingleGuest = asyncHandler(
         updatedVendors: updatedVendors.length > 0 ? updatedVendors : undefined,
         budgetUpdated: totalAdditionalCost > 0,
         additionalCost: totalAdditionalCost,
-        guestLimitExceeded
+        guestLimitExceeded,
       });
     } catch (error) {
       console.error("Error adding guest:", error);

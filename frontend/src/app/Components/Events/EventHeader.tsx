@@ -44,7 +44,7 @@ const EventHeader = ({ event }: { event: IEvent }) => {
             {event.name}
           </h1>
 
-          <span className="bg-cyan-700/50 text-sm px-2 py-1 rounded-3xl">
+          <span className="bg-cyan-700/50 text-sm md:w-20 text-center rounded-3xl">
             {getEventStatus(event.date)}
           </span>
 

@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
-import { Bell, Calendar } from "lucide-react";
+import { Bell, Calendar, User } from "lucide-react";
 import { AuthButtons } from "./AuthButton";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import NotificationLoader from "@/store/NotificationLoader";
 
@@ -11,25 +11,30 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import axios from "axios";
 import { usePathname } from "next/navigation";
 
 const Header = () => {
+  const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
   const { items, loading, error } = useSelector(
     (state: RootState) => state.notification
   );
 
+  const isAuthenticated = !!user;
+
+  // Calculate unread notifications count
+  const unreadCount = items?.filter((n) => n.status === "unread").length || 0;
+
   const handleMarkAllAsRead = async () => {
-    if (!items.length) return;
+    const userId = items[0].userId;
     try {
       await axios.patch(
         `http://localhost:5000/api/notifications/mark-all-read`,
-        {
-          userId: items[0].userId,
-        }
+        { userId }
       );
     } catch (error) {
       console.log("Failed to mark all as read", error);
@@ -66,12 +71,12 @@ const Header = () => {
                   <PopoverTrigger asChild>
                     <button className="p-2 rounded-full cursor-pointer hover:bg-gray-700 text-white relative">
                       <Bell size={20} />
-                      {items.length > 0 && (
+                      {unreadCount > 0 && (
                         <Badge
                           variant="destructive"
                           className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0"
                         >
-                          {items.length}
+                          {unreadCount}
                         </Badge>
                       )}
                     </button>
@@ -103,20 +108,26 @@ const Header = () => {
                           </p>
                         )}
 
-                        {!loading && !error && items.length === 0 && (
-                          <p className="text-center text-gray-500 py-4">
-                            No notifications
-                          </p>
-                        )}
-
                         {!loading &&
                           !error &&
+                          (!items || items.length === 0) && (
+                            <p className="text-center text-gray-500 py-4">
+                              No notifications
+                            </p>
+                          )}
+
+                        {!loading &&
+                          items &&
                           items.map((notification) => (
                             <div
                               key={notification._id}
-                              className="p-3 border-b border-gray-100 hover:bg-gray-50 bg-blue-50"
+                              className={`p-3 border-b border-gray-100 hover:bg-gray-50 ${
+                                notification.status === "unread"
+                                  ? "bg-blue-50"
+                                  : ""
+                              }`}
                             >
-                              <p className="font-medium text-cyan-900">
+                              <p className="font-medium text-gray-800">
                                 {notification.type}
                               </p>
                               <p className="text-sm text-gray-600">

@@ -141,7 +141,7 @@ const VendorCard = ({
 
   // Extracted dialog content component for clarity
   const renderDialogContent = () => (
-    <div className="space-y-2 text-sm">
+    <div className="space-y-2 text-gray-300  text-sm">
       <p>
         <strong>{vendor.title}</strong> – ₹{price.toLocaleString()} {priceUnit}
       </p>
@@ -176,7 +176,7 @@ const VendorCard = ({
           <p className="text-muted-foreground">
             Estimated Total: ₹{totalEstimate.toLocaleString()}
           </p>
-          <p className="text-xs text-blue-500">
+          <p className="text-xs text-cyan-400">
             Note: Event duration is {noOfDay} day{noOfDay > 1 ? "s" : ""}
           </p>
         </>
@@ -187,7 +187,7 @@ const VendorCard = ({
             <strong> ₹{totalEstimate.toLocaleString()}</strong>
           </p>
           {minGuestLimit && category.toLowerCase() === "catering" && (
-            <p className="text-xs text-blue-500">
+            <p className="text-xs text-cyan-400">
               Minimum requirement: {minGuestLimit} guests
             </p>
           )}
@@ -203,7 +203,7 @@ const VendorCard = ({
 
   return (
     <>
-      <Card className="rounded-xl shadow-md">
+      <Card className="rounded-xl bg-gray-800 shadow-md">
         <CardHeader className="flex items-start gap-4">
           {vendor.thumbnail && (
             <Image
@@ -215,22 +215,24 @@ const VendorCard = ({
             />
           )}
           <div>
-            <CardTitle>{vendor.title}</CardTitle>
-            <CardDescription>{vendor.address}</CardDescription>
+            <CardTitle className="text-white">{vendor.title}</CardTitle>
+            <CardDescription className="text-gray-200">
+              {vendor.address}
+            </CardDescription>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-2">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-gray-300">
             {vendor.description || "No description available."}
           </p>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-400">
             ⭐ {vendor.rating || 0} ({vendor.reviews || 0} reviews)
           </div>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-400">
             Est. ₹{price.toLocaleString()} {priceUnit}
             {minGuestLimit && category.toLowerCase() === "catering" && (
-              <span className="ml-2 text-xs text-blue-500">
+              <span className="ml-2 text-sm text-cyan-500">
                 Min. {minGuestLimit} guests required
               </span>
             )}
@@ -257,7 +259,7 @@ const VendorCard = ({
         </CardFooter>
 
         {showDetails && (
-          <CardContent className="text-sm text-muted-foreground space-y-1 pt-2">
+          <CardContent className="text-sm text-gray-300 space-y-1 pt-2">
             <div>
               <strong>Type:</strong> {vendor.type || category}
             </div>
@@ -275,7 +277,7 @@ const VendorCard = ({
                   href={vendor.links.directions}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-500 hover:underline"
+                  className="text-cyan-400 hover:underline"
                 >
                   Get Directions
                 </a>
@@ -298,7 +300,7 @@ const VendorCard = ({
       </Card>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="text-black">
+        <DialogContent className="text-white">
           <DialogHeader>
             <DialogTitle>Add Vendor Confirmation</DialogTitle>
           </DialogHeader>

@@ -25,29 +25,35 @@ const notificationSlice = createSlice({
     },
     fetchNotificationsSuccess(state, action: PayloadAction<INotification[]>) {
       state.items = action.payload;
-      state.unreadCount = action.payload.length; // All fetched are unread
+      state.unreadCount = action.payload.filter(
+        (n) => n.status === "unread"
+      ).length;
       state.loading = false;
     },
     fetchNotificationsFailure(state, action: PayloadAction<string>) {
       state.loading = false;
       state.error = action.payload;
     },
-    addNotification(state, action: PayloadAction<INotification>) {
+    addNotification: (state, action: PayloadAction<INotification>) => {
       const exists = state.items.some((n) => n._id === action.payload._id);
-      if (!exists && action.payload.status === "unread") {
-        state.items.unshift(action.payload);
-        state.unreadCount += 1;
+      if (!exists) {
+        state.items = [action.payload, ...state.items];
+        if (action.payload.status === "unread") {
+          state.unreadCount += 1;
+        }
       }
     },
     markAsRead(state, action: PayloadAction<string>) {
-      const index = state.items.findIndex((n) => n._id === action.payload);
-      if (index !== -1 && state.items[index].status === "unread") {
-        state.items[index].status = "read";
+      const notification = state.items.find((n) => n._id === action.payload);
+      if (notification && notification.status === "unread") {
+        notification.status = "read";
         state.unreadCount -= 1;
       }
     },
     markAllAsRead(state) {
-      state.items = state.items.map((n) => ({ ...n, status: "read" }));
+      state.items.forEach((notification) => {
+        notification.status = "read";
+      });
       state.unreadCount = 0;
     },
   },
@@ -58,8 +64,7 @@ export const {
   fetchNotificationsSuccess,
   fetchNotificationsFailure,
   addNotification,
-  markAsRead,
   markAllAsRead,
+  markAsRead,
 } = notificationSlice.actions;
-
 export default notificationSlice.reducer;
