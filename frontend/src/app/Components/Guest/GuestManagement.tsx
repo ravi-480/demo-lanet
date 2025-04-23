@@ -1,20 +1,24 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 import { Users, RefreshCcw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchGuests, removeAllGuest } from "@/store/rsvpSlice";
 import { AppDispatch, RootState } from "@/store/store";
 import GuestList from "./GuestList";
-import GuestUpload from "./GuestUpload";
-import GuestDialog from "./GuestDialog";
+const GuestDialog = lazy(() => import("./GuestDialog"));
+const GuestUpload = lazy(() => import("./GuestUpload"));
 import GuestStats from "./GuestStatCard";
 import GuestFilters from "./GuestFilter";
 import { Guest } from "@/Interface/interface";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { VendorAlertDialog } from "./AlertCard";
+const VendorAlertDialog = lazy(() =>
+  import("./AlertCard").then((module) => ({
+    default: module.VendorAlertDialog,
+  }))
+);
 
 const GuestManagement = ({ eventId }: { eventId: string }) => {
   const [isAddGuestOpen, setIsAddGuestOpen] = useState(false);
@@ -27,7 +31,9 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
   const guestsPerPage = 10;
 
   const dispatch = useDispatch<AppDispatch>();
-  const { rsvpData } = useSelector((state: RootState) => state.rsvp);
+  const { rsvpData } = useSelector((state: RootState) => state.rsvp, 
+  (prev, next) => prev.rsvpData === next.rsvpData 
+);
 
   useEffect(() => {
     if (eventId) {
@@ -40,22 +46,26 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
   };
 
   // Filter and paginate the guest data
-  const filteredGuests = rsvpData.filter((guest) => {
-    const matchesStatus =
-      statusFilter === "all" || guest.status === statusFilter;
-    const matchesSearch =
-      (guest.name?.toLowerCase().includes(searchFilter.toLowerCase()) ??
-        false) ||
-      (guest.email?.toLowerCase().includes(searchFilter.toLowerCase()) ??
-        false);
-    return matchesStatus && matchesSearch;
-  });
+  const filteredGuests = React.useMemo(() => {
+    return rsvpData.filter((guest) => {
+      const matchesStatus =
+        statusFilter === "all" || guest.status === statusFilter;
+      const matchesSearch =
+        (guest.name?.toLowerCase().includes(searchFilter.toLowerCase()) ??
+          false) ||
+        (guest.email?.toLowerCase().includes(searchFilter.toLowerCase()) ??
+          false);
+      return matchesStatus && matchesSearch;
+    });
+  }, [rsvpData, statusFilter, searchFilter]);
 
   const indexOfLast = currentPage * guestsPerPage;
   const indexOfFirst = indexOfLast - guestsPerPage;
-  const currentGuests = filteredGuests.slice(indexOfFirst, indexOfLast);
+  const currentGuests = React.useMemo(() => {
+    return filteredGuests.slice(indexOfFirst, indexOfLast);
+  }, [filteredGuests, indexOfFirst, indexOfLast]);
 
-  const RemoveAllGuest = async () => {
+  const RemoveAllGuest = React.useCallback(async () => {
     if (
       confirm(
         "Are you sure you want to remove ALL guests? This cannot be undone."
@@ -79,8 +89,7 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
         toast.error(error.message || "Failed to remove all guests");
       }
     }
-  };
-
+  }, [dispatch, eventId]);
   return (
     <div className="w-full max-w-6xl mx-auto p-2 sm:p-4 md:p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 sm:mb-6">
@@ -90,13 +99,17 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
         </h1>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <GuestUpload eventId={eventId} />
-          <GuestDialog
-            eventId={eventId}
-            isOpen={isAddGuestOpen}
-            setIsOpen={setIsAddGuestOpen}
-            editGuest={editGuest}
-            setEditGuest={setEditGuest}
-          />
+          <Suspense fallback={<div>Loading...</div>}>
+            {isAddGuestOpen && (
+              <GuestDialog
+                eventId={eventId}
+                isOpen={isAddGuestOpen}
+                setIsOpen={setIsAddGuestOpen}
+                editGuest={editGuest}
+                setEditGuest={setEditGuest}
+              />
+            )}
+          </Suspense>
         </div>
       </div>
 
@@ -159,11 +172,15 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
         </CardContent>
       </Card>
 
-      <VendorAlertDialog
-        open={showMinGuestAlert}
-        setOpen={setShowMinGuestAlert}
-        vendors={preservedVendors}
-      />
+      <Suspense fallback={<div>Loading...</div>}>
+        {showMinGuestAlert && (
+          <VendorAlertDialog
+            open={showMinGuestAlert}
+            setOpen={setShowMinGuestAlert}
+            vendors={preservedVendors}
+          />
+        )}
+      </Suspense>
     </div>
   );
 };

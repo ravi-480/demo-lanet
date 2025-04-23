@@ -19,16 +19,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { CardFooter } from "@/components/ui/card";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/store/store";
@@ -52,7 +42,7 @@ interface GuestListProps {
   onEdit: (guest: Guest) => void;
 }
 
-const GuestList = ({
+const GuestListComponent = ({
   guests,
   totalGuests,
   filteredCount,
@@ -65,12 +55,10 @@ const GuestList = ({
   const dispatch = useDispatch<AppDispatch>();
   const [showMinGuestAlert, setShowMinGuestAlert] = useState(false);
   const [violatingVendors, setViolatingVendors] = useState<any[]>([]);
-  const [guestToRemove, setGuestToRemove] = useState<string>("");
 
   const handleRemoveGuest = async (guestId: string) => {
     try {
       const response = await dispatch(removeSingleGuest(guestId)).unwrap();
-
       toast.success(response.message || "Guest removed successfully");
       dispatch(fetchGuests(eventId));
 
@@ -254,4 +242,5 @@ const GuestActions = ({
   );
 };
 
+const GuestList = React.memo(GuestListComponent);
 export default GuestList;
