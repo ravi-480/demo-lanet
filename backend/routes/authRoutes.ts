@@ -1,17 +1,25 @@
 import express from "express";
-import * as authController from "../controllers/authController";
+import {
+  signup,
+  login,
+  refreshToken,
+  logout,
+  authGuard,
+  forgotPassword,
+  resetPassword,
+} from "../controllers/authController";
 import { authenticate } from "../middleware/authMiddleware";
 
 const router = express.Router();
 
 // Authentication routes
-router.post("/signup", authController.signup);
-router.post("/login", authController.login);
-router.post("/refresh-token", authController.refreshToken);
-router.post("/logout",authenticate, authController.logout);
-router.get("/", authenticate,authController.authGuard);
+router.post("/signup", signup);
+router.post("/login", login);
+router.post("/refresh-token", refreshToken);
+router.post("/logout", authenticate, logout);
+router.get("/", authenticate, authGuard);
 // Password reset routes
-router.post("/forgot-password", authController.forgotPassword);
-router.post("/reset-password", authController.resetPassword);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
 
 export default router;

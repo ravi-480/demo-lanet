@@ -1,8 +1,8 @@
-// app.ts
 import express, { Request, Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
+import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes";
 import eventRoutes from "./routes/eventRoute";
@@ -12,8 +12,13 @@ import rsvpRoutes from "./routes/rsvpRoutes";
 import { errorConverter, errorHandler } from "./middleware/errorHandler";
 
 const app = express();
-
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: "Too many request please try again later",
+});
 // Middleware
+app.use(limiter);
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

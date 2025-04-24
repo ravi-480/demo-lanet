@@ -19,7 +19,7 @@ const vendorSchema = new Schema(
     placeId: { type: String, required: true, unique: true },
     pricingUnit: { type: String, required: true },
     category: { type: String, required: true },
-    numberOfGuests: { type: Number, default: 1 },
+    numberOfGuests: { type: Number, default: 0},
     isIncludedInSplit: { type: Boolean, default: false },
     minGuestLimit: { type: Number }, // Added this field for minimum guest requirement
     addedBy: {

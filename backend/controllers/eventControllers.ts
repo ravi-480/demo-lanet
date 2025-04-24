@@ -104,7 +104,6 @@ export const fetchById = asyncHandler(async (req: Request, res: Response) => {
     }
 
     const event = await Event.findById(eventId);
-    console.log(event);
 
     if (!event) {
       return res.status(404).json({

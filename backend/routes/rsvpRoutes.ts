@@ -9,22 +9,25 @@ import {
   validateUrl,
   responseInvite,
   sendReminder,
-  removeAllGuestOrVendor
+  removeAllGuestOrVendor,
 } from "../controllers/rsvpController";
 import { upload } from "../middleware/uploadMiddleware";
+import { authenticate } from "../middleware/authMiddleware";
 const router = Router();
 
-router.post("/upload-guest-excel", upload.single("file"), addGuestFromFile);
-router.get("/:eventId", getUserByEventId);
-router.post("/addSingleGuest", addSingleGuest);
-router.delete("/removeSingleGuest", removeSingleGuest);
-router.put("/:eventId/:guestId", updateGuest);
-router.post("/inviteAll",inviteAllGuest)
-router.post("/rsvp/respond",responseInvite)
-router.post("/sendReminder",sendReminder)
-router.delete("/removeAllGuestOrVendor",removeAllGuestOrVendor)
-// validate url
-router.get("/rsvp/validate",validateUrl)
+router.post(
+  "/upload-guest-excel",
+  authenticate,
+  upload.single("file"),
+  addGuestFromFile
+);
+router.get("/:eventId", authenticate, getUserByEventId);
+router.post("/addSingleGuest", authenticate, addSingleGuest);
+router.delete("/removeSingleGuest", authenticate, removeSingleGuest);
+router.put("/:eventId/:guestId", authenticate, updateGuest);
+router.post("/inviteAll", authenticate, inviteAllGuest);
+router.post("/rsvp/respond", responseInvite);
+router.post("/sendReminder", authenticate, sendReminder);
+router.delete("/removeAllGuestOrVendor", authenticate, removeAllGuestOrVendor);
+router.get("/rsvp/validate", validateUrl);
 export default router;
-
-

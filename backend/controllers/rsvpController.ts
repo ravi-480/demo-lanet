@@ -8,7 +8,6 @@ import { sendEmail } from "../utils/emailService";
 import Vendor from "../models/vendorModel";
 import { createNotification, formatEmailTemplate } from "../utils/helper";
 
-// Helper functions to reduce repetition
 
 const validateIdFormat = (id: string): boolean => {
   return mongoose.Types.ObjectId.isValid(id);
@@ -98,7 +97,14 @@ export const addGuestFromFile = asyncHandler(
         previousGuestCount - guestLimit
       );
       const newGuestsOverLimit = guestsOverLimit - previousGuestsOverLimit;
-
+      console.log({
+        previousGuestCount,
+        guestLimit,
+        totalGuests,
+        guestsOverLimit,
+        previousGuestsOverLimit,
+        newGuestsOverLimit,
+      });
       // Track total additional cost for budget updates
       let totalAdditionalCost = 0;
 
@@ -121,6 +127,7 @@ export const addGuestFromFile = asyncHandler(
 
             // Add to total additional cost for budget update
             totalAdditionalCost += additionalCost;
+            console.log("hello");
 
             return Vendor.findByIdAndUpdate(vendor._id, {
               price: newPrice,
