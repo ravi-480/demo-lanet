@@ -40,7 +40,7 @@ const SearchVendor = ({
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/vendors?query=${searchTerm}&location=${eventLocation}&page=${pageNum}`
+        `http://localhost:5000/api/vendors?query=${searchTerm}&location=${eventLocation}&page=${pageNum}`,{credentials:"include"}
       );
       const data = await res.json();
 

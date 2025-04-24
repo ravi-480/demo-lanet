@@ -43,9 +43,12 @@ const EventCalendar = () => {
     ? eventsByDate.filter((event: any) => isSameDay(event.date, selectedDate))
     : [];
 
-  const handleDayClick = (date: Date) => {
-    setSelectedDate(date);
-    setOpen(true);
+  // Updated day click handler
+  const handleSelect = (date: Date | undefined) => {
+    if (date) {
+      setSelectedDate(date);
+      setOpen(true);
+    }
   };
 
   return (
@@ -63,7 +66,7 @@ const EventCalendar = () => {
           align="center"
           side="top"
           sideOffset={10}
-          className="w-72 bg-gray-800 text-white border-gray-700  z-50"
+          className="w-72 bg-gray-800 text-white border-gray-700 z-50"
         >
           {selectedDate && (
             <>
@@ -85,32 +88,28 @@ const EventCalendar = () => {
                   ))}
                 </ul>
               ) : (
-                <div className="text-sm text-gray-400 index">
-                  No events scheduled
-                </div>
+                <div className="text-sm text-gray-400">No events scheduled</div>
               )}
             </>
           )}
         </PopoverContent>
 
-        <PopoverTrigger asChild>
-          <div>
-            <Calendar
-              modifiers={{
-                hasEvent: (day) =>
-                  eventDates.some((eventDate) => isSameDay(day, eventDate)),
-              }}
-              modifiersClassNames={{
-                hasEvent:
-                  "text-gray-100 bg-cyan-300 hover:bg-cyan-300/40 hover:text-white rounded-md",
-              }}
-              className="rounded-lg border h-91 border-gray-400 w-full"
-              selected={selectedDate ?? undefined}
-              onDayClick={handleDayClick}
-              mode="single"
-            />
-          </div>
-        </PopoverTrigger>
+        <div className="calendar-container">
+          <Calendar
+            modifiers={{
+              hasEvent: (day) =>
+                eventDates.some((eventDate) => isSameDay(day, eventDate)),
+            }}
+            modifiersClassNames={{
+              hasEvent:
+                "text-gray-100 bg-cyan-300 hover:bg-cyan-300/40 hover:text-white rounded-md",
+            }}
+            className="rounded-lg border h-91 border-gray-400 w-full"
+            selected={selectedDate ?? undefined}
+            onSelect={handleSelect}
+            mode="single"
+          />
+        </div>
       </Popover>
     </div>
   );

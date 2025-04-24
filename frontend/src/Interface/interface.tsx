@@ -102,6 +102,7 @@ export interface SignupPayload {
 }
 
 export interface StandardResponse {
+  [x: string]: any;
   success: boolean;
   message: string;
 }
@@ -229,9 +230,8 @@ export interface Vendor {
 }
 
 export interface Props {
-  eventId: number;
+  eventId: string;
   users: SplitUser[];
-  vendors: Vendor[];
 }
 
 export interface Guest {

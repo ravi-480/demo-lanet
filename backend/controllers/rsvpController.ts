@@ -8,7 +8,6 @@ import { sendEmail } from "../utils/emailService";
 import Vendor from "../models/vendorModel";
 import { createNotification, formatEmailTemplate } from "../utils/helper";
 
-
 const validateIdFormat = (id: string): boolean => {
   return mongoose.Types.ObjectId.isValid(id);
 };
@@ -54,6 +53,9 @@ export const addGuestFromFile = asyncHandler(
       const existingEmails = new Set(
         existingGuests.map((g) => g.email.toLowerCase())
       );
+      console.log(existingGuests);
+      
+      console.log(existingEmails);
 
       // Process new guests, skipping duplicates
       const newGuests = [];
@@ -127,7 +129,6 @@ export const addGuestFromFile = asyncHandler(
 
             // Add to total additional cost for budget update
             totalAdditionalCost += additionalCost;
-            console.log("hello");
 
             return Vendor.findByIdAndUpdate(vendor._id, {
               price: newPrice,
@@ -245,7 +246,6 @@ export const addSingleGuest = asyncHandler(
         email: req.body.email,
       });
 
-      console.log(existingGuest);
 
       if (existingGuest) {
         return res.status(400).json({

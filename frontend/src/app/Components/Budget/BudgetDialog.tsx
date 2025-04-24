@@ -76,17 +76,13 @@ const BudgetDialog = ({ eventId, isOpen, setIsOpen }: BudgetDialogProps) => {
           eventId,
           pricingUnit: "flat rate",
         })
-      );
+      ).unwrap();
 
-      if (addManualVendorExpense.fulfilled.match(result)) {
-        toast.success("Vendor added successfully");
-        await dispatch(fetchGuests(eventId));
-        handleClose();
-      } else {
-        toast.error("Failed to add vendor");
-      }
+      toast.success("Vendor added successfully");
+      await dispatch(fetchGuests(eventId));
+      handleClose();
     } catch (error) {
-      toast.error("An error occurred");
+      toast.error("Failed to add vendor");
       console.error(error);
     }
   };

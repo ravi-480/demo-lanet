@@ -129,13 +129,12 @@ const VendorCard = ({
       minGuestLimit,
     };
 
-    const data = await dispatch(createVendor(vendorData));
-
-    if (createVendor.fulfilled.match(data)) {
+    try {
+      await dispatch(createVendor(vendorData)).unwrap();
       toast.success("Vendor added successfully!");
       setShowDialog(false);
-    } else if (createVendor.rejected.match(data)) {
-      toast.error(`Error: ${data.payload}`);
+    } catch (error) {
+      toast.error(`Error: ${error}`);
     }
   };
 

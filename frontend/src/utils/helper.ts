@@ -40,10 +40,9 @@ export const handleSendRequest = async (
     name: string;
     email: string;
     amount: number;
-    eventId: number;
+    eventId: string;
   }[]
 ) => {
-
   const recipients = usersWithCost.map((user: any) => user.email);
   const amounts = usersWithCost.map((user: any) => user.amount);
   const eventId = usersWithCost.map((user: any) => user.eventId);

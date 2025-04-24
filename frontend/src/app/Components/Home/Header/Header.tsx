@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import axios from "axios";
 import { usePathname } from "next/navigation";
+import { markAllAsRead } from "@/store/notificationSlice";
 
 const Header = () => {
   const dispatch = useDispatch();
@@ -28,19 +29,21 @@ const Header = () => {
   const unreadCount = items?.filter((n) => n.status === "unread").length || 0;
 
   const handleMarkAllAsRead = async () => {
-    const userId = items[0].userId;
+    const userId = items[0]?.userId;
+    if (!userId) return;
+
     try {
       await axios.patch(
         `http://localhost:5000/api/notifications/mark-all-read`,
         { userId }
       );
+
+      dispatch(markAllAsRead());
     } catch (error) {
       console.log("Failed to mark all as read", error);
     }
   };
-
   const pathname = usePathname();
-  console.log(pathname, "pathnamessdsd");
 
   const hideNavbarRoutes = ["/split/confirm", "/rsvp/respond"];
 

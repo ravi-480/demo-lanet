@@ -2,7 +2,7 @@ import { AppDispatch, RootState } from "@/store/store";
 import { Socket, io } from "socket.io-client";
 import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addNotification } from "@/store/notificationSlice";
+import { addNotification, markAllAsRead } from "@/store/notificationSlice";
 
 export const useSocket = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -38,6 +38,10 @@ export const useSocket = () => {
         console.log("New notification:", notification);
         dispatch(addNotification(notification));
       });
+      socket.on("notifications-marked-read", () => {
+        console.log("All notifications marked as read");
+        dispatch(markAllAsRead());
+      });
 
       socket.on("connect_error", (err) => {
         console.log("Socket connection error:", err);
@@ -62,8 +66,9 @@ export const useSocket = () => {
     return () => {
       if (socketRef.current) {
         socketRef.current.off("new-notification");
+        socketRef.current.off("notifications-marked-read");
         socketRef.current.disconnect();
-        socketRef.current = null; // Reset the socket reference
+        socketRef.current = null;
       }
     };
   }, [user?.id, dispatch]); // Only re-run when user.id changes

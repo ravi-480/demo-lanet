@@ -46,7 +46,6 @@ export default async function EventLayout({
 
     return <>{children}</>;
   } catch (error: any) {
-    console.error("Layout fetch error:", error?.message || error);
     return (
       <div className="p-6 text-center text-white bg-gray-900 min-h-screen flex flex-col items-center justify-center">
         <h2 className="text-2xl font-bold mb-2">Error loading event</h2>

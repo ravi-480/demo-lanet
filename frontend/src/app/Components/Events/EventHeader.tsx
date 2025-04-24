@@ -13,7 +13,6 @@ import { toast } from "sonner";
 import { formatFullDateWithTime } from "@/StaticData/Static";
 import ConfirmDialog from "../Shared/ConfirmDialog";
 
-
 const EventHeader = ({ event }: { event: IEvent }) => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
@@ -66,7 +65,7 @@ const EventHeader = ({ event }: { event: IEvent }) => {
         </div>
 
         {/* Delete Button */}
-        <div className="self-end sm:self-auto">
+        <div className="self-end  sm:self-auto">
           <Button
             onClick={() => setOpen(true)}
             className="bg-red-700 hover:bg-red-900 w-full sm:w-auto"

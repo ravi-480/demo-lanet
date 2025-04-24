@@ -1,11 +1,14 @@
 import { Request, Response } from "express";
-import Event from "../models/eventModel";
+import Event, { EventDocument } from "../models/eventModel";
 import { asyncHandler } from "../utils/asyncHandler";
 import { buildEventData, uploadImageToCloudinary } from "../utils/eventBuild";
 import Vendor from "../models/vendorModel";
 import { AuthenticatedRequest } from "../interfaces/user.interface";
 import ApiError from "../utils/ApiError";
 import mongoose from "mongoose";
+import Guest from "../models/rsvpSchema";
+import PDFDocument from "pdfkit";
+import { format } from "date-fns";
 
 export const createEvent = asyncHandler(
   async (req: AuthenticatedRequest, res: Response) => {
@@ -179,3 +182,5 @@ export const deleteEvent = asyncHandler(async (req: Request, res: Response) => {
     .status(201)
     .json({ success: true, message: "Event Deleted successfully" });
 });
+
+
