@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "@/store/store";
 import {
@@ -17,17 +17,18 @@ const EventDetailClient = ({ id }: { id: string }) => {
   const dispatch = useDispatch<AppDispatch>();
   const event = useSelector(singleEvent);
   const eventError = useSelector(selectEventError);
+  const [hasFetched, setHasFetched] = useState(false);
 
   useEffect(() => {
-    let mounted = true;
-    if (mounted) {
+    if (!hasFetched) {
       dispatch(fetchById(id));
+      setHasFetched(true); // Set to true after fetch
     }
+
     return () => {
-      mounted = false;
-      dispatch(resetEventState());
+      dispatch(resetEventState()); // Cleanup state on unmount
     };
-  }, [dispatch, id]);
+  }, [dispatch, id, hasFetched]);
 
   if (eventError?.toLowerCase().includes("not found")) {
     notFound();

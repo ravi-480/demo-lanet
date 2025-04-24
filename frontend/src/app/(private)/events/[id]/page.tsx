@@ -5,6 +5,8 @@ const EventDetailClient = dynamic(() => import("@/app/Components/Events/EventDet
   loading: () => <LoadSpinner />,
 });
 
-export default function EventDetailPage({ params }: { params: { id: string } }) {
-  return <EventDetailClient id={params.id} />;
+export default async function EventDetailPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const id = params.id;
+  return <EventDetailClient id={id} />;
 }

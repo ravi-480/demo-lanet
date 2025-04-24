@@ -1,9 +1,14 @@
 import GuestManagement from "@/app/Components/Guest/GuestManagement";
+type Props = {
+  params: { id: string };
+};
 
-const GuestPage = async ({ params }: any) => {
+const GuestPage = async (props: { params: Promise<{ id: string }> }) => {
+  const params = await props.params;
+  const id = params.id;
   return (
     <div>
-      <GuestManagement eventId={params.id} />
+      <GuestManagement eventId={id} />
     </div>
   );
 };

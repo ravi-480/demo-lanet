@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "./store";
 import {
+  addNotification,
   fetchNotificationsFailure,
   fetchNotificationsSuccess,
   fetchNotificationStart,
@@ -16,11 +17,13 @@ const NotificationLoader = () => {
   const socket = useSocket();
   const [connectionStatus, setConnectionStatus] = useState("connected");
 
+  const hasFetchedNotificationsRef = useRef(false);  // Prevents unnecessary re-fetching
+
   useEffect(() => {
-    if (!user?.id) return;
-
+    if (!user?.id || hasFetchedNotificationsRef.current) return; // Don't refetch if notifications have already been fetched
+  
     dispatch(fetchNotificationStart());
-
+  
     const fetchNotifications = async () => {
       try {
         const response = await axios.get(
@@ -31,53 +34,40 @@ const NotificationLoader = () => {
             timeout: 5000,
           }
         );
-
+  
         dispatch(fetchNotificationsSuccess(response.data.notifications));
-        setConnectionStatus("connected");
+        hasFetchedNotificationsRef.current = true; // Mark notifications as fetched
       } catch (error: any) {
         console.log("Server connection issue - notifications not loaded");
         setConnectionStatus("disconnected");
-
-        //  dispatch the failure for the store, but with a user-friendly message
         dispatch(fetchNotificationsFailure("Unable to load notifications"));
       }
     };
-
+  
     fetchNotifications();
-
+  
     if (socket) {
-      socket.emit("authenticate", user.id);
-      socket.on("notifications-marked-read", () => {
-        dispatch(markAllAsRead());
+      socket.on("new-notification", (notification) => {
+        dispatch(addNotification(notification));  // Ensure this doesn't trigger another fetch
       });
-
+  
       socket.on("connect", () => {
         setConnectionStatus("connected");
-        // Refetch notifications when connection is restored
-        fetchNotifications();
-      });
-
-      socket.on("disconnect", () => {
-        setConnectionStatus("disconnected");
+        if (!hasFetchedNotificationsRef.current) {
+          fetchNotifications();  // Only fetch if not already fetched
+        }
       });
     }
-
-    //  auto-retry
-    const retryInterval = setInterval(() => {
-      if (connectionStatus === "disconnected") {
-        fetchNotifications();
-      }
-    }, 10000); // Try every 10 seconds
-
+  
+    // Cleanup on component unmount
     return () => {
-      clearInterval(retryInterval);
       if (socket) {
-        socket.off("notifications-marked-read");
+        socket.off("new-notification");
         socket.off("connect");
-        socket.off("disconnect");
       }
     };
-  }, [user, dispatch, socket]);
+  }, [user?.id, socket, dispatch, connectionStatus]);
+  
 
   return null;
 };

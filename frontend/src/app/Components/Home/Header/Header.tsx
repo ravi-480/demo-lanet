@@ -24,8 +24,6 @@ const Header = () => {
     (state: RootState) => state.notification
   );
 
-  const isAuthenticated = !!user;
-
   // Calculate unread notifications count
   const unreadCount = items?.filter((n) => n.status === "unread").length || 0;
 
@@ -42,7 +40,9 @@ const Header = () => {
   };
 
   const pathname = usePathname();
-  const hideNavbarRoutes = ["/rsvp/respond"];
+  console.log(pathname, "pathnamessdsd");
+
+  const hideNavbarRoutes = ["/split/confirm", "/rsvp/respond"];
 
   return (
     <>

@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
-import { cookies } from "next/headers";
-import {  redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import ErrorMessage from "@/app/Components/Error/ErrorMessage";
 
 export default async function EventLayout({
@@ -8,16 +8,17 @@ export default async function EventLayout({
   params,
 }: {
   children: ReactNode;
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  try {
-    const cookieStore = await cookies();
-    const cookieHeader = cookieStore
-      .getAll()
-      .map((c: any) => `${c.name}=${c.value}`)
-      .join("; ");
+  // Await params before accessing its properties
+  const resolvedParams = await params;
+  const eventId = resolvedParams.id;
 
-    const res = await fetch(`http://localhost:5000/api/events/${params.id}`, {
+  try {
+    const headerList = await headers();
+    const cookieHeader = headerList.get("cookie") || "";
+
+    const res = await fetch(`http://localhost:5000/api/events/${eventId}`, {
       headers: {
         Cookie: cookieHeader,
       },
@@ -45,7 +46,7 @@ export default async function EventLayout({
 
     return <>{children}</>;
   } catch (error: any) {
-    console.log("Layout fetch error:", error?.message || error);
+    console.error("Layout fetch error:", error?.message || error);
     return (
       <div className="p-6 text-center text-white bg-gray-900 min-h-screen flex flex-col items-center justify-center">
         <h2 className="text-2xl font-bold mb-2">Error loading event</h2>
