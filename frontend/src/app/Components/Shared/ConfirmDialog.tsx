@@ -25,7 +25,7 @@ const ConfirmDialog = ({
   onOpenChange,
   onConfirm,
   title = "Are you absolutely sure?",
-  description = "This action cannot be undone.",
+  description,
   confirmText = "Continue",
   cancelText = "Cancel",
   confirmClassName = "bg-red-600 hover:bg-red-700",
@@ -40,7 +40,7 @@ const ConfirmDialog = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className="text-black">
+          <AlertDialogCancel className="text-black cursor-pointer">
             {cancelText}
           </AlertDialogCancel>
           <AlertDialogAction className={confirmClassName} onClick={onConfirm}>

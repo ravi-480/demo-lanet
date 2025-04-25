@@ -47,7 +47,6 @@ const GuestUpload = ({ eventId }: GuestUploadProps) => {
       }
     } catch (error) {
       toast.error("An error occurred during upload");
-      console.error(error);
     }
   };
 

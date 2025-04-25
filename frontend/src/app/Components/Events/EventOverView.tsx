@@ -93,16 +93,16 @@ const EventOverView = ({ event }: { event: IEvent }) => {
 
       {/* Budget Summary Card */}
       <Card
-        className="border-0 bg-green-950 text-white shadow-lg"
+        className="border-0 bg-gray-800 text-white shadow-lg"
         role="region"
         aria-label="Budget Summary"
       >
         <CardHeader className="flex justify-between items-center pb-2">
-          <CardTitle className="text-green-100 flex items-center">
+          <CardTitle className="text-cyan-400 flex items-center">
             <Wallet className="mr-2" size={20} />
             Budget Summary
           </CardTitle>
-          <span className="text-sm text-green-200">
+          <span className="text-sm text-green-500">
             Total: ₹{budget.allocated.toLocaleString()}
           </span>
         </CardHeader>
@@ -110,8 +110,8 @@ const EventOverView = ({ event }: { event: IEvent }) => {
         <CardContent className="space-y-4">
           <div>
             <div className="flex justify-between mb-1">
-              <span className="text-green-100">Spent</span>
-              <span className="text-red-300 font-medium">
+              <span>Spent</span>
+              <span className="text-red-500 font-medium">
                 ₹{budget.spent.toLocaleString()} ({spentPercentage.toFixed(0)}%)
               </span>
             </div>
@@ -121,7 +121,7 @@ const EventOverView = ({ event }: { event: IEvent }) => {
             />
           </div>
           <div className="flex justify-between mt-2">
-            <span className="text-green-100">Remaining</span>
+            <span>Remaining</span>
             <span className="text-blue-400 font-medium">
               ₹{remaining.toLocaleString()}
             </span>

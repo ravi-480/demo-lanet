@@ -56,7 +56,7 @@ const BudgetFilters = ({
         </Select>
 
         <Button variant="ghost" size="icon" className="h-9 w-9">
-          <Filter size={15} />
+          <Filter className="text-white" size={15} />
         </Button>
       </div>
     </div>

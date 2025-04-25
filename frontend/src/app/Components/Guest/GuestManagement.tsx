@@ -14,6 +14,7 @@ import GuestFilters from "./GuestFilter";
 import { Guest } from "@/Interface/interface";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import ConfirmDialog from "../Shared/ConfirmDialog";
 const VendorAlertDialog = lazy(() =>
   import("./AlertCard").then((module) => ({
     default: module.VendorAlertDialog,
@@ -24,6 +25,7 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
   const [isAddGuestOpen, setIsAddGuestOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchFilter, setSearchFilter] = useState("");
+  const [open, setOpen] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [editGuest, setEditGuest] = useState<Guest | null>(null);
   const [showMinGuestAlert, setShowMinGuestAlert] = useState(false);
@@ -67,28 +69,22 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
   }, [filteredGuests, indexOfFirst, indexOfLast]);
 
   const RemoveAllGuest = React.useCallback(async () => {
-    if (
-      confirm(
-        "Are you sure you want to remove ALL guests? This cannot be undone."
-      )
-    ) {
-      try {
-        const result = await dispatch(
-          removeAllGuest({ id: eventId, query: "guest" })
-        ).unwrap();
+    try {
+      const result = await dispatch(
+        removeAllGuest({ id: eventId, query: "guest" })
+      ).unwrap();
 
-        if (result.preservedVendors && result.preservedVendors.length > 0) {
-          setPreservedVendors(result.preservedVendors);
-          setShowMinGuestAlert(true);
-          toast.info(
-            "All guests removed. Some vendor budgets were preserved due to minimum guest requirements."
-          );
-        } else {
-          toast.success("All guests removed successfully");
-        }
-      } catch (error: any) {
-        toast.error(error.message || "Failed to remove all guests");
+      if (result.preservedVendors && result.preservedVendors.length > 0) {
+        setPreservedVendors(result.preservedVendors);
+        setShowMinGuestAlert(true);
+        toast.info(
+          "All guests removed. Some vendor budgets were preserved due to minimum guest requirements."
+        );
+      } else {
+        toast.success("All guests removed successfully");
       }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to remove all guests");
     }
   }, [dispatch, eventId]);
   return (
@@ -127,18 +123,26 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
                 <span className="hidden sm:inline">Refresh</span>
               </button>
 
-              {rsvpData.length > 0 && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="bg-red-600 hover:bg-red-700 ml-auto lg:ml-0"
-                  onClick={RemoveAllGuest}
-                >
-                  <span className="hidden sm:inline">Remove All</span>
-                  <span className="sm:hidden">Delete All</span>
-                </Button>
-              )}
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={rsvpData.length === 0}
+                className="bg-red-600 hover:bg-red-700 ml-auto lg:ml-0"
+                onClick={() => setOpen(true)}
+              >
+                <span className="hidden sm:inline">Remove All</span>
+                <span className="sm:hidden">Delete All</span>
+              </Button>
             </CardTitle>
+            <ConfirmDialog
+              onOpenChange={setOpen}
+              confirmText="Continue"
+              cancelText="Cancel"
+              onConfirm={RemoveAllGuest}
+              open={open}
+              description="Are you sure want to remove all Guest"
+              title="Remove all Guest"
+            />
 
             <div className="w-full lg:w-auto">
               <GuestFilters

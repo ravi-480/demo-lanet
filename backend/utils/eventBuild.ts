@@ -26,7 +26,7 @@ export const buildEventData = (
     eventType,
     durationInDays: Number(durationInDays) || 1,
     guestLimit: Number(guestLimit) || 0,
-    noOfGuestAdded: 0, 
+    noOfGuestAdded: 0,
     budget: {
       allocated: Number(budget) || 0,
       spent: 0,

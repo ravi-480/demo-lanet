@@ -45,7 +45,6 @@ const VendorActions = ({
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>Edit Details</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="text-gray-950"
@@ -105,7 +104,7 @@ const BudgetList = ({ items }: { items: any[] }) => {
             items.map((item: any) => (
               <TableRow
                 key={item._id}
-                className="text-gray-200 hover:bg-gray-900/50"
+                className="text-gray-200 hover:bg-gray-900/40"
               >
                 <TableCell>
                   <div className="flex items-center gap-3">

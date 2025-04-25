@@ -15,11 +15,13 @@ import { AppDispatch, RootState } from "@/store/store";
 import { fetchById, singleEvent } from "@/store/eventSlice";
 import { getVendorsByEvent, removeAllVendor } from "@/store/vendorSlice";
 import BudgetStats from "./BudgetStatCard";
+import ConfirmDialog from "../Shared/ConfirmDialog";
 
 const BudgetManagement = ({ eventId }: { eventId: string }) => {
   const dispatch = useDispatch<AppDispatch>();
   const [isAddBudgetOpen, setIsAddBudgetOpen] = useState(false);
   const [searchFilter, setSearchFilter] = useState("");
+  const [open, setOpen] = useState(false);
   const [priceSortOrder, setPriceSortOrder] = useState<
     "lowToHigh" | "highToLow"
   >("highToLow");
@@ -97,11 +99,21 @@ const BudgetManagement = ({ eventId }: { eventId: string }) => {
               </span>
               <Button
                 className="bg-red-500 hover:bg-red-600"
-                onClick={handleRemoveAllVendors}
+                onClick={() => setOpen(true)}
+                disabled={items.length === 0}
               >
                 Remove all vendors
               </Button>
             </CardTitle>
+            <ConfirmDialog
+              onOpenChange={setOpen}
+              confirmText="Continue"
+              cancelText="Cancel"
+              onConfirm={handleRemoveAllVendors}
+              open={open}
+              description="Are you sure want to remove all vendors"
+              title="Remove all vendors"
+            />
             <BudgetFilters
               searchFilter={searchFilter}
               setSearchFilter={setSearchFilter}

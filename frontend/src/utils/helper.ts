@@ -1,4 +1,5 @@
 import axios from "axios";
+import { toast } from "sonner";
 
 export function getFilteredVendors(
   vendors: any[],
@@ -59,7 +60,7 @@ export const handleSendRequest = async (
     );
     alert("Emails sent!");
   } catch (err: any) {
-    console.error("Failed to send email", err);
+    toast.error("Failed to send email", err);
     alert("Something went wrong.");
   }
 };

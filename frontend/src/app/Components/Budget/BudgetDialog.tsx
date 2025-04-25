@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { PlusCircle } from "lucide-react";
@@ -63,14 +62,14 @@ const BudgetDialog = ({ eventId, isOpen, setIsOpen }: BudgetDialogProps) => {
   } = useForm<ExpenseFormData>({
     defaultValues: {
       title: "",
-      price: 0,
+      price: 10,
       status: "Catering",
     },
   });
 
   const handleAddExpense = async (data: ExpenseFormData) => {
     try {
-      const result = await dispatch(
+      await dispatch(
         addManualVendorExpense({
           ...data,
           eventId,
@@ -83,7 +82,6 @@ const BudgetDialog = ({ eventId, isOpen, setIsOpen }: BudgetDialogProps) => {
       handleClose();
     } catch (error) {
       toast.error("Failed to add vendor");
-      console.error(error);
     }
   };
 
@@ -135,8 +133,9 @@ const BudgetDialog = ({ eventId, isOpen, setIsOpen }: BudgetDialogProps) => {
                   placeholder="Enter price"
                   {...register("price", {
                     required: "Price is required",
-                    min: { value: 0, message: "Price must be positive" },
+                    min: { value: 10, message: "Price must be required" },
                   })}
+                  min={10}
                 />
                 {errors.price && (
                   <p className="text-sm text-red-500 mt-1">

@@ -6,9 +6,6 @@ import Vendor from "../models/vendorModel";
 import { AuthenticatedRequest } from "../interfaces/user.interface";
 import ApiError from "../utils/ApiError";
 import mongoose from "mongoose";
-import Guest from "../models/rsvpSchema";
-import PDFDocument from "pdfkit";
-import { format } from "date-fns";
 
 export const createEvent = asyncHandler(
   async (req: AuthenticatedRequest, res: Response) => {
@@ -16,11 +13,22 @@ export const createEvent = asyncHandler(
       throw new ApiError(401, "Unauthorized: User not authenticated");
     }
 
-    const requiredFields = ["name", "date", "location", "description"];
+    const requiredFields = [
+      "name",
+      "date",
+      "location",
+      "description",
+      "eventType",
+    ];
     for (const field of requiredFields) {
       if (!req.body[field]) {
         throw new ApiError(400, `Missing field,:${field}`);
       }
+    }
+
+    const eventDate = new Date(req.body.date);
+    if (isNaN(eventDate.getTime())) {
+      throw new ApiError(400, "Invalid date format");
     }
 
     let image = "";
@@ -182,5 +190,3 @@ export const deleteEvent = asyncHandler(async (req: Request, res: Response) => {
     .status(201)
     .json({ success: true, message: "Event Deleted successfully" });
 });
-
-

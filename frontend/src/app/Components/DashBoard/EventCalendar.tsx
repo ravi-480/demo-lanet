@@ -3,7 +3,6 @@
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
-  PopoverTrigger,
   PopoverContent,
   PopoverAnchor,
 } from "@/components/ui/popover";
@@ -43,12 +42,11 @@ const EventCalendar = () => {
     ? eventsByDate.filter((event: any) => isSameDay(event.date, selectedDate))
     : [];
 
-  // Updated day click handler
   const handleSelect = (date: Date | undefined) => {
-    if (date) {
-      setSelectedDate(date);
-      setOpen(true);
-    }
+    if (!date) return;
+    const sameDayClicked = selectedDate && isSameDay(date, selectedDate);
+    setSelectedDate(date);
+    setOpen(!sameDayClicked || !open);
   };
 
   return (
@@ -57,7 +55,6 @@ const EventCalendar = () => {
       ref={anchorRef}
     >
       <Popover open={open} onOpenChange={setOpen}>
-        {/* Attach the popover to the calendar wrapper */}
         <PopoverAnchor asChild>
           <div />
         </PopoverAnchor>
@@ -76,10 +73,7 @@ const EventCalendar = () => {
               {selectedEvents.length > 0 ? (
                 <ul className="space-y-2">
                   {selectedEvents.map((event: any, index: number) => (
-                    <li
-                      key={index}
-                      className="border border-gray-600 p-2 rounded bg-gray-700"
-                    >
+                    <li key={index}>
                       <div className="font-medium">{event.name}</div>
                       <div className="text-xs text-gray-300">
                         {event.location}
@@ -101,13 +95,13 @@ const EventCalendar = () => {
                 eventDates.some((eventDate) => isSameDay(day, eventDate)),
             }}
             modifiersClassNames={{
-              hasEvent:
-                "text-gray-100 bg-cyan-300 hover:bg-cyan-300/40 hover:text-white rounded-md",
+              hasEvent: "bg-cyan-500 text-white rounded-xl",
+              selected: "", // no selected style
             }}
-            className="rounded-lg border h-91 border-gray-400 w-full"
-            selected={selectedDate ?? undefined}
-            onSelect={handleSelect}
+            className="rounded-lg border h-91 border-gray-400 w-full [&_.day-selected]:bg-transparent [&_.day-selected]:text-inherit"
+            selected={undefined} // no visual selection
             mode="single"
+            onDayClick={handleSelect}
           />
         </div>
       </Popover>

@@ -4,30 +4,35 @@ import { PricingUnit } from "@/Interface/interface";
 
 export const getPriceUnitLabel = (category: string): PricingUnit => {
   const pricingMap: Record<string, PricingUnit> = {
-    catering: 'per plate',
-    photography: 'per hour',
-    music: 'per hour',
-    decoration: 'flat rate',
-    venue: 'per day',
-    videography: 'per hour',
-    'lighting/sound': 'per setup',
+    catering: "per plate",
+    photography: "per hour",
+    music: "per hour",
+    decoration: "flat rate",
+    venue: "per day",
+    videography: "per hour",
+    "lighting/sound": "per setup",
   };
 
-  return pricingMap[category.toLowerCase()] || 'flat rate';
+  return pricingMap[category.toLowerCase()] || "flat rate";
 };
 
 export const calculateTotalEstimate = (
   priceUnit: PricingUnit,
   price: number,
   units: number,
-  guestCount: number
+  guestCount: number,
+  category?: string,
+  noOfDay?: number
 ): number => {
   switch (priceUnit) {
-    case 'per hour':
-      return units * price;
-    case 'per plate':
+    case "per hour":
+      return units * price * (noOfDay || 1);
+    case "per plate":
       return price * guestCount;
-    case 'per day':
+    case "per day":
+      if (category?.toLowerCase() === "venue" && noOfDay) {
+        return price * noOfDay;
+      }
       return units * price;
     default:
       return price;
@@ -39,10 +44,13 @@ export const checkMinimumGuestRequirement = (
   guestCount: number,
   minGuestLimit?: number
 ): boolean => {
-  if (category.toLowerCase() !== 'catering' || typeof minGuestLimit !== 'number') {
+  if (
+    category.toLowerCase() !== "catering" ||
+    typeof minGuestLimit !== "number"
+  ) {
     return false;
   }
-  
+
   return guestCount < minGuestLimit;
 };
 
@@ -51,18 +59,24 @@ export const generateMinGuestLimit = (): number => {
   return possibleLimits[Math.floor(Math.random() * possibleLimits.length)];
 };
 
-export const enrichVendor = (vendor: any, matchedCategory: string | null, getRandomPrice: any, noOfGuest: number, eventType: string): any => {
+export const enrichVendor = (
+  vendor: any,
+  matchedCategory: string | null,
+  getRandomPrice: any,
+  noOfGuest: number,
+  eventType: string
+): any => {
   const recommended = !!matchedCategory;
-  const isCatering = matchedCategory?.toLowerCase() === 'catering';
+  const isCatering = matchedCategory?.toLowerCase() === "catering";
   const minGuestLimit = isCatering ? generateMinGuestLimit() : undefined;
-  
+
   // Get pricing unit based on category and event type
-  let pricingUnit: PricingUnit = 'flat rate';
+  let pricingUnit: PricingUnit = "flat rate";
   if (recommended) {
-    if (matchedCategory === 'photography') {
-      pricingUnit = 'per hour';
-    } else if (matchedCategory === 'catering') {
-      pricingUnit = 'per plate';
+    if (matchedCategory === "photography") {
+      pricingUnit = "per hour";
+    } else if (matchedCategory === "catering") {
+      pricingUnit = "per plate";
     } else {
       pricingUnit = getPriceUnitLabel(matchedCategory);
     }
@@ -70,8 +84,8 @@ export const enrichVendor = (vendor: any, matchedCategory: string | null, getRan
 
   return {
     ...vendor,
-    price: getRandomPrice(matchedCategory || 'default', !recommended),
-    category: recommended ? matchedCategory : 'Premium Service',
+    price: getRandomPrice(matchedCategory || "default", !recommended),
+    category: recommended ? matchedCategory : "Premium Service",
     numberOfGuests: isCatering ? noOfGuest : 0,
     pricingUnit,
     minGuestLimit,

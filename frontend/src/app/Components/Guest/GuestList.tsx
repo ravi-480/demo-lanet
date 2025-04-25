@@ -131,7 +131,7 @@ const GuestListComponent = ({
                 </TableRow>
               ))
             ) : (
-              <TableRow>
+              <TableRow className="hover:bg-gray-900/40">
                 <TableCell colSpan={4} className="text-center py-6">
                   No guests found
                 </TableCell>

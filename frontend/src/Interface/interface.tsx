@@ -3,7 +3,7 @@ import { EventType } from "react-hook-form";
 export interface IEvent {
   _id: string;
   name: string;
-  date: string | Date;
+  date: string | Date ;
   time: string;
   location: string;
   description: string;
@@ -212,6 +212,7 @@ export interface SplitState {
 
 export interface SplitUser {
   name: string;
+  _id:string
   email: string;
   status: "pending" | "confirmed";
 }

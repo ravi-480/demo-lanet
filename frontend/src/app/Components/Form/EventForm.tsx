@@ -20,9 +20,21 @@ import { z } from "zod";
 import { eventTypeOptions, IEvent } from "@/Interface/interface";
 import Image from "next/image";
 
+// Enhanced Zod schema with better validations
 const eventFormSchema = z.object({
-  name: z.string().min(1, { message: "Event name is required" }).max(40),
-  date: z.string().min(1, { message: "Event Date is required " }),
+  name: z
+    .string()
+    .min(1, { message: "Event name is required" })
+    .max(20, { message: "Title cannot be longer than 20 character" })
+    .refine((value) => !/^\d+$/.test(value), {
+      message: "Event name cannot contain only numbers",
+    }),
+  date: z
+    .string()
+    .min(1, { message: "Event Date is required" })
+    .refine((value) => !isNaN(Date.parse(value)), {
+      message: "Please provide a valid date",
+    }),
   location: z
     .string()
     .min(3, { message: "Event location is required" })
@@ -31,12 +43,22 @@ const eventFormSchema = z.object({
     .string()
     .min(1, { message: "Description is required" })
     .max(200),
-  budget: z.coerce.number().min(0, { message: "Budget must be positive" }),
+  budget: z.coerce
+    .number()
+    .min(1, { message: "Budget must be at least 1" })
+    .max(1_00_00_000, { message: "Budget cannot exceed ₹1 crore" })
+    .nonnegative({ message: "Budget cannot be negative" }),
   guestLimit: z.coerce
     .number()
-    .min(1, { message: "Number of guest atleast 1" }),
+    .min(1, { message: "Number of guests must be at least 1" })
+    .max(10000, { message: "Guest limit cannot be exceed 10000" })
+    .nonnegative({ message: "Guest limit cannot be negative" }),
   eventType: z.string().min(1, { message: "Event type is required" }),
-  durationInDays: z.coerce.number().min(1, { message: "Duration is required" }),
+  durationInDays: z.coerce
+    .number()
+    .min(1, { message: "Duration must be at least 1 day" })
+    .max(30, { message: "Duration cannot be more than 30" })
+    .nonnegative({ message: "Duration cannot be negative" }),
 });
 
 type EventFormValues = z.infer<typeof eventFormSchema>;
@@ -46,6 +68,21 @@ interface EventFormProps {
   onSubmit: (data: FormData) => void;
   isEditing?: boolean;
 }
+
+// Helper function to properly format dates for input fields
+const formatDateForInput = (dateString?: string | Date): string => {
+  if (!dateString) return "";
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
+    const istOffset = 5.5 * 60;
+    const localTime = new Date(date.getTime() + istOffset * 60000);
+    const iso = localTime.toISOString();
+    return iso.slice(0, 16);
+  } catch (e) {
+    return "";
+  }
+};
 
 const EventForm: React.FC<EventFormProps> = ({
   initialData,
@@ -67,13 +104,11 @@ const EventForm: React.FC<EventFormProps> = ({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
       name: initialData?.name || "",
-      date: initialData?.date
-        ? new Date(initialData.date).toISOString().slice(0, 16)
-        : "",
+      date: formatDateForInput(initialData?.date),
       location: initialData?.location || "",
       description: initialData?.description || "",
-      budget: initialData?.budget?.allocated || 0,
-      guestLimit: initialData?.guestLimit || 0,
+      budget: initialData?.budget?.allocated || undefined, // Remove default 0
+      guestLimit: initialData?.guestLimit || undefined, // Remove default 0
       eventType: initialData?.eventType || "",
       durationInDays: initialData?.durationInDays || 1,
     },
@@ -98,19 +133,27 @@ const EventForm: React.FC<EventFormProps> = ({
   const submitHandler = (data: EventFormValues) => {
     const formData = new FormData();
 
-    Object.entries(data).forEach(([key, value]) =>
-      formData.append(key, String(value))
-    );
+    // Ensure numeric values are properly converted to numbers
+    Object.entries(data).forEach(([key, value]) => {
+      // Convert string numbers to actual numbers where appropriate
+      if (
+        ["budget", "guestLimit", "durationInDays"].includes(key) &&
+        value !== undefined
+      ) {
+        formData.append(key, String(Number(value)));
+      } else {
+        formData.append(key, String(value));
+      }
+    });
 
     if (imageFile) formData.append("image", imageFile);
-
-    if (initialData?._id) formData.append("eventId", initialData._id); // for edit
+    if (initialData?._id) formData.append("eventId", initialData._id);
 
     onSubmit(formData);
   };
 
   return (
-    <div className="bg-gray-900 border  max-w-2xl mx-auto p-6 m-4 rounded-lg">
+    <div className="bg-gray-900 border max-w-2xl mx-auto p-6 m-4 rounded-lg">
       <h1 className="text-center font-bold mb-6 text-white">
         {isEditing ? "Edit Event" : "Create New Event"}
       </h1>
@@ -120,7 +163,21 @@ const EventForm: React.FC<EventFormProps> = ({
           <Label className="mb-2" htmlFor="name">
             Event Name
           </Label>
-          <Input {...register("name")} id="name" />
+          <Input
+            {...register("name")}
+            id="name"
+            onKeyDown={(e) => {
+              if (/\d/.test(e.key)) {
+                e.preventDefault(); // block number keys
+              }
+            }}
+            onPaste={(e) => {
+              const pasted = e.clipboardData.getData("text");
+              if (/\d/.test(pasted)) {
+                e.preventDefault(); // block pasting numbers
+              }
+            }}
+          />
           {errors.name && (
             <p className="text-red-500 text-sm">{errors.name.message}</p>
           )}
@@ -131,9 +188,10 @@ const EventForm: React.FC<EventFormProps> = ({
             Event Date
           </Label>
           <Input
-            min={new Date().toISOString().slice(0, 16)}
+            min={formatDateForInput(new Date())}
             className="text-white [&::-webkit-calendar-picker-indicator]:invert"
             {...register("date")}
+            defaultValue={formatDateForInput(initialData?.date)}
             id="date"
             type="datetime-local"
           />
@@ -146,7 +204,21 @@ const EventForm: React.FC<EventFormProps> = ({
           <Label className="mb-2" htmlFor="location">
             Location
           </Label>
-          <Input {...register("location")} id="location" />
+          <Input
+            {...register("location")}
+            id="location"
+            onKeyDown={(e) => {
+              if (/\d/.test(e.key)) {
+                e.preventDefault(); // block number keys
+              }
+            }}
+            onPaste={(e) => {
+              const pasted = e.clipboardData.getData("text");
+              if (/\d/.test(pasted)) {
+                e.preventDefault(); // block pasting numbers
+              }
+            }}
+          />
           {errors.location && (
             <p className="text-red-500 text-sm">{errors.location.message}</p>
           )}
@@ -159,13 +231,13 @@ const EventForm: React.FC<EventFormProps> = ({
           <Input
             type="file"
             accept="image/jpeg, image/png, image/webp"
-            className="file:text-white  "
+            className="file:text-white"
             onChange={handleImageChange}
           />
           {imagePreview && (
             <div className="mt-2">
               <Image
-                width={300}
+                width={200}
                 height={200}
                 src={imagePreview}
                 alt="Preview"
@@ -189,7 +261,14 @@ const EventForm: React.FC<EventFormProps> = ({
           <Label className="mb-2" htmlFor="budget">
             Budget
           </Label>
-          <Input {...register("budget")} id="budget" type="number" />
+          <Input
+            {...register("budget")}
+            id="budget"
+            type="number"
+            min="1"
+            max="10000000"
+            placeholder="Enter event budget"
+          />
           {errors.budget && (
             <p className="text-red-500 text-sm">{errors.budget.message}</p>
           )}
@@ -199,7 +278,14 @@ const EventForm: React.FC<EventFormProps> = ({
           <Label className="mb-2" htmlFor="guestLimit">
             Guest Limit
           </Label>
-          <Input {...register("guestLimit")} id="guestLimit" type="number" />
+          <Input
+            {...register("guestLimit")}
+            id="guestLimit"
+            type="number"
+            min="1"
+            max="10000"
+            placeholder="Enter guest limit"
+          />
           {errors.guestLimit && (
             <p className="text-red-500 text-sm">{errors.guestLimit.message}</p>
           )}
@@ -238,6 +324,8 @@ const EventForm: React.FC<EventFormProps> = ({
             {...register("durationInDays")}
             id="durationInDays"
             type="number"
+            min="1"
+            max="30"
           />
           {errors.durationInDays && (
             <p className="text-red-500 text-sm">

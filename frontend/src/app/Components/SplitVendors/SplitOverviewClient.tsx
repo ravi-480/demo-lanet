@@ -4,15 +4,6 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-
-import {
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
 import { fetchById, singleEvent } from "@/store/eventSlice";
 import {
   addUserInSplit,
@@ -22,7 +13,6 @@ import {
 import { AppDispatch } from "@/store/store";
 import { SplitUser } from "@/Interface/interface";
 import { toast } from "sonner";
-
 import { LoadingIndicator } from "./LoadingIndicator";
 import { EmptyState } from "./EmptyState";
 import { AddUserDialog } from "./AddUserDialog";
@@ -30,6 +20,8 @@ import { EditUserDialog } from "./EditUserDialog";
 import { UserTable } from "./UserTable";
 import { DarkCard } from "./Card";
 import { CreateSplitButton } from "./CreateUser";
+import { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import ConfirmDialog from "../Shared/ConfirmDialog";
 
 const SplitOverviewClient = () => {
   const { id } = useParams();
@@ -40,6 +32,8 @@ const SplitOverviewClient = () => {
   const [isEditUserOpen, setIsEditUserOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<SplitUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false); // State to handle delete confirmation dialog
+  const [userToDelete, setUserToDelete] = useState<SplitUser | null>(null); // User to be deleted
 
   // Add user form handling
   const {
@@ -72,7 +66,7 @@ const SplitOverviewClient = () => {
         !errMsg.includes("401") &&
         !errMsg.includes("Unauthorized")
       ) {
-        console.error("Failed to refresh event data:", error);
+        toast.error("Failed to refresh event data:", error);
       }
     } finally {
       setIsLoading(false);
@@ -121,8 +115,8 @@ const SplitOverviewClient = () => {
         })
       ).unwrap();
       await refreshEventData();
-    } catch (error) {
-      console.error("Failed to edit user:", error);
+    } catch (error: any) {
+      toast.error("Failed to edit user:", error);
     } finally {
       setIsLoading(false);
       editReset();
@@ -145,20 +139,29 @@ const SplitOverviewClient = () => {
     setIsEditUserOpen(true);
   };
 
+  // Handle opening delete dialog
+  const openDeleteDialog = (user: any) => {
+    setUserToDelete(user); // Store user to delete
+    setIsDeleteDialogOpen(true); // Open delete confirmation dialog
+  };
+
   // Handle user removal
-  const removeUser = async (userData: any) => {
-    if (!confirm("Are you sure you want to remove this user?")) return;
+  const removeUser = async () => {
+    if (!userToDelete) return;
 
     setIsLoading(true);
     try {
       await dispatch(
-        deleteUserFromSplit({ id: id as string, userId: userData._id })
+        deleteUserFromSplit({ id: id as string, userId: userToDelete._id })
       ).unwrap();
       await refreshEventData();
-    } catch (error) {
-      console.error("Failed to remove user:", error);
+      toast.success("User removed successfully!");
+    } catch (error: any) {
+      toast.error("Failed to remove user:", error);
     } finally {
       setIsLoading(false);
+      setIsDeleteDialogOpen(false); // Close the delete dialog
+      setUserToDelete(null); // Reset user to delete
     }
   };
 
@@ -210,7 +213,7 @@ const SplitOverviewClient = () => {
             users={event.includedInSplit}
             isLoading={isLoading}
             onEdit={openEditDialog}
-            onDelete={removeUser}
+            onDelete={openDeleteDialog} // Trigger delete dialog
           />
         ) : (
           <EmptyState
@@ -230,6 +233,18 @@ const SplitOverviewClient = () => {
             />
           </CardFooter>
         )}
+
+      {/* Confirm Dialog for Deletion */}
+      <ConfirmDialog
+        title="Delete User"
+        description="Are you sure you want to remove this user from the split?"
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmClassName="bg-red-600 hover:bg-red-700"
+        onConfirm={removeUser}
+        onOpenChange={setIsDeleteDialogOpen}
+        open={isDeleteDialogOpen}
+      />
     </DarkCard>
   );
 };

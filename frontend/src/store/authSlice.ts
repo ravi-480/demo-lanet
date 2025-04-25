@@ -7,6 +7,7 @@ import {
   SignupPayload,
   StandardResponse,
 } from "@/Interface/interface";
+import { toast } from "sonner";
 
 export interface User {
   id: string;
@@ -35,8 +36,8 @@ try {
   if (userCookie && userCookie !== "undefined") {
     storedUser = JSON.parse(userCookie);
   }
-} catch (error) {
-  console.error("Error parsing user cookie:", error);
+} catch (error: any) {
+  toast.error("Error parsing user cookie:", error);
   // Clear the invalid cookie
   Cookies.remove("user");
 }
@@ -205,8 +206,8 @@ const authSlice = createSlice({
           path: "/",
           sameSite: "lax",
         });
-      } catch (error) {
-        console.error("Error setting user cookie:", error);
+      } catch (error: any) {
+        toast.error("Error setting user cookie:", error);
       }
     },
     logout: (state) => {
@@ -233,7 +234,7 @@ const authSlice = createSlice({
           {},
           { withCredentials: true }
         )
-        .catch((error) => console.error("Error during logout:", error));
+        .catch((error) => toast.error("Error during logout:", error));
     },
   },
   extraReducers: (builder) => {

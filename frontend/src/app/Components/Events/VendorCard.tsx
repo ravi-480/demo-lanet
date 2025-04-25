@@ -46,6 +46,7 @@ const VendorCard = ({
   const [showDetails, setShowDetails] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [units, setUnits] = useState("1");
+  const [localNoOfDay, setLocalNoOfDay] = useState<number>(noOfDay);
   const [error, setError] = useState<string | null>(null);
   const dispatch = useDispatch<AppDispatch>();
 
@@ -59,20 +60,20 @@ const VendorCard = ({
     minGuestLimit
   );
 
-  // Calculate total estimate based on pricing unit
   const totalEstimate = calculateTotalEstimate(
     priceUnit,
     price,
     Number(units),
-    checkNoOfGuest
+    checkNoOfGuest,
+    category,
+    localNoOfDay
   );
 
-  // Validate units when it changes or dialog opens
   useEffect(() => {
-    if (priceUnit === "per day" && Number(units) > noOfDay) {
+    if (priceUnit === "per day" && Number(units) > localNoOfDay) {
       setError(
-        `Cannot book for more than the event duration (${noOfDay} day${
-          noOfDay > 1 ? "s" : ""
+        `Cannot book for more than the event duration (${localNoOfDay} day${
+          localNoOfDay > 1 ? "s" : ""
         })`
       );
     } else if (isBelowMinGuestLimit) {
@@ -85,7 +86,7 @@ const VendorCard = ({
   }, [
     units,
     priceUnit,
-    noOfDay,
+    localNoOfDay,
     isBelowMinGuestLimit,
     minGuestLimit,
     checkNoOfGuest,
@@ -94,10 +95,9 @@ const VendorCard = ({
   const handleConfirmAdd = async () => {
     if (!eventId || !addedBy) return;
 
-    // Validate before submitting
-    if (priceUnit === "per day" && Number(units) > noOfDay) {
+    if (priceUnit === "per day" && Number(units) > localNoOfDay) {
       toast.error(
-        `Cannot book for more than the event duration (${noOfDay} days)`
+        `Cannot book for more than the event duration (${localNoOfDay} days)`
       );
       return;
     }
@@ -120,7 +120,8 @@ const VendorCard = ({
       directionsLink: vendor.links?.directions || "",
       placeId: vendor.place_id || vendor.placeId || "",
       phone: vendor.phone || "",
-      price: totalEstimate,
+      price:
+        priceUnit === "per day" ? totalEstimate * localNoOfDay : totalEstimate,
       pricingUnit: priceUnit,
       category,
       numberOfGuests: checkNoOfGuest,
@@ -138,16 +139,15 @@ const VendorCard = ({
     }
   };
 
-  // Extracted dialog content component for clarity
   const renderDialogContent = () => (
-    <div className="space-y-2 text-gray-300  text-sm">
+    <div className="space-y-2 text-gray-300 text-sm">
       <p>
         <strong>{vendor.title}</strong> – ₹{price.toLocaleString()} {priceUnit}
       </p>
 
       {priceUnit === "per hour" ? (
         <>
-          <Label htmlFor="units">Enter hours</Label>
+          <Label htmlFor="units">Enter hours per day</Label>
           <Input
             id="units"
             type="number"
@@ -155,30 +155,58 @@ const VendorCard = ({
             onChange={(e) => setUnits(e.target.value)}
             min={1}
           />
+          <Label htmlFor="days">Enter number of days</Label>
+          <Input
+            id="days"
+            type="number"
+            value={localNoOfDay}
+            onChange={(e) => setLocalNoOfDay(Number(e.target.value))}
+            min={1}
+          />
           <p className="text-muted-foreground">
-            Estimated Total: ₹{totalEstimate.toLocaleString()}
+            Estimated Total: ₹
+            {calculateTotalEstimate(
+              priceUnit,
+              price,
+              Number(units),
+              checkNoOfGuest,
+              category,
+              localNoOfDay
+            ).toLocaleString()}
           </p>
         </>
       ) : priceUnit === "per day" ? (
-        <>
-          <Label htmlFor="units">Enter days</Label>
-          <Input
-            id="units"
-            type="number"
-            value={units}
-            onChange={(e) => setUnits(e.target.value)}
-            min={1}
-            max={noOfDay}
-            className={error ? "border-red-500" : ""}
-          />
-          {error && <p className="text-red-500 text-xs">{error}</p>}
-          <p className="text-muted-foreground">
-            Estimated Total: ₹{totalEstimate.toLocaleString()}
-          </p>
-          <p className="text-xs text-cyan-400">
-            Note: Event duration is {noOfDay} day{noOfDay > 1 ? "s" : ""}
-          </p>
-        </>
+        category.toLowerCase() === "venue" ? (
+          <>
+            <p>This venue is priced at ₹{price.toLocaleString()} per day.</p>
+            <p className="text-muted-foreground">
+              Event duration: {localNoOfDay} day
+              {localNoOfDay > 1 ? "s" : ""} × ₹{price.toLocaleString()} ={" "}
+              <strong>₹{(price * localNoOfDay).toLocaleString()}</strong>
+            </p>
+          </>
+        ) : (
+          <>
+            <Label htmlFor="units">Enter days</Label>
+            <Input
+              id="units"
+              type="number"
+              value={units}
+              onChange={(e) => setUnits(e.target.value)}
+              min={1}
+              max={localNoOfDay}
+              className={error ? "border-red-500" : ""}
+            />
+            {error && <p className="text-red-500 text-xs">{error}</p>}
+            <p className="text-muted-foreground">
+              Estimated Total: ₹{totalEstimate.toLocaleString()}
+            </p>
+            <p className="text-xs text-cyan-400">
+              Note: Event duration is {localNoOfDay} day
+              {localNoOfDay > 1 ? "s" : ""}
+            </p>
+          </>
+        )
       ) : priceUnit === "per plate" ? (
         <>
           <p>
@@ -193,8 +221,7 @@ const VendorCard = ({
         </>
       ) : (
         <p>
-          Flat rate cost:
-          <strong> ₹{totalEstimate.toLocaleString()}</strong>
+          Flat rate cost: <strong>₹{totalEstimate.toLocaleString()}</strong>
         </p>
       )}
     </div>

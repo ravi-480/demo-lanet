@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Search, Filter, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/store/store";
 import { sendInviteAll } from "@/store/rsvpSlice";
 import { toast } from "sonner";
+import ConfirmDialog from "../Shared/ConfirmDialog";
 
 interface GuestFiltersProps {
   searchFilter: string;
@@ -33,7 +34,7 @@ const GuestFilters = ({
   pendingGuests,
 }: GuestFiltersProps) => {
   const dispatch = useDispatch<AppDispatch>();
-
+  const [open, setOpen] = useState(false);
   const handleInvite = async () => {
     try {
       if (pendingGuests.length === 0) {
@@ -66,12 +67,23 @@ const GuestFilters = ({
         <Button
           size="sm"
           className="bg-cyan-600 hover:bg-cyan-700 text-white"
-          onClick={handleInvite}
+          onClick={() => setOpen(true)}
           disabled={pendingGuests.length === 0}
         >
           <Mail className="mr-1 h-4 w-4" />
           <span className="hidden xs:inline">Invite All</span>
         </Button>
+
+        <ConfirmDialog
+          onOpenChange={setOpen}
+          confirmText="Continue"
+          cancelText="Cancel"
+          onConfirm={handleInvite}
+          open={open}
+          confirmClassName="bg-cyan-500 hover:bg-cyan-600"
+          description="Are you sure you want to send invitations to all guests? This action will send the invite to everyone listed for this event. Please confirm before proceeding."
+          title="Invite All Guest"
+        />
 
         <Select
           value={statusFilter}

@@ -1,23 +1,23 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Clock, MapPin } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../store/store";
 import { fetchEvents } from "../../../store/eventSlice";
 import Link from "next/link";
-import Image from "next/image";
-import RenderEventStatusBadge from "./EventStatus";
-import { formatSimpleDate, tabs } from "@/StaticData/Static";
-import { getEventStatus } from "@/utils/helper";
+import { useEventFilter } from "../Events/EventFilter";
+import EventTabs from "../Events/EventTab";
+import LoadingState from "../Loading/Loading";
+import EventCard from "../Events/EventCard";
 
 const EventDisplay = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { events, isLoading, error } = useSelector(
     (state: RootState) => state.event
   );
-  const [activeTab, setActiveTab] = useState<string>("all");
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
+  const { activeTab, setActiveTab, filteredEvents } = useEventFilter({
+    events,
+  });
 
   useEffect(() => {
     let retryTimeout: any;
@@ -39,46 +39,11 @@ const EventDisplay = () => {
     };
   }, [dispatch]);
 
-  const now = new Date().getTime();
-
-  const [showAllEvents, setShowAllEvents] = useState(false);
-
-  const filteredEvents =
-    events?.filter((event) => {
-      if (activeTab === "all") return true;
-      const eventDate = new Date(event.date).getTime();
-      if (activeTab === "upcoming") return eventDate > now;
-      if (activeTab === "past") return eventDate <= now;
-      return event.status === activeTab;
-    }) || [];
-
-  const displayEvents = !showAllEvents
-    ? filteredEvents.slice(0, 3)
-    : filteredEvents;
-
   if (isLoading || !isInitialized) {
     return (
       <div className="bg-gray-900 text-white rounded-lg shadow-sm p-6 mb-6 w-full">
-        <div className="border-b border-gray-500 pb-4 mb-4">
-          <div className="flex flex-wrap gap-2">
-            {tabs.map((tab) => (
-              <Button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-3 py-2 rounded-md ${
-                  activeTab === tab.id
-                    ? "bg-blue-100 text-blue-800"
-                    : "text-gray-300 hover:bg-gray-100 hover:text-blue-800"
-                }`}
-              >
-                {tab.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-        <div className="text-center py-12">
-          <p className="text-white">Loading events...</p>
-        </div>
+        <EventTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+        <LoadingState />
       </div>
     );
   }
@@ -91,41 +56,23 @@ const EventDisplay = () => {
     );
   }
 
+  const displayEvents = filteredEvents.slice(0, 3);
+
   return (
     <div className="bg-gray-900 border text-gray-200 rounded-lg shadow-sm p-4 sm:p-6 mb-6 w-full">
       <div className="border-b border-gray-500 flex justify-between pb-4 mb-4">
-        <div className="flex flex-wrap  gap-2">
-          {tabs.map((tab) => (
-            <Button
-              key={tab.id}
-              onClick={() => {
-                setActiveTab(tab.id), setShowAllEvents(false);
-              }}
-              className={`px-3 py-2 cursor-pointer rounded-md ${
-                activeTab === tab.id
-                  ? "bg-blue-100 hover:bg-blue-100  text-gray-900 font-semibold"
-                  : "text-gray-200 hover:bg-gray-100 hover:text-gray-900"
-              }`}
-            >
-              {tab.label}
-            </Button>
-          ))}
-        </div>
-        {activeTab == "all" && filteredEvents.length > 3 && !showAllEvents && (
-          <p
-            className=" mt-2 cursor-pointer hover:text-cyan-700 "
-            onClick={() => setShowAllEvents(true)}
+        <EventTabs
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          className=""
+        />
+        {filteredEvents.length > 3 && (
+          <Link
+            href="/events/all"
+            className="mt-2 cursor-pointer hover:text-cyan-700"
           >
             View All
-          </p>
-        )}
-        {showAllEvents && (
-          <p
-            className=" mt-2 cursor-pointer hover:text-cyan-600 "
-            onClick={() => setShowAllEvents(false)}
-          >
-            Hide
-          </p>
+          </Link>
         )}
       </div>
 
@@ -137,53 +84,11 @@ const EventDisplay = () => {
           <p className="text-gray-300 mt-2 mb-4">Click 'Create New Event'</p>
         </div>
       ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 space-y-2">
-            {displayEvents.map((event) => (
-              <div
-                key={event._id}
-                className=" rounded-lg sm:w-full md:w-60 overflow-hidden  border  flex flex-col"
-              >
-                <Image
-                  src={event.image || "/api/placeholder/400/200"}
-                  alt={event.name || "Event"}
-                  className="w-full sm:h-32 object-cover"
-                  width={400}
-                  height={160}
-                />
-                <div className="px-3 py-2 flex-1 flex flex-col justify-between">
-                  <div>
-                    <div className="flex justify-between items-start">
-                      <h3 className="font-medium text-sm sm:text-base md:text-lg text-white">
-                        {event.name || "Unnamed Event"}
-                      </h3>
-                      {RenderEventStatusBadge(getEventStatus(event.date))}
-                    </div>
-
-                    <div className="mt-2 space-y-2 text-xs text-gray-300">
-                      <div className="flex justify-between gap-2">
-                        <div className="flex items-center">
-                          <Clock size={12} className="mr-2" />
-                          <span>{formatSimpleDate(event.date)}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <MapPin size={12} className="mr-2" />
-                          <span className="truncate max-w-[100px]">
-                            {event.location || "No location"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Link href={`/events/${event._id}`} className="mt-3">
-                    <Button className="w-full ">View more</Button>
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
+          {displayEvents.map((event) => (
+            <EventCard key={event._id} event={event} />
+          ))}
+        </div>
       )}
     </div>
   );

@@ -44,20 +44,6 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
           </div>
         ))}
       </Carousel>
-
-      <button
-        className="absolute left-2 md:left-4 top-1/2 transform -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center bg-black/50 text-white rounded-full hover:bg-black/70"
-        onClick={previous}
-      >
-        <LeftOutlined />
-      </button>
-
-      <button
-        className="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center bg-black/50 text-white rounded-full hover:bg-black/70"
-        onClick={next}
-      >
-        <RightOutlined />
-      </button>
     </div>
   );
 };

@@ -3,6 +3,7 @@ import Event from "../models/eventModel";
 import { asyncHandler } from "../utils/asyncHandler";
 import { Request, Response } from "express";
 import { sendEmail } from "../utils/emailService";
+import { v4 as uuidv4 } from "uuid";
 const axios = require("axios");
 
 interface AuthenticatedRequest extends Request {
@@ -188,7 +189,7 @@ export const sendMailToUser = asyncHandler(async (req, res) => {
       <h3>Hello from Split App</h3>
       <p>You’ve been asked to confirm a split expense of <strong>₹${amounts[i]}</strong>.</p>
       <p>
-    <a href="http://localhost:3001/split/confirm?eventId=${eventId[i]}&userId=${userId[i]}"
+    <a href="http://localhost:3000/split/confirm?eventId=${eventId[i]}&userId=${userId[i]}"
        style="background-color:#0ea5e9;padding:10px 20px;color:white;text-decoration:none;border-radius:5px;">
       Confirm Your Share
     </a>
@@ -357,6 +358,7 @@ export const addManualExpense = asyncHandler(
   async (req: Request, res: Response) => {
     try {
       const { title, price, status, eventId, pricingUnit } = req.body;
+      console.log(req.body);
 
       if (!title || !price || !status || !eventId || !pricingUnit) {
         return res.status(400).json({
@@ -383,6 +385,7 @@ export const addManualExpense = asyncHandler(
           message: "Event creator not found",
         });
       }
+      const randomPlaceId = uuidv4();
 
       const manualVendor = await Vendor.create({
         title,
@@ -390,7 +393,9 @@ export const addManualExpense = asyncHandler(
         category: status,
         pricingUnit,
         event: eventId,
+        placeId: randomPlaceId,
         addedBy,
+
         isIncludedInSplit: false,
       });
 

@@ -74,7 +74,7 @@ export const formatEmailTemplate = (
       }</p>
       
       <div style="text-align: center; margin: 30px 0;">
-        <a href="http://localhost:3001/rsvp/respond?eventId=${eventId}&guestId=${
+        <a href="http://localhost:3000/rsvp/respond?eventId=${eventId}&guestId=${
     guest._id
   }"
           style="background-color: ${

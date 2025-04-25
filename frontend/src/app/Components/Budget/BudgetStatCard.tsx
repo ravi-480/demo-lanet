@@ -7,6 +7,7 @@ interface StatCardProps {
   value: number;
   percentage?: number;
   isOverBudget?: boolean;
+  color?: string;
   isRemaining?: boolean;
 }
 
@@ -14,6 +15,7 @@ const StatCard = ({
   title,
   value,
   percentage,
+  color = "text-gray-200",
   isOverBudget,
   isRemaining,
 }: StatCardProps) => {
@@ -23,8 +25,7 @@ const StatCard = ({
     minimumFractionDigits: 2,
   }).format(value);
 
-  const valueTextClass =
-    isOverBudget && isRemaining ? "text-red-500" : "text-gray-200";
+  const valueTextClass = isOverBudget && isRemaining ? "text-red-500" : color;
   const percentageText =
     isRemaining && isOverBudget
       ? `${percentage}% over budget`
@@ -75,9 +76,10 @@ const BudgetStats = ({ eventBudget }: { eventBudget: any }) => {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-        <StatCard title="Total Budget" value={totalBudget} />
+        <StatCard title="Total Budget" color="text-green-500" value={totalBudget} />
         <StatCard
           title="Spent"
+          color="text-red-400"
           value={spent}
           percentage={calculatePercentage(spent)}
           isOverBudget={isOverBudget}
@@ -85,6 +87,7 @@ const BudgetStats = ({ eventBudget }: { eventBudget: any }) => {
         <StatCard
           title="Remaining"
           value={remaining}
+          color="text-orange-500"
           percentage={calculatePercentage(Math.abs(remaining))}
           isOverBudget={isOverBudget}
           isRemaining={true}

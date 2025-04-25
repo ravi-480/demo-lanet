@@ -14,6 +14,7 @@ import VendorCard from "./VendorCard";
 import { getRandomPrice } from "@/StaticData/Static";
 import { enrichVendor } from "@/utils/vendorUtils";
 import { SearchVendorProps } from "@/Interface/interface";
+import { toast } from "sonner";
 
 type SortOption = "lowToHigh" | "highToLow" | "rating" | "";
 
@@ -40,7 +41,8 @@ const SearchVendor = ({
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/vendors?query=${searchTerm}&location=${eventLocation}&page=${pageNum}`,{credentials:"include"}
+        `http://localhost:5000/api/vendors?query=${searchTerm}&location=${eventLocation}&page=${pageNum}`,
+        { credentials: "include" }
       );
       const data = await res.json();
 
@@ -50,8 +52,8 @@ const SearchVendor = ({
 
       setVendors(enrichedVendors);
       setHasMore(data.pagination?.hasMore ?? false);
-    } catch (err) {
-      console.error("Vendor fetch error:", err);
+    } catch (err: any) {
+      toast.error("Vendor fetch error:", err);
     } finally {
       setLoading(false);
     }
