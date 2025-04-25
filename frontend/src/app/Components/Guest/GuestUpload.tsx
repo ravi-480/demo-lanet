@@ -18,8 +18,15 @@ const GuestUpload = ({ eventId }: GuestUploadProps) => {
   const dispatch = useDispatch<AppDispatch>();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const validImageTypes = [".xlsx, .xls, .csv"];
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
+
+    if (!validImageTypes.includes(selectedFile.type)) {
+      alert("Only xlsx, xls, or csv files are allowed.");
+      e.target.value = "";
+      return;
+    }
     setFile(selectedFile);
   };
 

@@ -17,7 +17,6 @@ import { SearchVendorProps } from "@/Interface/interface";
 import { toast } from "sonner";
 
 type SortOption = "lowToHigh" | "highToLow" | "rating" | "";
-
 const SearchVendor = ({
   eventType,
   noOfDay,
@@ -33,9 +32,20 @@ const SearchVendor = ({
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [sortOption, setSortOption] = useState<SortOption>("");
+  const [locationError, setLocationError] = useState(false);
 
-  // Fetch vendors based on search term
+  const validateLocation = (location: string) => {
+    const locationRegex = /^[a-zA-Z\s,]+$/;
+    return locationRegex.test(location);
+  };
+
   const fetchVendors = async (pageNum = 1) => {
+    if (!validateLocation(eventLocation)) {
+      setLocationError(true);
+      return;
+    }
+
+    setLocationError(false);
     setLoading(true);
     setPage(pageNum);
 
@@ -45,6 +55,9 @@ const SearchVendor = ({
         { credentials: "include" }
       );
       const data = await res.json();
+      if (data.vendors.length === 0) {
+        toast.error("No vendors found for the specified location.");
+      }
 
       const enrichedVendors = (data.vendors || []).map((vendor: any) =>
         enrichVendor(vendor, searchTerm, getRandomPrice, noOfGuest, eventType)
@@ -59,10 +72,9 @@ const SearchVendor = ({
     }
   };
 
-  // Handle search on submit (Enter press)
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchVendors(); // Trigger search on submit
+    fetchVendors();
   };
 
   const getSortedVendors = () => {
@@ -75,25 +87,28 @@ const SearchVendor = ({
   };
 
   const renderSearchBar = () => (
-    <form onSubmit={handleSearchSubmit} className="flex items-center gap-2">
+    <form
+      onSubmit={handleSearchSubmit}
+      className="flex flex-col sm:flex-row items-center gap-2"
+    >
       <Input
         placeholder={`Search vendors for ${eventType}...`}
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
-            handleSearchSubmit(e); // Trigger search on Enter
+            handleSearchSubmit(e);
           }
         }}
       />
-      <Button type="submit" disabled={!searchTerm}>
+      <Button type="submit" disabled={!searchTerm} className="w-full sm:w-auto">
         Search
       </Button>
     </form>
   );
 
   const renderSortOptions = () => (
-    <div className="flex items-center gap-4">
+    <div className="flex flex-col sm:flex-row items-center gap-4">
       <span className="text-sm text-muted-foreground">Sort by:</span>
       <Select
         onValueChange={(value) => setSortOption(value as SortOption)}
@@ -134,7 +149,7 @@ const SearchVendor = ({
   const renderVendorGrid = () => {
     const sortedVendors = getSortedVendors();
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {sortedVendors.map((vendor, idx) => (
           <VendorCard
             key={idx}
@@ -155,13 +170,16 @@ const SearchVendor = ({
 
   return (
     <div className="space-y-4">
-      {/* Search input */}
       {renderSearchBar()}
 
-      {/* Sort dropdown */}
+      {locationError && (
+        <div className="text-red-500 text-sm">
+          Invalid location entered. Please enter a valid location.
+        </div>
+      )}
+
       {vendors.length > 0 && renderSortOptions()}
 
-      {/* Loader */}
       {loading && (
         <div className="text-gray-500 text-sm flex items-center gap-2">
           <Loader className="animate-spin" size={16} />
@@ -169,14 +187,12 @@ const SearchVendor = ({
         </div>
       )}
 
-      {/* No vendors
       {!loading && vendors.length === 0 && searchTerm && (
         <div className="text-center py-8 text-gray-500">
-          No vendors found matching "{searchTerm}"
+          No vendors found matching "{searchTerm}" in the specified location.
         </div>
-      )} */}
+      )}
 
-      {/* Vendors grid */}
       {!loading && vendors.length > 0 && (
         <>
           {renderVendorGrid()}
@@ -187,4 +203,5 @@ const SearchVendor = ({
   );
 };
 
-export default SearchVendor;
+
+export default SearchVendor

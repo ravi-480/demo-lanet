@@ -258,7 +258,11 @@ const VendorCard = ({
           <div className="text-sm text-gray-400">
             Est. ₹{price.toLocaleString()} {priceUnit}
             {minGuestLimit && category.toLowerCase() === "catering" && (
-              <span className="ml-2 text-sm text-cyan-500">
+              <span
+                className={`ml-2 text-sm ${
+                  isBelowMinGuestLimit ? "text-red-400" : "text-cyan-500"
+                }`}
+              >
                 Min. {minGuestLimit} guests required
               </span>
             )}
@@ -278,9 +282,7 @@ const VendorCard = ({
             size="sm"
             disabled={isBelowMinGuestLimit}
           >
-            {isBelowMinGuestLimit
-              ? `Min ${minGuestLimit} guests required`
-              : "Add Vendor"}
+            Add Vendor
           </Button>
         </CardFooter>
 

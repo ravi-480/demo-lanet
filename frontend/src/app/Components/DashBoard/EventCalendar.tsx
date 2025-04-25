@@ -98,7 +98,7 @@ const EventCalendar = () => {
               hasEvent: "bg-cyan-500 text-white rounded-xl",
               selected: "", // no selected style
             }}
-            className="rounded-lg border h-91 border-gray-400 w-full [&_.day-selected]:bg-transparent [&_.day-selected]:text-inherit"
+            className="rounded-lg border md:h-91 border-gray-400 w-full [&_.day-selected]:bg-transparent [&_.day-selected]:text-inherit"
             selected={undefined} // no visual selection
             mode="single"
             onDayClick={handleSelect}

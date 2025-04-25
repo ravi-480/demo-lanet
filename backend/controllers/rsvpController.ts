@@ -53,9 +53,7 @@ export const addGuestFromFile = asyncHandler(
       const existingEmails = new Set(
         existingGuests.map((g) => g.email.toLowerCase())
       );
-      console.log(existingGuests);
       
-      console.log(existingEmails);
 
       // Process new guests, skipping duplicates
       const newGuests = [];
