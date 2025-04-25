@@ -17,6 +17,15 @@ type EventData = {
   eventType: string;
 };
 
+type ApiError = {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+  message?: string;
+};
+
 const API_BASE_URL = "http://localhost:5000/api";
 
 export default function RSVPRespond() {
@@ -47,8 +56,9 @@ export default function RSVPRespond() {
         );
 
         setEvent(data.guest);
-      } catch (err: any) {
-        setError(err.response?.data?.message || "Invalid RSVP link.");
+      } catch (err: unknown) {
+        const error = err as ApiError;
+        setError(error.response?.data?.message || "Invalid RSVP link.");
       } finally {
         setLoading(false);
       }
@@ -71,9 +81,10 @@ export default function RSVPRespond() {
       });
 
       setSuccess(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as ApiError;
       setError(
-        err.response?.data?.message || "Failed to submit your response."
+        error.response?.data?.message || "Failed to submit your response."
       );
     } finally {
       setSubmitting(false);
@@ -131,7 +142,7 @@ export default function RSVPRespond() {
             Your response has been successfully submitted.
             {response === "accept"
               ? " We look forward to seeing you at the event!"
-              : " We're sorry you won't be able to join us, but appreciate your response."}
+              : " We&apos;re sorry you won&apos;t be able to join us, but appreciate your response."}
           </p>
           <p className="text-sm text-gray-500">
             You can close this window now.
@@ -153,7 +164,7 @@ export default function RSVPRespond() {
             <Check />
           </div>
           <h2 className="text-xl font-bold text-gray-800 mb-4">
-            You've Already Responded
+            You&apos;ve Already Responded
           </h2>
           <p className="text-gray-600 text-center mb-6">
             You have already{" "}
@@ -196,10 +207,10 @@ export default function RSVPRespond() {
               Hello, {event?.name || "Guest"}!
             </h2>
             <p className="text-gray-700 mb-6">
-              Please let us know if you'll be attending.
+              Please let us know if you&apos;ll be attending.
             </p>
 
-            <form onSubmit={handleSubmit} >
+            <form onSubmit={handleSubmit}>
               <div className="mb-6">
                 <div className="flex flex-col space-y-3">
                   <button
@@ -211,7 +222,7 @@ export default function RSVPRespond() {
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                   >
-                    Yes, I'll be there
+                    Yes, I&apos;ll be there
                   </button>
 
                   <button
@@ -223,7 +234,7 @@ export default function RSVPRespond() {
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                   >
-                    No, I can't make it
+                    No, I can&apos;t make it
                   </button>
                 </div>
               </div>

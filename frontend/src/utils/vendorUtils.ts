@@ -1,20 +1,4 @@
-// utils/vendorUtils.ts
-
-import { PricingUnit } from "@/Interface/interface";
-
-// Define a Vendor interface
-interface Vendor {
-  id?: string;
-  name?: string;
-  description?: string;
-  image?: string;
-  price?: number;
-  category?: string;
-  numberOfGuests?: number;
-  pricingUnit?: PricingUnit;
-  minGuestLimit?: number;
-  [key: string]: any; // For any additional properties
-}
+import { PricingUnit, VendorType } from "@/Interface/interface";
 
 // Type for the price generator function
 type PriceGenerator = (category: string, isDefault?: boolean) => number;
@@ -77,11 +61,11 @@ export const generateMinGuestLimit = (): number => {
 };
 
 export const enrichVendor = (
-  vendor: Vendor,
+  vendor: VendorType,
   matchedCategory: string | null,
   getRandomPrice: PriceGenerator,
   noOfGuest: number
-): Vendor => {
+): VendorType => {
   const recommended = !!matchedCategory;
   const isCatering = matchedCategory?.toLowerCase() === "catering";
   const minGuestLimit = isCatering ? generateMinGuestLimit() : undefined;

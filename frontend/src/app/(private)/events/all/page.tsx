@@ -40,7 +40,9 @@ const AllEventsPage = () => {
       try {
         await dispatch(fetchEvents()).unwrap();
       } catch (err) {
-        retryTimeout = setTimeout(() => loadEvents(), 10000); // retry after 10 seconds
+        console.log(err);
+
+        retryTimeout = setTimeout(() => loadEvents(), 10000);
       }
     };
 

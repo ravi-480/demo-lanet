@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "../utils/axiosConfig";
 import { RootState } from "./store";
 import { VendorType } from "@/Interface/interface";
@@ -10,6 +10,14 @@ interface VendorState {
   items: VendorType[];
   status: StatusType;
   error: string | { message: string } | null;
+}
+
+interface ManualVendorExpenseData {
+  eventId: string;
+  title: string;
+  price: number;
+  description?: string;
+  [key: string]: string | number | undefined; // For any additional properties
 }
 
 const initialState: VendorState = {
@@ -101,7 +109,7 @@ export const removeAddedVendor = createAsyncThunk<
 // Add manual vendor expense
 export const addManualVendorExpense = createAsyncThunk<
   void,
-  { [key: string]: any },
+  ManualVendorExpenseData,
   { rejectValue: string }
 >("vendor/addOtherExpense", async (data, { rejectWithValue }) => {
   try {

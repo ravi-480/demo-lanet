@@ -16,6 +16,7 @@ import { fetchById, singleEvent } from "@/store/eventSlice";
 import { getVendorsByEvent, removeAllVendor } from "@/store/vendorSlice";
 import BudgetStats from "./BudgetStatCard";
 import ConfirmDialog from "../Shared/ConfirmDialog";
+import { VendorType } from "@/Interface/interface";
 
 const BudgetManagement = ({ eventId }: { eventId: string }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -32,19 +33,19 @@ const BudgetManagement = ({ eventId }: { eventId: string }) => {
   useEffect(() => {
     if (eventId) {
       dispatch(fetchById(eventId));
-      dispatch(getVendorsByEvent({ eventId }));
+      dispatch(getVendorsByEvent({ eventId, includeSplit: false }));
     }
   }, [dispatch, eventId]);
 
   const filteredVendors = items
-    .filter((item: any) => {
+    .filter((item: VendorType) => {
       const searchTerm = searchFilter.toLowerCase();
       return (
         item.title?.toLowerCase().includes(searchTerm) ||
         item.email?.toLowerCase().includes(searchTerm)
       );
     })
-    .sort((a: any, b: any) => {
+    .sort((a: VendorType, b: VendorType) => {
       return priceSortOrder === "lowToHigh"
         ? a.price - b.price
         : b.price - a.price;
@@ -55,7 +56,7 @@ const BudgetManagement = ({ eventId }: { eventId: string }) => {
   };
 
   const refreshData = () => {
-    dispatch(getVendorsByEvent({ eventId }));
+    dispatch(getVendorsByEvent({ eventId, includeSplit: false }));
     dispatch(fetchById(eventId));
   };
 

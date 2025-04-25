@@ -5,20 +5,23 @@ import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import EventForm from "@/app/Components/Form/EventForm";
 import { toast } from "sonner";
+import { AppDispatch } from "@/store/store";
 
 const CreateEventForm = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
 
   const handleCreate = (data: FormData) => {
-    dispatch(createEvent(data) as any)
+    dispatch(createEvent(data))
       .unwrap()
       .then(() => {
         toast.success("Event created successfuly");
         router.push("/events");
       })
-      .catch((err: any) => {
-        toast.error("error", err);
+      .catch((error: unknown) => {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        toast.error(`Error creating event: ${errorMessage}`);
       });
   };
 

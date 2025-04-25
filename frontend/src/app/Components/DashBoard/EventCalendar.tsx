@@ -11,6 +11,12 @@ import { useSelector } from "react-redux";
 import { useState, useRef } from "react";
 import { isSameDay, parseISO, isFuture, format } from "date-fns";
 
+interface ProcessedEvent {
+  date: Date;
+  name: string;
+  location: string;
+}
+
 const EventCalendar = () => {
   const events = useSelector(selectEvents) || [];
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -34,12 +40,14 @@ const EventCalendar = () => {
         return null;
       }
     })
-    .filter(Boolean);
+    .filter(Boolean) as ProcessedEvent[];
 
-  const eventDates = eventsByDate.map((event: any) => event.date);
+  const eventDates = eventsByDate.map((event: ProcessedEvent) => event.date);
 
   const selectedEvents = selectedDate
-    ? eventsByDate.filter((event: any) => isSameDay(event.date, selectedDate))
+    ? eventsByDate.filter((event: ProcessedEvent) =>
+        isSameDay(event.date, selectedDate)
+      )
     : [];
 
   const handleSelect = (date: Date | undefined) => {
@@ -72,14 +80,16 @@ const EventCalendar = () => {
               </h3>
               {selectedEvents.length > 0 ? (
                 <ul className="space-y-2">
-                  {selectedEvents.map((event: any, index: number) => (
-                    <li key={index}>
-                      <div className="font-medium">{event.name}</div>
-                      <div className="text-xs text-gray-300">
-                        {event.location}
-                      </div>
-                    </li>
-                  ))}
+                  {selectedEvents.map(
+                    (event: ProcessedEvent, index: number) => (
+                      <li key={index}>
+                        <div className="font-medium">{event.name}</div>
+                        <div className="text-xs text-gray-300">
+                          {event.location}
+                        </div>
+                      </li>
+                    )
+                  )}
                 </ul>
               ) : (
                 <div className="text-sm text-gray-400">No events scheduled</div>

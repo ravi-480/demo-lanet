@@ -5,11 +5,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Cookies from "js-cookie";
-import {
-  loginUser,
-} from "@/store/authSlice";
+import { loginUser } from "@/store/authSlice";
 import { AppDispatch, RootState } from "@/store/store";
-import axios from "axios";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,13 +24,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginformSchema } from "@/schemas/ValidationSchema";
 import { toast } from "sonner";
 
-
-
 export default function LoginForm() {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
- 
-  const { user, error:authError,status:authStatus } = useSelector((state: RootState) => state.auth);
+
+  const {
+    user,
+    error: authError,
+    status: authStatus,
+  } = useSelector((state: RootState) => state.auth);
 
   const {
     register,
@@ -133,7 +132,7 @@ export default function LoginForm() {
       </CardContent>
       <CardFooter className="flex justify-center flex-col space-y-2">
         <p className="text-sm">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link href="/signup" className="text-[#d4c99e] hover:text-yellow-500">
             Create new account
           </Link>

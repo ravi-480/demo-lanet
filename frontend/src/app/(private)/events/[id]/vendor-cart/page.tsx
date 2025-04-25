@@ -1,5 +1,4 @@
-const VendorPAge = async ({ params }: any) => {
-
+const VendorPAge = async () => {
   return <div className="p-4">hello</div>;
 };
 

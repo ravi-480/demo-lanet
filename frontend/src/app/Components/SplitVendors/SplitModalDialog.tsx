@@ -53,9 +53,6 @@ const SplitTabsDialog = ({ users, eventId }: Props) => {
         : parseFloat(customSplit[index]) || 0,
   }));
 
-
-  
-
   return (
     <Tabs defaultValue="users" className="w-full max-w-md mx-auto">
       <TabsList className="bg-gray-900 w-full justify-start border border-gray-700">
@@ -145,8 +142,8 @@ const SplitTabsDialog = ({ users, eventId }: Props) => {
         ) : (
           <>
             <p className="text-sm text-gray-400 mb-4">
-              Here's a breakdown of all vendors you've added so far along with
-              their respective costs.
+              Here&apos;s a breakdown of all vendors you&apos;ve added so far
+              along with their respective costs.
             </p>
             <div className="space-y-3">
               {vendors.map((vendor, idx) => (

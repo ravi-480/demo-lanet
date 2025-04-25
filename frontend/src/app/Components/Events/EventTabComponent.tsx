@@ -6,8 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import dynamic from "next/dynamic";
 import { eventVendorMapping } from "@/StaticData/Static";
 import { RootState } from "@/store/store";
-
-// Use dynamic imports with loading states
+import { SearchVendorProps } from "@/Interface/interface";
 const EventOverView = dynamic(() => import("./EventOverView"), {
   loading: () => (
     <div className="h-64 w-full bg-gray-800 animate-pulse rounded-lg"></div>
@@ -51,17 +50,11 @@ const EventTabComponent = memo(() => {
     []
   );
 
-  if (!event) {
-    return (
-      <div role="alert" className="text-center py-4 text-white">
-        No event loaded.
-      </div>
-    );
-  }
+  // Define vendor props only if event exists, otherwise set to null
+  const vendorProps = useMemo<SearchVendorProps | null>(() => {
+    if (!event) return null;
 
-  // Define vendor props to avoid recalculation in render
-  const vendorProps = useMemo(
-    () => ({
+    return {
       noOfDay: event.durationInDays,
       eventId: event._id,
       noOfAddedGuest: event.noOfGuestAdded,
@@ -70,18 +63,25 @@ const EventTabComponent = memo(() => {
       eventType: event.eventType,
       allowedCategories,
       eventLocation: event.location,
-    }),
-    [
-      event.durationInDays,
-      event._id,
-      event.noOfGuestAdded,
-      event.creator,
-      event.guestLimit,
-      event.eventType,
-      allowedCategories,
-      event.location,
-    ]
-  );
+    };
+  }, [
+    event?.durationInDays,
+    event?._id,
+    event?.noOfGuestAdded,
+    event?.creator,
+    event?.guestLimit,
+    event?.eventType,
+    allowedCategories,
+    event?.location,
+  ]);
+
+  if (!event) {
+    return (
+      <div role="alert" className="text-center py-4 text-white">
+        No event loaded.
+      </div>
+    );
+  }
 
   return (
     <div className="w-full sm:w-[95%] bg-gray-900 border mt-2 sm:mt-4 border-b rounded-lg sm:rounded-2xl p-3 sm:p-5 mx-auto">
@@ -112,7 +112,7 @@ const EventTabComponent = memo(() => {
         </TabsContent>
 
         <TabsContent value="vendors" className="p-2 sm:p-4">
-          {activeTab === "vendors" && (
+          {activeTab === "vendors" && vendorProps && (
             <Suspense
               fallback={
                 <div className="h-64 w-full bg-gray-800 animate-pulse rounded-lg"></div>
@@ -128,4 +128,3 @@ const EventTabComponent = memo(() => {
 });
 
 EventTabComponent.displayName = "EventTabComponent";
-export default EventTabComponent;

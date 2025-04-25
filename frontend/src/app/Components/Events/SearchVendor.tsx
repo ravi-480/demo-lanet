@@ -13,10 +13,15 @@ import { Input } from "@/components/ui/input";
 import VendorCard from "./VendorCard";
 import { getRandomPrice } from "@/StaticData/Static";
 import { enrichVendor } from "@/utils/vendorUtils";
-import { SearchVendorProps } from "@/Interface/interface";
+import {
+  SearchVendorProps,
+  VendorType,
+  PricingUnit,
+} from "@/Interface/interface";
 import { toast } from "sonner";
 
 type SortOption = "lowToHigh" | "highToLow" | "rating" | "";
+
 const SearchVendor = ({
   eventType,
   noOfDay,
@@ -27,7 +32,7 @@ const SearchVendor = ({
   eventId,
 }: SearchVendorProps) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [vendors, setVendors] = useState<any[]>([]);
+  const [vendors, setVendors] = useState<VendorType[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -59,14 +64,19 @@ const SearchVendor = ({
         toast.error("No vendors found for the specified location.");
       }
 
-      const enrichedVendors = (data.vendors || []).map((vendor: any) =>
-        enrichVendor(vendor, searchTerm, getRandomPrice, noOfGuest, eventType)
+      const enrichedVendors = (data.vendors || []).map((vendor: VendorType) =>
+        enrichVendor(vendor, searchTerm, getRandomPrice, noOfGuest)
       );
 
       setVendors(enrichedVendors);
       setHasMore(data.pagination?.hasMore ?? false);
-    } catch (err: any) {
-      toast.error("Vendor fetch error:", err);
+    } catch (error) {
+      // Fix the error handling for toast
+      toast.error(
+        `Vendor fetch error: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     } finally {
       setLoading(false);
     }
@@ -153,13 +163,16 @@ const SearchVendor = ({
         {sortedVendors.map((vendor, idx) => (
           <VendorCard
             key={idx}
-            vendor={vendor}
+            vendor={{
+              ...vendor,
+              pricingUnit: vendor.pricingUnit as PricingUnit,
+            }}
             eventId={eventId}
             addedBy={addedBy}
             noOfAddedGuest={noOfAddedGuest}
             numberOfGuests={vendor.numberOfGuests}
             category={vendor.category}
-            pricingUnit={vendor.pricingUnit}
+            pricingUnit={vendor.pricingUnit as PricingUnit}
             minGuestLimit={vendor.minGuestLimit}
             noOfDay={noOfDay}
           />
@@ -189,7 +202,8 @@ const SearchVendor = ({
 
       {!loading && vendors.length === 0 && searchTerm && (
         <div className="text-center py-8 text-gray-500">
-          No vendors found matching "{searchTerm}" in the specified location.
+          No vendors found matching &quot;{searchTerm}&quot; in the specified
+          location.
         </div>
       )}
 
@@ -203,5 +217,4 @@ const SearchVendor = ({
   );
 };
 
-
-export default SearchVendor
+export default SearchVendor;

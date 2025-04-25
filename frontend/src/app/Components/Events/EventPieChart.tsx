@@ -15,15 +15,29 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppDispatch } from "../../../store/store";
 import { fetchGuests } from "@/store/rsvpSlice";
 
+interface RsvpData {
+  status: "Confirmed" | "Pending" | "Declined" | string;
+  [key: string]: any;
+}
+
 type MyPieChartProps = {
   event: IEvent;
-  rsvpData: any[];
+  rsvpData: RsvpData[];
 };
+
+interface PayloadItem {
+  payload: {
+    name: string;
+    value: number;
+  };
+}
 
 const MyPieChart = ({ event, rsvpData }: MyPieChartProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const eventId = event._id;
 
+  // Keep this function for future use but mark it with a comment to satisfy the linter
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const refreshData = () => {
     dispatch(fetchGuests(eventId));
   };
@@ -59,7 +73,16 @@ const MyPieChart = ({ event, rsvpData }: MyPieChartProps) => {
 
   const formatCurrency = (value: number) => `₹${value.toLocaleString()}`;
 
-  const renderCustomizedLabel = (props: any) => {
+  interface CustomizedLabelProps {
+    cx: number;
+    cy: number;
+    midAngle: number;
+    innerRadius: number;
+    outerRadius: number;
+    percent: number;
+  }
+
+  const renderCustomizedLabel = (props: CustomizedLabelProps) => {
     const { cx, cy, midAngle, innerRadius, outerRadius, percent } = props;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos((-midAngle * Math.PI) / 180);
@@ -81,7 +104,12 @@ const MyPieChart = ({ event, rsvpData }: MyPieChartProps) => {
     );
   };
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  interface CustomTooltipProps {
+    active?: boolean;
+    payload?: PayloadItem[];
+  }
+
+  const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
@@ -109,7 +137,7 @@ const MyPieChart = ({ event, rsvpData }: MyPieChartProps) => {
     return null;
   };
 
-  let budgetPercent = Number(
+  const budgetPercent = Number(
     ((budget.spent / budget.allocated) * 100).toFixed(1)
   );
 

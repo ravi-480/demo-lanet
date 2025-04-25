@@ -207,12 +207,9 @@ const eventSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(
-        updateEvent.fulfilled,
-        (state, action: PayloadAction<string>) => {
-          state.isLoading = false;
-        }
-      )
+      .addCase(updateEvent.fulfilled, (state) => {
+        state.isLoading = false;
+      })
       .addCase(updateEvent.rejected, (state, action) => {
         state.isLoading = false;
         state.error =

@@ -28,13 +28,20 @@ import {
   updateSingleGuest,
 } from "@/store/rsvpSlice";
 import { toast } from "sonner";
+import { Guest } from "@/Interface/interface";
+
+interface FormData {
+  name: string;
+  email: string;
+  status: string;
+}
 
 interface GuestDialogProps {
   eventId: string;
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  editGuest: any | null;
-  setEditGuest: (guest: any | null) => void;
+  editGuest: Guest | null;
+  setEditGuest: React.Dispatch<React.SetStateAction<Guest | null>>;
 }
 
 const GuestDialog = ({
@@ -54,7 +61,7 @@ const GuestDialog = ({
     watch,
     setValue,
     formState: { errors },
-  } = useForm({
+  } = useForm<FormData>({
     defaultValues: {
       name: "",
       email: "",
@@ -71,11 +78,15 @@ const GuestDialog = ({
     }
   }, [editGuest, setValue]);
 
-  const handleSaveGuest = async (data: any) => {
+  const handleSaveGuest = async (data: FormData) => {
     try {
-      if (isEditing) {
+      if (isEditing && editGuest?._id) {
         const result = await dispatch(
-          updateSingleGuest({ eventId, guestId: editGuest._id, data })
+          updateSingleGuest({
+            eventId,
+            guestId: editGuest._id,
+            data: data as unknown as Record<string, any>,
+          })
         );
         if (updateSingleGuest.fulfilled.match(result)) {
           toast.success("Guest updated successfully");
@@ -85,11 +96,18 @@ const GuestDialog = ({
           toast.error(
             typeof result.payload === "string"
               ? result.payload
-              : "Failed to add guest"
+              : "Failed to update guest"
           );
         }
       } else {
-        const result = await dispatch(addSingleGuest({ ...data, eventId }));
+        // For new guests, use the form data directly
+        const result = await dispatch(
+          // Use a type assertion that aligns with your API expectations
+          addSingleGuest({
+            eventId,
+            ...data,
+          } as any)
+        );
         if (addSingleGuest.fulfilled.match(result)) {
           toast.success("Guest added successfully");
           await dispatch(fetchGuests(eventId));
@@ -102,7 +120,7 @@ const GuestDialog = ({
           );
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error("An error occurred");
       console.error(error);
     }
@@ -195,7 +213,11 @@ const GuestDialog = ({
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" className="bg-white text-black hover:bg-gray-200" onClick={handleClose}>
+            <Button
+              type="button"
+              className="bg-white text-black hover:bg-gray-200"
+              onClick={handleClose}
+            >
               Cancel
             </Button>
             <Button type="submit">

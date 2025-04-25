@@ -7,7 +7,8 @@ import {
   fetchNotificationsSuccess,
   fetchNotificationStart,
 } from "./notificationSlice";
-import axios from "../utils/axiosConfig";
+import axios from "../utils/axiosConfig"; // Add AxiosError import
+import { AxiosError } from "axios";
 import { useSocket } from "@/hooks/useSocket";
 
 const NotificationLoader = () => {
@@ -16,48 +17,57 @@ const NotificationLoader = () => {
   const socket = useSocket();
   const [connectionStatus, setConnectionStatus] = useState("connected");
 
-  const hasFetchedNotificationsRef = useRef(false);  // Prevents unnecessary re-fetching
+  const hasFetchedNotificationsRef = useRef(false); // Prevents unnecessary re-fetching
 
   useEffect(() => {
     if (!user?.id || hasFetchedNotificationsRef.current) return; // Don't refetch if notifications have already been fetched
-  
+
     dispatch(fetchNotificationStart());
-  
+
     const fetchNotifications = async () => {
       try {
-        const response = await axios.get(
-          `/notifications`,
-          {
-            withCredentials: true,
-            params: { userId: user.id },
-            timeout: 5000,
-          }
-        );
-  
+        const response = await axios.get(`/notifications`, {
+          withCredentials: true,
+          params: { userId: user.id },
+          timeout: 5000,
+        });
+
         dispatch(fetchNotificationsSuccess(response.data.notifications));
         hasFetchedNotificationsRef.current = true; // Mark notifications as fetched
-      } catch (error: any) {
-        console.log("Server connection issue - notifications not loaded");
+      } catch (error: unknown) {
+        // Change error type from any to unknown
+        // Use error in a log message to avoid the unused variable warning
+        if (error instanceof AxiosError) {
+          console.log(
+            "Server connection issue - notifications not loaded:",
+            error.message
+          );
+        } else {
+          console.log(
+            "Server connection issue - notifications not loaded:",
+            error
+          );
+        }
         setConnectionStatus("disconnected");
         dispatch(fetchNotificationsFailure("Unable to load notifications"));
       }
     };
-  
+
     fetchNotifications();
-  
+
     if (socket) {
       socket.on("new-notification", (notification) => {
-        dispatch(addNotification(notification));  // Ensure this doesn't trigger another fetch
+        dispatch(addNotification(notification)); // Ensure this doesn't trigger another fetch
       });
-  
+
       socket.on("connect", () => {
         setConnectionStatus("connected");
         if (!hasFetchedNotificationsRef.current) {
-          fetchNotifications();  // Only fetch if not already fetched
+          fetchNotifications(); // Only fetch if not already fetched
         }
       });
     }
-  
+
     // Cleanup on component unmount
     return () => {
       if (socket) {
@@ -66,7 +76,6 @@ const NotificationLoader = () => {
       }
     };
   }, [user?.id, socket, dispatch, connectionStatus]);
-  
 
   return null;
 };

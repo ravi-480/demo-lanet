@@ -80,6 +80,7 @@ const formatDateForInput = (dateString?: string | Date): string => {
     const iso = localTime.toISOString();
     return iso.slice(0, 16);
   } catch (e) {
+    console.log(e);
     return "";
   }
 };

@@ -103,7 +103,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
           Oops! Server is down.
         </h1>
         <p className="text-lg text-gray-300 mb-6">
-          We're having trouble connecting to our backend. Please try again
+          We&apos;re having trouble connecting to our backend. Please try again
           later.
         </p>
         <Button

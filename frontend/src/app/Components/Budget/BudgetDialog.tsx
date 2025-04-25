@@ -80,7 +80,9 @@ const BudgetDialog = ({ eventId, isOpen, setIsOpen }: BudgetDialogProps) => {
       toast.success("Vendor added successfully");
       await dispatch(fetchGuests(eventId));
       handleClose();
-    } catch (error) {
+    } catch (err) {
+      console.log(err);
+
       toast.error("Failed to add vendor");
     }
   };

@@ -30,7 +30,6 @@ export const EditUserDialog = ({
   register,
   errors,
   onSubmit,
-  currentUser,
   setCurrentUser,
 }: EditUserDialogProps) => (
   <Dialog open={isOpen} onOpenChange={setIsOpen}>

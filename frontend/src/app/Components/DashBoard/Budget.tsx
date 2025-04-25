@@ -55,7 +55,8 @@ const Budget = () => {
           No Recent Expenses
         </h2>
         <p className="text-xs md:text-sm text-gray-300 mb-4 text-center">
-          You haven't added any expenses yet. Start by adding your first one.
+          You haven&apos;t added any expenses yet. Start by adding your first
+          one.
         </p>
       </div>
     );

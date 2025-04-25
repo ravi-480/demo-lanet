@@ -10,7 +10,6 @@ export default async function EventLayout({
   children: ReactNode;
   params: Promise<{ id: string }>;
 }) {
-  // Await params before accessing its properties
   const resolvedParams = await params;
   const eventId = resolvedParams.id;
 
@@ -45,7 +44,9 @@ export default async function EventLayout({
     }
 
     return <>{children}</>;
-  } catch (error: any) {
+  } catch (err) {
+    console.log(err);
+
     return (
       <div className="p-6 text-center text-white bg-gray-900 min-h-screen flex flex-col items-center justify-center">
         <h2 className="text-2xl font-bold mb-2">Error loading event</h2>

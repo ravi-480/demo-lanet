@@ -3,7 +3,7 @@ import { EventType } from "react-hook-form";
 export interface IEvent {
   _id: string;
   name: string;
-  date: string | Date ;
+  date: string | Date;
   time: string;
   location: string;
   description: string;
@@ -125,12 +125,14 @@ export interface CustomEvent {
   };
 }
 
+// Update your VendorType interface to include all necessary properties:
 export interface VendorType {
-  _id?: string;
+  _id: string;
   event: string;
   title: string;
   type: string;
   address: string;
+  email?: string;
   rating: number;
   description?: string;
   website?: string;
@@ -143,6 +145,9 @@ export interface VendorType {
   createdAt?: string;
   numberOfGuests: number;
   addedBy: string;
+  minGuestLimit?: number;
+  days?: number;
+  isIncludedInSplit?: boolean;
 }
 
 export interface Expense {
@@ -212,7 +217,7 @@ export interface SplitState {
 
 export interface SplitUser {
   name: string;
-  _id:string
+  _id: string;
   email: string;
   status: "pending" | "confirmed";
 }
@@ -331,4 +336,3 @@ export interface SearchVendorProps {
   noOfAddedGuest: number;
   eventId?: string;
 }
-

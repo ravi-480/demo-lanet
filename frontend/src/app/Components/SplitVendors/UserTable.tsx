@@ -9,13 +9,20 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Edit, Mail, Trash } from "lucide-react";
-import { SplitUser } from "@/Interface/interface";
+// Removed unused import
+
+interface User {
+  _id?: string;
+  name: string;
+  email: string;
+  status?: string;
+}
 
 interface UserTableProps {
-  users: any[];
+  users: User[];
   isLoading: boolean;
-  onEdit: (user: any) => void;
-  onDelete: (user: any) => void;
+  onEdit: (user: User) => void;
+  onDelete: (user: User) => void;
 }
 
 export const UserTable = ({
@@ -41,7 +48,7 @@ export const UserTable = ({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {users.map((user: any, idx: number) => (
+        {users.map((user: User, idx: number) => (
           <TableRow
             key={user._id || idx}
             className="hover:bg-gray-800/70 border-gray-700 transition-colors"

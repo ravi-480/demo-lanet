@@ -24,10 +24,18 @@ const EditEvent = () => {
     dispatch(updateEvent(formData))
       .unwrap()
       .then(() => {
-        toast.success("Event update successfuly"), router.push("/events");
+        toast.success("Event updated successfully");
+        router.push("/events");
       })
-      .catch((err: any) => {
-        toast.error(err?.message || "Failed to update event");
+      .catch((err: unknown) => {
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : typeof err === "object" && err !== null && "message" in err
+            ? String((err as { message: unknown }).message)
+            : "Failed to update event";
+
+        toast.error(errorMessage);
       });
   };
 

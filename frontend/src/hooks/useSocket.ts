@@ -3,6 +3,7 @@ import { Socket, io } from "socket.io-client";
 import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addNotification, markAllAsRead } from "@/store/notificationSlice";
+import { INotification } from "@/Interface/interface";
 
 export const useSocket = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -34,7 +35,7 @@ export const useSocket = () => {
         }
       });
 
-      socket.on("new-notification", (notification: any) => {
+      socket.on("new-notification", (notification: INotification) => {
         console.log("New notification:", notification);
         dispatch(addNotification(notification));
       });
