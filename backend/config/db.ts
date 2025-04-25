@@ -6,8 +6,13 @@ const connectDB = async (): Promise<void> => {
       process.env.MONGODB_URI || "mongodb://localhost:27017/eventwise"
     );
     console.log(`MongoDB Connected: ${conn.connection.host}`);
-  } catch (error: any) {
-    console.error(`Error: ${error.message}`);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      // Now you can safely access error.message
+      console.error(`Error: ${error.message}`);
+    } else {
+      console.error("An unknown error occurred.");
+    }
     process.exit(1);
   }
 };

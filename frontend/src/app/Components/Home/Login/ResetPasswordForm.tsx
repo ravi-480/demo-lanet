@@ -6,13 +6,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   resetPassword,
-  selectAuthError,
-  selectAuthStatus,
-  selectResetPasswordSuccess,
-  selectResetPasswordMessage,
   clearResetPasswordState,
 } from "@/store/authSlice";
-import { AppDispatch } from "@/store/store";
+import { AppDispatch, RootState } from "@/store/store";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,10 +45,12 @@ interface ResetPasswordFormProps {
 export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const authError = useSelector(selectAuthError);
-  const authStatus = useSelector(selectAuthStatus);
-  const resetPasswordSuccess = useSelector(selectResetPasswordSuccess);
-  const resetPasswordMessage = useSelector(selectResetPasswordMessage);
+  const {
+    error: authError,
+    status: authStatus,
+    resetPasswordSuccess,
+    resetPasswordMessage,
+  } = useSelector((state: RootState) => state.auth);
 
   const form = useForm({
     resolver: zodResolver(formSchema),

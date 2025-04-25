@@ -5,13 +5,9 @@ import { useDispatch, useSelector } from "react-redux";
 import Link from "next/link";
 import {
   forgotPassword,
-  selectAuthError,
-  selectAuthStatus,
-  selectForgotPasswordSuccess,
-  selectForgotPasswordMessage,
   clearForgotPasswordState,
 } from "@/store/authSlice";
-import { AppDispatch } from "@/store/store";
+import { AppDispatch, RootState } from "@/store/store";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,10 +31,12 @@ const formSchema = z.object({
 
 const ForgotPasswordForm = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const authError = useSelector(selectAuthError);
-  const authStatus = useSelector(selectAuthStatus);
-  const forgotPasswordSuccess = useSelector(selectForgotPasswordSuccess);
-  const forgotPasswordMessage = useSelector(selectForgotPasswordMessage);
+  const {
+    error: authError,
+    status: authStatus,
+    forgotPasswordSuccess,
+    forgotPasswordMessage,
+  } = useSelector((state: RootState) => state.auth);
 
   const form = useForm({
     resolver: zodResolver(formSchema),

@@ -7,8 +7,6 @@ import Link from "next/link";
 import Cookies from "js-cookie";
 import {
   loginUser,
-  selectAuthError,
-  selectAuthStatus,
 } from "@/store/authSlice";
 import { AppDispatch, RootState } from "@/store/store";
 import axios from "axios";
@@ -29,14 +27,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginformSchema } from "@/schemas/ValidationSchema";
 import { toast } from "sonner";
 
-// Configure axios
+
 
 export default function LoginForm() {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const authError = useSelector(selectAuthError);
-  const authStatus = useSelector(selectAuthStatus);
-  const { user } = useSelector((state: RootState) => state.auth);
+ 
+  const { user, error:authError,status:authStatus } = useSelector((state: RootState) => state.auth);
 
   const {
     register,

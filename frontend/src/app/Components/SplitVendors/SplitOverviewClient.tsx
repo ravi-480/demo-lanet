@@ -20,8 +20,20 @@ import { EditUserDialog } from "./EditUserDialog";
 import { UserTable } from "./UserTable";
 import { DarkCard } from "./Card";
 import { CreateSplitButton } from "./CreateUser";
-import { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import ConfirmDialog from "../Shared/ConfirmDialog";
+
+// Define an Error interface to handle API errors
+interface ApiError {
+  message?: string;
+  toString: () => string;
+}
 
 const SplitOverviewClient = () => {
   const { id } = useParams();
@@ -59,14 +71,15 @@ const SplitOverviewClient = () => {
     setIsLoading(true);
     try {
       await dispatch(fetchById(id as string)).unwrap();
-    } catch (error: any) {
-      const errMsg = error?.message || error?.toString();
+    } catch (error: unknown) {
+      const err = error as ApiError;
+      const errMsg = err?.message || err?.toString();
       if (
         !errMsg.includes("Authentication required") &&
         !errMsg.includes("401") &&
         !errMsg.includes("Unauthorized")
       ) {
-        toast.error("Failed to refresh event data:", error);
+        toast.error(`Failed to refresh event data: ${errMsg}`);
       }
     } finally {
       setIsLoading(false);
@@ -89,8 +102,10 @@ const SplitOverviewClient = () => {
 
       await refreshEventData();
       toast.success("User added to split successfully!");
-    } catch (error: any) {
-      toast.error(error || "Failed to add user to split");
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      toast.error(errorMessage || "Failed to add user to split");
     } finally {
       setIsLoading(false);
       addReset();
@@ -115,8 +130,10 @@ const SplitOverviewClient = () => {
         })
       ).unwrap();
       await refreshEventData();
-    } catch (error: any) {
-      toast.error("Failed to edit user:", error);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      toast.error(`Failed to edit user: ${errorMessage}`);
     } finally {
       setIsLoading(false);
       editReset();
@@ -134,13 +151,13 @@ const SplitOverviewClient = () => {
   }, [currentUser, setValue]);
 
   // Handle opening edit dialog
-  const openEditDialog = (user: any) => {
+  const openEditDialog = (user: SplitUser) => {
     setCurrentUser(user);
     setIsEditUserOpen(true);
   };
 
   // Handle opening delete dialog
-  const openDeleteDialog = (user: any) => {
+  const openDeleteDialog = (user: SplitUser) => {
     setUserToDelete(user); // Store user to delete
     setIsDeleteDialogOpen(true); // Open delete confirmation dialog
   };
@@ -156,8 +173,10 @@ const SplitOverviewClient = () => {
       ).unwrap();
       await refreshEventData();
       toast.success("User removed successfully!");
-    } catch (error: any) {
-      toast.error("Failed to remove user:", error);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      toast.error(`Failed to remove user: ${errorMessage}`);
     } finally {
       setIsLoading(false);
       setIsDeleteDialogOpen(false); // Close the delete dialog
@@ -170,6 +189,7 @@ const SplitOverviewClient = () => {
     if (id) {
       refreshEventData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   return (

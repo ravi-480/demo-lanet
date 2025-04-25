@@ -1,11 +1,25 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "./store";
-import axios from "axios";
+import axios from "../utils/axiosConfig";
+
+interface Vendor {
+  // Define properties for vendor
+  id: string;
+  title: string;
+  price: number;
+  // Add other properties as per your API response
+}
+
+interface User {
+  name: string;
+  email: string;
+  _id: string;
+}
 
 interface SplitState {
   eventId: string;
-  splittedVendors: any[];
-  personInSplit: any[];
+  splittedVendors: Vendor[]; // Typed vendors array
+  personInSplit: User[]; // Typed personInSplit array
   status: "idle" | "loading" | "success" | "failed";
   error: string | null;
 }
@@ -19,83 +33,87 @@ const initialState: SplitState = {
 };
 
 export const addVendorInSplitOrRemove = createAsyncThunk<
-  any, // returned data type from the API
-  string, // payload type
+  Vendor, // The returned data type from the API (Vendor type)
+  string, // Payload type (vendorId)
   { rejectValue: string }
 >("vendorSplit/addToSplit", async (vendorId, { rejectWithValue }) => {
   try {
     const response = await axios.post(
-      "http://localhost:5000/api/vendors/addToSplit",
+      "/vendors/addToSplit",
       { vendorId },
       { withCredentials: true }
     );
     return response.data;
-  } catch (error: any) {
+  } catch (error: unknown) {
     return rejectWithValue(
-      error.response?.data?.message || "Failed to add vendor to split"
+      error instanceof Error ? error.message : "Failed to add vendor to split"
     );
   }
 });
 
 interface AddUserPayload {
-  user: { name: string; email: string };
+  user: User; // Use User type for user data
   id: string;
 }
 
-export const addUserInSplit = createAsyncThunk(
+export const addUserInSplit = createAsyncThunk<
+  User, // The returned data type from the API (User type)
+  AddUserPayload, // Payload type
+  { rejectValue: string }
+>(
   "addUser/addToSplit",
   async (userData: AddUserPayload, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/vendors/addUserToSplit",
-        userData,
-        { withCredentials: true }
-      );
+      const response = await axios.post("/vendors/addUserToSplit", userData, {
+        withCredentials: true,
+      });
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to add user to split"
+        error instanceof Error ? error.message : "Failed to add user to split"
       );
     }
   }
 );
 
 // Remove added user in split
-export const deleteUserFromSplit = createAsyncThunk(
-  "split/deleteFromSplit",
-  async (data: { id: string; userId: string }, { rejectWithValue }) => {
-    try {
-      const response = await axios.delete(
-        "http://localhost:5000/api/vendors/delete/addedInSplit",
-        { data, withCredentials: true }
-      );
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to delete user"
-      );
-    }
+export const deleteUserFromSplit = createAsyncThunk<
+  string, // Return type (a message or the ID of the deleted user)
+  { id: string; userId: string }, // Payload type
+  { rejectValue: string }
+>("split/deleteFromSplit", async (data, { rejectWithValue }) => {
+  try {
+    const response = await axios.delete("/vendors/delete/addedInSplit", {
+      data,
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error: unknown) {
+    return rejectWithValue(
+      error instanceof Error ? error.message : "Failed to delete user"
+    );
   }
-);
+});
 
 // Edit user details which were included in split
-export const editUserInSplit = createAsyncThunk(
-  "split/editUserInSplit",
-  async (data: { user: any; id: string }, { rejectWithValue }) => {
-    try {
-      const response = await axios.patch(
-        "http://localhost:5000/api/vendors/split/users/edituser",
-        data, // Send data directly, not wrapped in another object
-        { withCredentials: true }
-      );
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to edit user"
-      );
-    }
+export const editUserInSplit = createAsyncThunk<
+  User, // The returned data type from the API (User type)
+  { user: User; id: string }, // Payload type
+  { rejectValue: string }
+>("split/editUserInSplit", async (data, { rejectWithValue }) => {
+  try {
+    const response = await axios.patch(
+      "/vendors/split/users/edituser",
+      data, // Send data directly
+      { withCredentials: true }
+    );
+    return response.data;
+  } catch (error: unknown) {
+    return rejectWithValue(
+      error instanceof Error ? error.message : "Failed to edit user"
+    );
   }
-);
+});
 
 const splitVendorPrice = createSlice({
   name: "split",
@@ -113,13 +131,12 @@ const splitVendorPrice = createSlice({
         state.status = "loading";
         state.error = null;
       })
-      .addCase(addVendorInSplitOrRemove.fulfilled, (state) => {
+      .addCase(addVendorInSplitOrRemove.fulfilled, (state, action) => {
         state.status = "success";
+        state.splittedVendors.push(action.payload); // Add vendor to split
       })
       .addCase(addVendorInSplitOrRemove.rejected, (state, action) => {
         state.status = "failed";
-        console.log(action);
-
         state.error = (action.payload as string) || "Unknown error occurred";
       })
 
@@ -128,8 +145,9 @@ const splitVendorPrice = createSlice({
         state.status = "loading";
         state.error = null;
       })
-      .addCase(addUserInSplit.fulfilled, (state) => {
+      .addCase(addUserInSplit.fulfilled, (state, action) => {
         state.status = "success";
+        state.personInSplit.push(action.payload); // Add user to split
       })
       .addCase(addUserInSplit.rejected, (state, action) => {
         state.status = "failed";
@@ -141,8 +159,11 @@ const splitVendorPrice = createSlice({
         state.status = "loading";
         state.error = null;
       })
-      .addCase(deleteUserFromSplit.fulfilled, (state) => {
+      .addCase(deleteUserFromSplit.fulfilled, (state, action) => {
         state.status = "success";
+        state.personInSplit = state.personInSplit.filter(
+          (user) => user._id !== action.payload // Assuming the payload is the user ID
+        );
       })
       .addCase(deleteUserFromSplit.rejected, (state, action) => {
         state.status = "failed";
@@ -154,8 +175,14 @@ const splitVendorPrice = createSlice({
         state.status = "loading";
         state.error = null;
       })
-      .addCase(editUserInSplit.fulfilled, (state) => {
+      .addCase(editUserInSplit.fulfilled, (state, action) => {
         state.status = "success";
+        const index = state.personInSplit.findIndex(
+          (user) => user._id === action.payload._id
+        );
+        if (index !== -1) {
+          state.personInSplit[index] = action.payload; // Update user info
+        }
       })
       .addCase(editUserInSplit.rejected, (state, action) => {
         state.status = "failed";

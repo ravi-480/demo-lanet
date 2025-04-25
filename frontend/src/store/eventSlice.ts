@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import axios from "@/utils/axiosConfig";
 import type { RootState } from "./store";
 import { IEvent } from "@/Interface/interface";
+import { AxiosError } from "axios";
 
 interface EventState {
   events: IEvent[];
@@ -20,23 +21,22 @@ const initialState: EventState = {
 // creating new events
 export const createEvent = createAsyncThunk(
   "events/createEvent",
-  async (eventData: FormData, { rejectWithValue, getState }) => {
+  async (eventData: FormData, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        "/events/create-new-event",
-        eventData,
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await axios.post("/events/create-new-event", eventData, {
+        withCredentials: true,
+      });
 
       return response.data;
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message ||
-          error.message ||
-          "Failed to store event"
-      );
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        return rejectWithValue(
+          error.response?.data?.message ||
+            error.message ||
+            "Failed to store event"
+        );
+      }
+      return rejectWithValue("Failed to store event");
     }
   }
 );
@@ -50,10 +50,13 @@ export const fetchEvents = createAsyncThunk(
         withCredentials: true,
       });
       return response.data.events;
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch events"
-      );
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        return rejectWithValue(
+          error.response?.data?.message || "Failed to fetch events"
+        );
+      }
+      return rejectWithValue("Failed to fetch events");
     }
   }
 );
@@ -64,18 +67,18 @@ export const fetchById = createAsyncThunk(
   "events/fetchById",
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await axios.get(
-        `/events/${id}`,
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await axios.get(`/events/${id}`, {
+        withCredentials: true,
+      });
 
       return response.data.event;
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch events"
-      );
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        return rejectWithValue(
+          error.response?.data?.message || "Failed to fetch events"
+        );
+      }
+      return rejectWithValue("Failed to fetch events");
     }
   }
 );
@@ -86,22 +89,21 @@ export const updateEvent = createAsyncThunk(
   "event/updateEvent",
   async (data: FormData, { rejectWithValue }) => {
     try {
-      const response = await axios.put(
-        `/events/updateEvent`,
-        data,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data", // without this file wont go in backend
-          },
-          withCredentials: true,
-        }
-      );
+      const response = await axios.put(`/events/updateEvent`, data, {
+        headers: {
+          "Content-Type": "multipart/form-data", // without this file wont go in backend
+        },
+        withCredentials: true,
+      });
 
       return response.data;
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to update event"
-      );
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        return rejectWithValue(
+          error.response?.data?.message || "Failed to update event"
+        );
+      }
+      return rejectWithValue("Failed to update event");
     }
   }
 );
@@ -112,18 +114,18 @@ export const deleteEvent = createAsyncThunk(
   "event/deleteEvent",
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(
-        `/events/deleteEvent/${id}`,
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await axios.delete(`/events/deleteEvent/${id}`, {
+        withCredentials: true,
+      });
 
       return response.data;
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to delete Event"
-      );
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        return rejectWithValue(
+          error.response?.data?.message || "Failed to delete Event"
+        );
+      }
+      return rejectWithValue("Failed to delete Event");
     }
   }
 );
@@ -176,7 +178,6 @@ const eventSlice = createSlice({
         }
       )
       .addCase(createEvent.rejected, (state, action) => {
-
         state.isLoading = false;
         state.error =
           typeof action.payload === "string"
@@ -202,14 +203,13 @@ const eventSlice = createSlice({
       })
 
       // update event
-      .addCase(updateEvent.pending, (state, action) => {
+      .addCase(updateEvent.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
       .addCase(
         updateEvent.fulfilled,
         (state, action: PayloadAction<string>) => {
-
           state.isLoading = false;
         }
       )
@@ -222,16 +222,13 @@ const eventSlice = createSlice({
       })
 
       // delete event
-      .addCase(deleteEvent.pending, (state, action) => {
+      .addCase(deleteEvent.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(
-        deleteEvent.fulfilled,
-        (state, action: PayloadAction<string>) => {
-          state.isLoading = false;
-        }
-      )
+      .addCase(deleteEvent.fulfilled, (state) => {
+        state.isLoading = false;
+      })
       .addCase(deleteEvent.rejected, (state, action) => {
         state.isLoading = false;
         state.error =

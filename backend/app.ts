@@ -13,12 +13,12 @@ import { errorConverter, errorHandler } from "./middleware/errorHandler";
 
 const app = express();
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
+  windowMs: 5 * 60 * 1000,
+  max: 200,
   message: "Too many request please try again later",
 });
 // Middleware
-// app.use(limiter);
+app.use(limiter);
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

@@ -1,6 +1,7 @@
 import { Guest } from "@/Interface/interface";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import axios from "axios";
+import axios from "../utils/axiosConfig";
+import { AxiosError } from "axios";
 
 interface RSVPState {
   rsvpData: Guest[];
@@ -14,26 +15,24 @@ const initialState: RSVPState = {
   error: null,
 };
 
-// Upload guest file
 export const uploadFile = createAsyncThunk(
   "rsvp/uploadRsvp",
   async (formData: FormData, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/guest/upload-guest-excel",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true,
-        }
-      );
+      const response = await axios.post("/guest/upload-guest-excel", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true,
+      });
       return response.data.message;
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to upload file"
-      );
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        return rejectWithValue(
+          error.response?.data?.message || "Failed to upload file"
+        );
+      }
+      return rejectWithValue("Failed to upload file");
     }
   }
 );
@@ -43,17 +42,17 @@ export const fetchGuests = createAsyncThunk(
   "rsvp/fetchGuest",
   async (eventId: string, { rejectWithValue }) => {
     try {
-      const response = await axios.get(
-        `http://localhost:5000/api/guest/${eventId}`,
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await axios.get(`/guest/${eventId}`, {
+        withCredentials: true,
+      });
       return response.data.rsvpList;
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch guest list"
-      );
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        return rejectWithValue(
+          error.response?.data?.message || "Failed to fetch guest list"
+        );
+      }
+      return rejectWithValue("Failed to fetch guest list");
     }
   }
 );
@@ -63,42 +62,45 @@ export const removeAllGuest = createAsyncThunk(
   "rsvp/remove-guest",
   async (data: { id: string; query: string }, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(
-        `http://localhost:5000/api/guest/removeAllGuestOrVendor`,
-        { data, withCredentials: true }
-      );
+      const response = await axios.delete(`/guest/removeAllGuestOrVendor`, {
+        data,
+        withCredentials: true,
+      });
       // Return the full response data which may include preservedVendors
       return response.data;
-    } catch (error: any) {
-      // If the response includes violatingVendors, pass that along
-      if (error.response?.data?.violatingVendors) {
-        return rejectWithValue({
-          message: error.response.data.message,
-          violatingVendors: error.response.data.violatingVendors,
-        });
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        // If the response includes violatingVendors, pass that along
+        if (error.response?.data?.violatingVendors) {
+          return rejectWithValue({
+            message: error.response.data.message,
+            violatingVendors: error.response.data.violatingVendors,
+          });
+        }
+        return rejectWithValue(
+          error.response?.data?.message || "Failed to remove guests"
+        );
       }
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to remove guests"
-      );
+      return rejectWithValue("Failed to remove guests");
     }
   }
 );
 
-// add guest manually
 export const addSingleGuest = createAsyncThunk(
   "guest/add",
-  async (guestData: any, { rejectWithValue }) => {
+  async (guestData: Guest, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/guest/addSingleGuest",
-        guestData,
-        { withCredentials: true }
-      );
+      const response = await axios.post("/guest/addSingleGuest", guestData, {
+        withCredentials: true,
+      });
       return response.data;
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to add guest"
-      );
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        return rejectWithValue(
+          error.response?.data?.message || "Failed to add guest"
+        );
+      }
+      return rejectWithValue("Failed to add guest");
     }
   }
 );
@@ -108,25 +110,25 @@ export const removeSingleGuest = createAsyncThunk(
   "rsvp/removeSingleGuest",
   async (guestId: string, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(
-        "http://localhost:5000/api/guest/removeSingleGuest",
-        {
-          params: { guestId },
-          withCredentials: true,
-        }
-      );
+      const response = await axios.delete("/guest/removeSingleGuest", {
+        params: { guestId },
+        withCredentials: true,
+      });
       return response.data;
-    } catch (error: any) {
-      // If the error includes violatingVendors, pass that along
-      if (error.response?.data?.violatingVendors) {
-        return rejectWithValue({
-          message: error.response.data.message,
-          violatingVendors: error.response.data.violatingVendors,
-        });
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        // If the error includes violatingVendors, pass that along
+        if (error.response?.data?.violatingVendors) {
+          return rejectWithValue({
+            message: error.response.data.message,
+            violatingVendors: error.response.data.violatingVendors,
+          });
+        }
+        return rejectWithValue(
+          error.response?.data?.message || "Failed to remove guest"
+        );
       }
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to remove guest"
-      );
+      return rejectWithValue("Failed to remove guest");
     }
   }
 );
@@ -135,22 +137,25 @@ export const removeSingleGuest = createAsyncThunk(
 export const updateSingleGuest = createAsyncThunk(
   "rsvp/updateSingleGuest",
   async (
-    { eventId, guestId, data }: { eventId: string; guestId: string; data: any },
+    {
+      eventId,
+      guestId,
+      data,
+    }: { eventId: string; guestId: string; data: Record<string, unknown> },
     thunkAPI
   ) => {
     try {
-      const response = await axios.put(
-        `http://localhost:5000/api/guest/${eventId}/${guestId}`,
-        data,
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await axios.put(`/guest/${eventId}/${guestId}`, data, {
+        withCredentials: true,
+      });
       return response.data;
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "Failed to update guest"
-      );
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        return thunkAPI.rejectWithValue(
+          error.response?.data?.message || "Failed to update guest"
+        );
+      }
+      return thunkAPI.rejectWithValue("Failed to update guest");
     }
   }
 );
@@ -158,18 +163,19 @@ export const updateSingleGuest = createAsyncThunk(
 // send invite to all
 export const sendInviteAll = createAsyncThunk(
   "rsvp/sendInviteAll",
-  async (data: any, { rejectWithValue }) => {
+  async (data: Record<string, unknown>, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/guest/inviteAll",
-        data,
-        { withCredentials: true }
-      );
+      const response = await axios.post("/guest/inviteAll", data, {
+        withCredentials: true,
+      });
       return response.data;
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to send mail to all"
-      );
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        return rejectWithValue(
+          error.response?.data?.message || "Failed to send mail to all"
+        );
+      }
+      return rejectWithValue("Failed to send mail to all");
     }
   }
 );
@@ -179,16 +185,17 @@ export const sendReminder = createAsyncThunk(
   "rsvp/sendReminder",
   async (data: { eventId: string; guestId: string }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/guest/sendReminder",
-        data,
-        { withCredentials: true }
-      );
+      const response = await axios.post("/guest/sendReminder", data, {
+        withCredentials: true,
+      });
       return response.data;
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to send reminder mail"
-      );
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        return rejectWithValue(
+          error.response?.data?.message || "Failed to send reminder mail"
+        );
+      }
+      return rejectWithValue("Failed to send reminder mail");
     }
   }
 );
@@ -261,12 +268,10 @@ const rsvpSlice = createSlice({
         }
         // We'll let the component handle refreshing the list with fetchGuests instead
       })
-      .addCase(removeSingleGuest.rejected, (state, action) => {
+      .addCase(removeSingleGuest.rejected, (state) => {
         state.loading = false;
-        // Handle complex error objects or string errors
-        state.error = (action.payload as string) || "Failed to remove guest";
+        state.error = "Failed to remove guest";
       })
-
       .addCase(updateSingleGuest.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -314,14 +319,14 @@ const rsvpSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(removeAllGuest.fulfilled, (state, action) => {
+      .addCase(removeAllGuest.fulfilled, (state) => {
         state.loading = false;
         state.rsvpData = []; // clear guest list on success
       })
-      .addCase(removeAllGuest.rejected, (state, action) => {
+      .addCase(removeAllGuest.rejected, (state) => {
+        // Removed unused 'action' parameter
         state.loading = false;
-        state.error =
-          (action.payload as string) || "Failed to remove all guests";
+        state.error = "Failed to remove all guests";
       });
   },
 });

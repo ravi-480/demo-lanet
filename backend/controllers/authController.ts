@@ -116,12 +116,12 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
     sameSite: "lax",
     path: "/",
   });
-  // res.clearCookie("refreshToken", {
-  //   httpOnly: true,
-  //   secure: process.env.NODE_ENV === "production",
-  //   sameSite: "lax",
-  //   path: "/",
-  // });
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+  });
 
   // If we have a user ID, also clear the token in the database
   if (userId) {

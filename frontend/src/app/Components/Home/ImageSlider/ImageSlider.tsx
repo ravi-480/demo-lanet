@@ -3,7 +3,6 @@
 import React, { useState, useCallback } from "react";
 import Image from "next/image";
 import { Carousel } from "antd";
-import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { ImageSliderProps } from "@/Interface/interface";
 
 const ImageSlider: React.FC<ImageSliderProps> = ({
@@ -13,11 +12,11 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
 }) => {
   const [carouselRef, setCarouselRef] = useState<any>(null);
 
-  const next = useCallback(() => {
+  useCallback(() => {
     carouselRef?.next();
   }, [carouselRef]);
 
-  const previous = useCallback(() => {
+  useCallback(() => {
     carouselRef?.prev();
   }, [carouselRef]);
 

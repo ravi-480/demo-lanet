@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import axios from "axios";
+import axios from "../utils/axiosConfig";
 import type { RootState } from "./store";
 import Cookies from "js-cookie";
 import {
@@ -21,8 +21,6 @@ interface AuthState {
   token: string | null;
   status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
-  signupSuccess: boolean;
-  signupMessage: string | null;
   forgotPasswordSuccess: boolean;
   forgotPasswordMessage: string | null;
   resetPasswordSuccess: boolean;
@@ -36,8 +34,9 @@ try {
   if (userCookie && userCookie !== "undefined") {
     storedUser = JSON.parse(userCookie);
   }
-} catch (error: any) {
-  toast.error("Error parsing user cookie:", error);
+} catch (error: unknown) {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  toast.error(`Error parsing user cookie: ${errorMessage}`);
   // Clear the invalid cookie
   Cookies.remove("user");
 }
@@ -50,25 +49,29 @@ const initialState: AuthState = {
   token: storedToken,
   status: "idle",
   error: null,
-  signupSuccess: false,
-  signupMessage: null,
   forgotPasswordSuccess: false,
   forgotPasswordMessage: null,
   resetPasswordSuccess: false,
   resetPasswordMessage: null,
 };
 
+// Define the type for API response
+interface ApiResponse {
+  success: boolean;
+  data?: any;
+  message?: string;
+}
+
 // Helper function for API requests
-const makeAuthRequest = async (url: string, data: any) => {
+const makeAuthRequest = async (
+  url: string,
+  data: unknown
+): Promise<ApiResponse> => {
   try {
-    const response = await axios.post(
-      `http://localhost:5000/api/auth/${url}`,
-      data,
-      {
-        withCredentials: true,
-        validateStatus: (status) => status < 500,
-      }
-    );
+    const response = await axios.post(`/auth/${url}`, data, {
+      withCredentials: true,
+      validateStatus: (status) => status < 500,
+    });
 
     if (response.data.success) {
       return { success: true, data: response.data };
@@ -78,10 +81,16 @@ const makeAuthRequest = async (url: string, data: any) => {
       success: false,
       message: response.data.message || `${url} operation failed`,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error) && error.response) {
+      return {
+        success: false,
+        message: error.response.data?.message || "Network error occurred",
+      };
+    }
     return {
       success: false,
-      message: error.response?.data?.message || "Network error occurred",
+      message: "Network error occurred",
     };
   }
 };
@@ -119,7 +128,7 @@ export const loginUser = createAsyncThunk<
     }
   }
 
-  return rejectWithValue(result.message);
+  return rejectWithValue(result.message || "Login failed");
 });
 
 export const signupUser = createAsyncThunk<
@@ -137,7 +146,7 @@ export const signupUser = createAsyncThunk<
     };
   }
 
-  return rejectWithValue(result.message);
+  return rejectWithValue(result.message || "Signup failed");
 });
 
 export const forgotPassword = createAsyncThunk<
@@ -154,7 +163,7 @@ export const forgotPassword = createAsyncThunk<
     };
   }
 
-  return rejectWithValue(result.message);
+  return rejectWithValue(result.message || "Password reset request failed");
 });
 
 export const resetPassword = createAsyncThunk<
@@ -171,7 +180,7 @@ export const resetPassword = createAsyncThunk<
     };
   }
 
-  return rejectWithValue(result.message);
+  return rejectWithValue(result.message || "Password reset failed");
 });
 
 const authSlice = createSlice({
@@ -182,10 +191,7 @@ const authSlice = createSlice({
       state.status = "idle";
       state.error = null;
     },
-    clearSignupState: (state) => {
-      state.signupSuccess = false;
-      state.signupMessage = null;
-    },
+
     clearForgotPasswordState: (state) => {
       state.forgotPasswordSuccess = false;
       state.forgotPasswordMessage = null;
@@ -206,8 +212,10 @@ const authSlice = createSlice({
           path: "/",
           sameSite: "lax",
         });
-      } catch (error: any) {
-        toast.error("Error setting user cookie:", error);
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        toast.error(`Error setting user cookie: ${errorMessage}`);
       }
     },
     logout: (state) => {
@@ -216,8 +224,6 @@ const authSlice = createSlice({
       state.token = null;
       state.status = "idle";
       state.error = null;
-      state.signupSuccess = false;
-      state.signupMessage = null;
       state.forgotPasswordSuccess = false;
       state.forgotPasswordMessage = null;
       state.resetPasswordSuccess = false;
@@ -229,12 +235,12 @@ const authSlice = createSlice({
 
       // Call logout API endpoint
       axios
-        .post(
-          "http://localhost:5000/api/auth/logout",
-          {},
-          { withCredentials: true }
-        )
-        .catch((error) => toast.error("Error during logout:", error));
+        .post("/auth/logout", {}, { withCredentials: true })
+        .catch((error: unknown) => {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          toast.error(`Error during logout: ${errorMessage}`);
+        });
     },
   },
   extraReducers: (builder) => {
@@ -245,7 +251,10 @@ const authSlice = createSlice({
     };
 
     // Generic rejection handler
-    const setRejected = (state: AuthState, action: any) => {
+    const setRejected = (
+      state: AuthState,
+      action: PayloadAction<string | undefined>
+    ) => {
       state.status = "failed";
       state.error = action.payload ?? "An error occurred";
     };
@@ -253,17 +262,12 @@ const authSlice = createSlice({
     builder
       // Signup
       .addCase(signupUser.pending, setPending)
-      .addCase(signupUser.fulfilled, (state, action) => {
+      .addCase(signupUser.fulfilled, (state) => {
         state.status = "succeeded";
-
-        state.signupSuccess = action.payload.success;
-        state.signupMessage = action.payload.message;
         state.error = null;
       })
       .addCase(signupUser.rejected, (state, action) => {
         setRejected(state, action);
-        state.signupSuccess = false;
-        state.signupMessage = null;
       })
 
       // Login
@@ -274,8 +278,6 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.token = action.payload.token;
         state.error = null;
-        state.signupSuccess = false;
-        state.signupMessage = null;
       })
       .addCase(loginUser.rejected, setRejected)
 
@@ -312,7 +314,6 @@ const authSlice = createSlice({
 export const {
   resetAuthStatus,
   logout,
-  clearSignupState,
   clearForgotPasswordState,
   clearResetPasswordState,
   setUser,
@@ -321,19 +322,5 @@ export const {
 // Selectors
 export const selectAuth = (state: RootState) => state.auth;
 export const selectUser = (state: RootState) => state.auth.user;
-
-export const selectAuthStatus = (state: RootState) => state.auth.status;
-export const selectAuthError = (state: RootState) => state.auth.error;
-
-export const selectSignupMessage = (state: RootState) =>
-  state.auth.signupMessage;
-export const selectForgotPasswordSuccess = (state: RootState) =>
-  state.auth.forgotPasswordSuccess;
-export const selectForgotPasswordMessage = (state: RootState) =>
-  state.auth.forgotPasswordMessage;
-export const selectResetPasswordSuccess = (state: RootState) =>
-  state.auth.resetPasswordSuccess;
-export const selectResetPasswordMessage = (state: RootState) =>
-  state.auth.resetPasswordMessage;
 
 export default authSlice.reducer;

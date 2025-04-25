@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Bell, Calendar, User } from "lucide-react";
+import { Bell, Calendar } from "lucide-react";
 import { AuthButtons } from "./AuthButton";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
@@ -14,7 +14,7 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import axios from "axios";
+import axios from "../../../../utils/axiosConfig";
 import { usePathname } from "next/navigation";
 import { markAllAsRead } from "@/store/notificationSlice";
 
@@ -33,10 +33,7 @@ const Header = () => {
     if (!userId) return;
 
     try {
-      await axios.patch(
-        `http://localhost:5000/api/notifications/mark-all-read`,
-        { userId }
-      );
+      await axios.patch(`/notifications/mark-all-read`, { userId });
 
       dispatch(markAllAsRead());
     } catch (error) {
@@ -149,7 +146,6 @@ const Header = () => {
                 </Popover>
               </div>
               <AuthButtons />
-
             </div>
           </div>
         </header>

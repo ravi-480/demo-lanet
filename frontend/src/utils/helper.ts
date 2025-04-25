@@ -1,8 +1,10 @@
-import axios from "axios";
+import axios from "../utils/axiosConfig";
 import { toast } from "sonner";
+import { VendorType, IEvent } from "@/Interface/interface"; 
 
+// Get filtered vendors based on search term, price range, and rating filter
 export function getFilteredVendors(
-  vendors: any[],
+  vendors: VendorType[], // Use VendorType for the vendors array
   searchTerm: string,
   priceRange: [number, number],
   ratingFilter: number | null
@@ -26,6 +28,7 @@ export function getFilteredVendors(
 
 const now = new Date().getTime();
 
+// Get event status based on the event date
 export const getEventStatus = (date?: string | Date): string => {
   if (!date) return "unknown";
   try {
@@ -42,35 +45,36 @@ export const handleSendRequest = async (
     email: string;
     amount: number;
     eventId: string;
+    _id: string;
   }[]
 ) => {
-  const recipients = usersWithCost.map((user: any) => user.email);
-  const amounts = usersWithCost.map((user: any) => user.amount);
-  const eventId = usersWithCost.map((user: any) => user.eventId);
-  const userId = usersWithCost.map((user: any) => user._id);
+  const recipients = usersWithCost.map((user) => user.email);
+  const amounts = usersWithCost.map((user) => user.amount);
+  const eventId = usersWithCost.map((user) => user.eventId);
+  const userId = usersWithCost.map((user) => user._id);
   try {
-    const res = await axios.post(
-      "http://localhost:5000/api/vendors/send-mail",
-      {
-        recipients,
-        amounts,
-        eventId,
-        userId,
-      }
-    );
+    await axios.post("/vendors/send-mail", {
+      recipients,
+      amounts,
+      eventId,
+      userId,
+    });
     alert("Emails sent!");
-  } catch (err: any) {
-    toast.error("Failed to send email", err);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      toast.error(`Failed to send email: ${err.message}`);
+    } else {
+      toast.error("Failed to send email: An unknown error occurred.");
+    }
     alert("Something went wrong.");
   }
 };
 
-// calculate the no of upcoming events
-
-export const getNoOfUpcomingEvent = (events: any) => {
+// Get the number of upcoming events
+export const getNoOfUpcomingEvent = (events: IEvent[]) => {
   const now = Date.now();
   let count = 0;
-  events.filter((event: any) => {
+  events.filter((event) => {
     const eventDate = new Date(event.date).getTime();
     if (eventDate > now) {
       count++;

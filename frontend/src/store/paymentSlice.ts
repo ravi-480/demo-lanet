@@ -1,7 +1,12 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import axios from "../utils/axiosConfig";
 
-const initialState = {
+interface PaymentState {
+  status: string;
+  errorMessage: string;
+}
+
+const initialState: PaymentState = {
   status: "idle",
   errorMessage: "",
 };
@@ -14,21 +19,22 @@ export const fetchPaymentStatus = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const res = await axios.get(
-        "http://localhost:5000/api/vendors/payment-status",
-        { params: { eventId, userId } }
-      );
+      const res = await axios.get("/vendors/payment-status", {
+        params: { eventId, userId },
+      });
       return res.data;
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Error while fetching payment Status"
-      );
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response) {
+        return rejectWithValue(
+          error.response.data?.message || "Error while fetching payment Status"
+        );
+      }
+      return rejectWithValue("Error while fetching payment Status");
     }
   }
 );
 
 // update Payment method
-
 export const confirmPayment = createAsyncThunk(
   "payment/confirmPayment",
   async (
@@ -36,13 +42,18 @@ export const confirmPayment = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/vendors/confirm-payment",
-        { eventId, userId }
-      );
+      const res = await axios.post("/vendors/confirm-payment", {
+        eventId,
+        userId,
+      });
       return res.data;
-    } catch (error: any) {
-      return rejectWithValue(error?.data?.message || "Error in payment");
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        return rejectWithValue(
+          error.response?.data?.message || "Error in payment"
+        );
+      }
+      return rejectWithValue("Error in payment");
     }
   }
 );
@@ -58,11 +69,11 @@ const paymentSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchPaymentStatus.pending, (state, action) => {
+      .addCase(fetchPaymentStatus.pending, (state) => {
         state.status = "loading";
       })
       .addCase(fetchPaymentStatus.fulfilled, (state, action) => {
-        if (action.payload.status == "Paid") {
+        if (action.payload.status === "Paid") {
           state.status = "Paid";
         } else {
           state.status = "idle";
@@ -70,21 +81,21 @@ const paymentSlice = createSlice({
         state.errorMessage = "";
       })
       .addCase(fetchPaymentStatus.rejected, (state, action) => {
-        (state.status = "error"),
-          (state.errorMessage = action.payload as string);
+        state.status = "error";
+        state.errorMessage = action.payload as string;
       })
 
       // confirm payment
-      .addCase(confirmPayment.pending, (state, action) => {
+      .addCase(confirmPayment.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(confirmPayment.fulfilled, (state, action) => {
+      .addCase(confirmPayment.fulfilled, (state) => {
         state.status = "confirmed";
         state.errorMessage = "";
       })
       .addCase(confirmPayment.rejected, (state, action) => {
-        (state.status = "error"),
-          (state.errorMessage = action.payload as string);
+        state.status = "error";
+        state.errorMessage = action.payload as string;
       });
   },
 });

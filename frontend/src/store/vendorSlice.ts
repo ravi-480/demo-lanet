@@ -1,7 +1,8 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import axios from "axios";
+import axios from "../utils/axiosConfig";
 import { RootState } from "./store";
 import { VendorType } from "@/Interface/interface";
+import { AxiosError } from "axios"; // Import AxiosError for better error typing
 
 type StatusType = "idle" | "loading" | "succeeded" | "failed";
 
@@ -17,110 +18,124 @@ const initialState: VendorState = {
   error: null,
 };
 
-//  Create vendor
+// Create vendor
 export const createVendor = createAsyncThunk<
   VendorType,
   VendorType,
   { rejectValue: { message: string } }
 >("vendors/createVendor", async (vendorId, { rejectWithValue }) => {
   try {
-    const response = await axios.post(
-      "http://localhost:5000/api/vendors/add",
-      vendorId
-    );
+    const response = await axios.post("/vendors/add", vendorId);
     return response.data;
-  } catch (error: any) {
-    const errorMsg =
-      typeof error.response?.data === "object" && error.response?.data.message
-        ? error.response.data.message
-        : error.response?.data || error.message;
-
-    return rejectWithValue(errorMsg);
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      // Handle Axios error and access response correctly
+      const errorMsg =
+        error.response?.data?.message || error.response?.data || error.message;
+      return rejectWithValue({ message: errorMsg });
+    }
+    return rejectWithValue({ message: "An unknown error occurred" });
   }
 });
 
-export const getVendorsByEvent = createAsyncThunk(
+// Get vendors by event
+export const getVendorsByEvent = createAsyncThunk<
+  VendorType[],
+  { eventId: string; includeSplit: boolean },
+  { rejectValue: string }
+>(
   "vendors/getVendorsByEvent",
-  async ({ eventId, includeSplit }: any, { rejectWithValue }) => {
+  async ({ eventId, includeSplit }, { rejectWithValue }) => {
     try {
-      const response = await axios.get(
-        `http://localhost:5000/api/vendors/event/${eventId}`,
-        {
-          params: {
-            includeSplit: includeSplit ? "true" : undefined,
-          },
-        }
-      );
+      const response = await axios.get(`/vendors/event/${eventId}`, {
+        params: {
+          includeSplit: includeSplit ? "true" : undefined,
+        },
+      });
       return response.data as VendorType[];
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data || error.message);
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        return rejectWithValue(error.response?.data || error.message);
+      }
+      return rejectWithValue("Failed to fetch vendors");
     }
   }
 );
 
-// get vendor by user account
+// Get vendor by user account
 export const getVendorByUser = createAsyncThunk<
   VendorType[],
   void,
   { rejectValue: string }
 >("vendors/fetchByUser", async (_, { rejectWithValue }) => {
   try {
-    const response = await axios.get(
-      "http://localhost:5000/api/vendors/getByUser",
-      { withCredentials: true }
-    );
-
+    const response = await axios.get("/vendors/getByUser", {
+      withCredentials: true,
+    });
     return response.data;
-  } catch (error: any) {
-    return rejectWithValue(error.response?.data || error.message || error);
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      return rejectWithValue(error.response?.data || error.message || error);
+    }
+    return rejectWithValue("Failed to fetch vendors by user");
   }
 });
 
-// remove added vendors from list
-export const removeAddedVendor = createAsyncThunk(
-  "vendor/removeVendor",
-  async (id: string, { rejectWithValue }) => {
-    try {
-      const response = await axios.delete(
-        `http://localhost:5000/api/vendors/remove-vendor/${id}`
-      );
-      return response.data;
-    } catch (error: any) {
-      rejectWithValue(error.response?.data || error.message);
+// Remove added vendors from list
+export const removeAddedVendor = createAsyncThunk<
+  void,
+  string,
+  { rejectValue: string }
+>("vendor/removeVendor", async (id, { rejectWithValue }) => {
+  try {
+    const response = await axios.delete(`/vendors/remove-vendor/${id}`);
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      return rejectWithValue(error.response?.data || error.message);
     }
+    return rejectWithValue("Failed to remove vendor");
   }
-);
+});
 
-export const addManualVendorExpense = createAsyncThunk(
-  "vendor/addOtherExpense",
-  async (data: any, { rejectWithValue }) => {
-    try {
-      const response = await axios.post(
-        "http://localhost:5000/api/vendors/addManualExpense",
-        data,
-        { withCredentials: true }
-      );
-      return response.data;
-    } catch (error: any) {
-      rejectWithValue(error.response?.data || error.message);
+// Add manual vendor expense
+export const addManualVendorExpense = createAsyncThunk<
+  void,
+  { [key: string]: any },
+  { rejectValue: string }
+>("vendor/addOtherExpense", async (data, { rejectWithValue }) => {
+  try {
+    const response = await axios.post("/vendors/addManualExpense", data, {
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      return rejectWithValue(error.response?.data || error.message);
     }
+    return rejectWithValue("Failed to add manual expense");
   }
-);
+});
 
-export const removeAllVendor = createAsyncThunk(
-  "vendor/removeAllVendor",
-  async (data: { id: string; query: string }, { rejectWithValue }) => {
-    try {
-      const response = await axios.delete(
-        "http://localhost:5000/api/guest/removeAllGuestOrVendor",
-        { data, withCredentials: true }
-      );
-      return response.data;
-    } catch (error: any) {
-      rejectWithValue(error.response?.data || error.message);
+// Remove all vendors
+export const removeAllVendor = createAsyncThunk<
+  void,
+  { id: string; query: string },
+  { rejectValue: string }
+>("vendor/removeAllVendor", async (data, { rejectWithValue }) => {
+  try {
+    const response = await axios.delete("/guest/removeAllGuestOrVendor", {
+      data,
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      return rejectWithValue(error.response?.data || error.message);
     }
+    return rejectWithValue("Failed to remove all vendors");
   }
-);
+});
 
 const vendorSlice = createSlice({
   name: "vendors",
@@ -143,7 +158,7 @@ const vendorSlice = createSlice({
       })
       .addCase(createVendor.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.payload || "Failed to create vendor";
+        state.error = action.payload?.message || "Failed to create vendor";
       })
       .addCase(getVendorsByEvent.pending, (state) => {
         state.status = "loading";
@@ -154,10 +169,11 @@ const vendorSlice = createSlice({
       })
       .addCase(getVendorsByEvent.rejected, (state, action) => {
         state.status = "failed";
-        state.error = (action.payload as string) || "Failed to fetch vendors";
+        state.error = action.payload || "Failed to fetch vendors";
       })
-      .addCase(getVendorByUser.pending, (state, action) => {
-        (state.status = "loading"), (state.error = null);
+      .addCase(getVendorByUser.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
       })
       .addCase(getVendorByUser.fulfilled, (state, action) => {
         state.status = "succeeded";
@@ -165,8 +181,8 @@ const vendorSlice = createSlice({
         state.error = null;
       })
       .addCase(getVendorByUser.rejected, (state, action) => {
-        (state.status = "failed"),
-          (state.error = action.payload || "Failed to fetch vendors by user");
+        state.status = "failed";
+        state.error = action.payload || "Failed to fetch vendors by user";
       })
       .addCase(removeAllVendor.pending, (state) => {
         state.status = "loading";
@@ -178,8 +194,7 @@ const vendorSlice = createSlice({
       })
       .addCase(removeAllVendor.rejected, (state, action) => {
         state.status = "failed";
-        state.error =
-          (action.payload as string) || "Failed to remove all vendors";
+        state.error = action.payload || "Failed to remove all vendors";
       });
   },
 });

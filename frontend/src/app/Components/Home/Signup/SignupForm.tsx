@@ -1,12 +1,8 @@
 "use client";
 
 import { useDispatch, useSelector } from "react-redux";
-import {
-  signupUser,
-  selectAuthError,
-  selectAuthStatus,
-} from "@/store/authSlice";
-import { AppDispatch } from "@/store/store";
+import { signupUser } from "@/store/authSlice";
+import { AppDispatch, RootState } from "@/store/store";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -30,8 +26,9 @@ import { toast } from "sonner";
 const SignupForm = () => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const authError = useSelector(selectAuthError);
-  const authStatus = useSelector(selectAuthStatus);
+  const { error: authError, status: authStatus } = useSelector(
+    (state: RootState) => state.auth
+  );
 
   const {
     register,

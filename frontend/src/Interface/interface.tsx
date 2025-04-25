@@ -331,3 +331,4 @@ export interface SearchVendorProps {
   noOfAddedGuest: number;
   eventId?: string;
 }
+

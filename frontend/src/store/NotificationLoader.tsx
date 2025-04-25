@@ -6,9 +6,8 @@ import {
   fetchNotificationsFailure,
   fetchNotificationsSuccess,
   fetchNotificationStart,
-  markAllAsRead,
 } from "./notificationSlice";
-import axios from "axios";
+import axios from "../utils/axiosConfig";
 import { useSocket } from "@/hooks/useSocket";
 
 const NotificationLoader = () => {
@@ -27,7 +26,7 @@ const NotificationLoader = () => {
     const fetchNotifications = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/notifications`,
+          `/notifications`,
           {
             withCredentials: true,
             params: { userId: user.id },

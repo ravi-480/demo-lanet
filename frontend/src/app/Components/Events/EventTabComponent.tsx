@@ -26,7 +26,7 @@ const SearchVendor = dynamic(() => import("./SearchVendor"), {
 });
 
 // Using memo to prevent unnecessary re-renders
-const EventTabComponent = memo(({ id }: { id: string }) => {
+const EventTabComponent = memo(() => {
   const [activeTab, setActiveTab] = useState("overview");
 
   // Use shallowEqual for performance optimization
