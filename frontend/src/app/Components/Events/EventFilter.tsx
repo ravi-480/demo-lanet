@@ -1,16 +1,8 @@
+import { IEvent } from "@/Interface/interface";
 import { useState, useMemo } from "react";
 
-interface Event {
-  _id: string;
-  name: string;
-  date: string | Date;
-  location: string;
-  status?: string;
-  [key: string]: any;
-}
-
 interface UseEventFilterProps {
-  events: Event[] | null | undefined;
+  events: IEvent[] | null | undefined;
   initialTab?: string;
 }
 

@@ -10,19 +10,16 @@ import {
   Legend,
 } from "recharts";
 import { useDispatch } from "react-redux";
-import { IEvent } from "../../../Interface/interface";
+import { IEvent, IGuest } from "../../../Interface/interface";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppDispatch } from "../../../store/store";
 import { fetchGuests } from "@/store/rsvpSlice";
 
-interface RsvpData {
-  status: "Confirmed" | "Pending" | "Declined" | string;
-  [key: string]: any;
-}
+
 
 type MyPieChartProps = {
   event: IEvent;
-  rsvpData: RsvpData[];
+  rsvpData: IGuest[];
 };
 
 interface PayloadItem {

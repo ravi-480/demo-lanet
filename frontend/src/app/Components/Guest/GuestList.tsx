@@ -54,7 +54,9 @@ const GuestListComponent = ({
 }: GuestListProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const [showMinGuestAlert, setShowMinGuestAlert] = useState(false);
-  const [violatingVendors, setViolatingVendors] = useState<any[]>([]);
+  const [violatingVendors, setViolatingVendors] = useState<
+    { id: string; title: string; minGuestLimit: number }[]
+  >([]);
 
   const handleRemoveGuest = async (guestId: string) => {
     try {
@@ -66,9 +68,9 @@ const GuestListComponent = ({
         setViolatingVendors(response.violatingVendors);
         setShowMinGuestAlert(true);
       }
-    } catch (error: any) {
-      toast.error(error.message || "Failed to remove guest");
-      console.error(error);
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      toast.error(err.message || "Failed to remove  guests");
     }
   };
 

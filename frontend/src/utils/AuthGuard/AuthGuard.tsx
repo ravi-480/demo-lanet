@@ -13,6 +13,11 @@ interface AuthGuardProps {
   children: React.ReactNode;
 }
 
+// Define a proper error interface
+interface ApiError extends Error {
+  message: string;
+}
+
 const AuthGuard = ({ children }: AuthGuardProps) => {
   const [loading, setLoading] = useState(true);
   const [serverDown, setServerDown] = useState(false);
@@ -59,8 +64,8 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
           router.push("/login");
           return;
         }
-      } catch (error: any) {
-        if (error.message === "SERVER_DOWN") {
+      } catch (error: unknown) {
+        if ((error as ApiError).message === "SERVER_DOWN") {
           setServerDown(true);
         } else {
           router.push("/login");

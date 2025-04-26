@@ -29,7 +29,9 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [editGuest, setEditGuest] = useState<Guest | null>(null);
   const [showMinGuestAlert, setShowMinGuestAlert] = useState(false);
-  const [preservedVendors, setPreservedVendors] = useState<any[]>([]);
+  const [preservedVendors, setPreservedVendors] = useState<
+    { id: string; title: string; minGuestLimit: number }[]
+  >([]);
   const guestsPerPage = 10;
 
   const dispatch = useDispatch<AppDispatch>();
@@ -83,8 +85,9 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
       } else {
         toast.success("All guests removed successfully");
       }
-    } catch (error: any) {
-      toast.error(error.message || "Failed to remove all guests");
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      toast.error(err.message || "Failed to remove all guests");
     }
   }, [dispatch, eventId]);
   return (

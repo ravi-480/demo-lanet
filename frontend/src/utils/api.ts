@@ -58,6 +58,8 @@ api.interceptors.response.use(
         }
         return Promise.reject(new Error("AUTH_ERROR"));
       } catch (refreshError) {
+        console.log(refreshError);
+        
         if (api.onAuthError) {
           api.onAuthError();
         }
@@ -66,7 +68,6 @@ api.interceptors.response.use(
       }
     }
 
-    // Show error message for errors other than 401
     if (error.response?.status !== 401) {
       const message =
         error.response?.data?.message ||

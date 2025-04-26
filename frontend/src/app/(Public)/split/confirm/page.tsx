@@ -1,24 +1,24 @@
 import ConfirmCard from "@/app/Components/Payment/ConfirmCard";
-import React from "react";
+import { Metadata } from "next";
 
-const Confirm = ({
+export const metadata: Metadata = {
+  title: "Confirm Payment",
+};
+
+export default function Confirm({
   searchParams,
 }: {
   searchParams: { eventId?: string; userId?: string };
-}) => {
-  if (!searchParams.eventId || !searchParams.userId) {
+}) {
+  const { eventId, userId } = searchParams;
+
+  if (!eventId || !userId) {
     return <p className="text-red-500">Invalid link</p>;
   }
 
-
   return (
-    <div className="flex justify-center items-center m-4 ">
-      <ConfirmCard
-        userId={searchParams.userId}
-        eventId={searchParams.eventId}
-      />
+    <div className="flex justify-center items-center m-4">
+      <ConfirmCard userId={userId} eventId={eventId} />
     </div>
   );
-};
-
-export default Confirm;
+}

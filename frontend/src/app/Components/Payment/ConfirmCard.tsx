@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { confirmPayment, fetchPaymentStatus } from "@/store/paymentSlice";
 import { useEffect } from "react";
-import { AppDispatch } from "../../../store/store";
+import { AppDispatch, RootState } from "../../../store/store";
 import { useDispatch, useSelector } from "react-redux";
 import { useSocket } from "@/hooks/useSocket";
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
@@ -11,8 +11,8 @@ type Props = { eventId?: string; userId?: string };
 
 const ConfirmCard = ({ eventId, userId }: Props) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { status } = useSelector((state: any) => state.payment);
-  const user = useSelector((state: any) => state.auth.user);
+  const { status } = useSelector((state: RootState) => state.payment);
+  const user = useSelector((state: RootState) => state.auth.user);
   const socket = useSocket();
 
   useEffect(() => {

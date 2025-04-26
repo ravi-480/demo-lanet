@@ -78,7 +78,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
     }
   }, [resetPasswordSuccess, router]);
 
-  const onSubmit = async (values: { password: any; confirmPassword: any }) => {
+  const onSubmit = async (values: { password: string; confirmPassword: string }) => {
     await dispatch(
       resetPassword({
         token,

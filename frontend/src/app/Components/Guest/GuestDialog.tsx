@@ -85,7 +85,7 @@ const GuestDialog = ({
           updateSingleGuest({
             eventId,
             guestId: editGuest._id,
-            data: data as unknown as Record<string, any>,
+            data: data as unknown as Record<string, string>,
           })
         );
         if (updateSingleGuest.fulfilled.match(result)) {
@@ -100,13 +100,11 @@ const GuestDialog = ({
           );
         }
       } else {
-        // For new guests, use the form data directly
         const result = await dispatch(
-          // Use a type assertion that aligns with your API expectations
           addSingleGuest({
             eventId,
             ...data,
-          } as any)
+          } as Guest)
         );
         if (addSingleGuest.fulfilled.match(result)) {
           toast.success("Guest added successfully");

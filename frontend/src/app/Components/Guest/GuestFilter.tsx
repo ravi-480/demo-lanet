@@ -16,6 +16,7 @@ import { AppDispatch } from "@/store/store";
 import { sendInviteAll } from "@/store/rsvpSlice";
 import { toast } from "sonner";
 import ConfirmDialog from "../Shared/ConfirmDialog";
+import { GuestStatus } from "@/Interface/interface";
 
 interface GuestFiltersProps {
   searchFilter: string;
@@ -23,7 +24,7 @@ interface GuestFiltersProps {
   statusFilter: string;
   setStatusFilter: (value: string) => void;
   eventId: string;
-  pendingGuests: any[];
+  pendingGuests: GuestStatus[];
 }
 
 const GuestFilters = ({

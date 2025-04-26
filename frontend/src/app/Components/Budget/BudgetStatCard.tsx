@@ -1,6 +1,7 @@
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { IEvent } from "@/Interface/interface";
 
 interface StatCardProps {
   title: string;
@@ -48,7 +49,7 @@ const StatCard = ({
   );
 };
 
-const BudgetStats = ({ eventBudget }: { eventBudget: any }) => {
+const BudgetStats = ({ eventBudget }: { eventBudget: IEvent | null }) => {
   if (!eventBudget?.budget) return null;
 
   const totalBudget = Number(eventBudget.budget.allocated);
@@ -76,7 +77,11 @@ const BudgetStats = ({ eventBudget }: { eventBudget: any }) => {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-        <StatCard title="Total Budget" color="text-green-500" value={totalBudget} />
+        <StatCard
+          title="Total Budget"
+          color="text-green-500"
+          value={totalBudget}
+        />
         <StatCard
           title="Spent"
           color="text-red-400"

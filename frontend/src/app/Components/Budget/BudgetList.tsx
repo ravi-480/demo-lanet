@@ -23,9 +23,10 @@ import {
 import { AppDispatch } from "@/store/store";
 import { addVendorInSplitOrRemove } from "@/store/splitSlice";
 import { getVendorsByEvent, removeAddedVendor } from "@/store/vendorSlice";
+import { VendorType } from "@/Interface/interface";
 
 interface VendorActionProps {
-  item: any;
+  item: VendorType;
   onRemove: (id: string) => void;
   handleAddOrRemoveFromSplit: (id: string) => void;
 }
@@ -64,7 +65,7 @@ const VendorActions = ({
   );
 };
 
-const BudgetList = ({ items }: { items: any[] }) => {
+const BudgetList = ({ items }: { items: VendorType[] }) => {
   const dispatch = useDispatch<AppDispatch>();
 
   const handleRemoveVendor = async (vendorId: string) => {
@@ -73,7 +74,9 @@ const BudgetList = ({ items }: { items: any[] }) => {
         await dispatch(removeAddedVendor(vendorId));
         toast.success("Vendor removed successfully");
         if (items.length > 0) {
-          dispatch(getVendorsByEvent(items[0].event));
+          dispatch(
+            getVendorsByEvent({ eventId: items[0].event, includeSplit: false })
+          );
         }
       } catch (error) {
         toast.error("Failed to remove vendor");
@@ -101,7 +104,7 @@ const BudgetList = ({ items }: { items: any[] }) => {
         </TableHeader>
         <TableBody>
           {items.length > 0 ? (
-            items.map((item: any) => (
+            items.map((item: VendorType) => (
               <TableRow
                 key={item._id}
                 className="text-gray-200 hover:bg-gray-900/40"

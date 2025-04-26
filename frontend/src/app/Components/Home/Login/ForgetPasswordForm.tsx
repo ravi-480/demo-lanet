@@ -3,10 +3,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Link from "next/link";
-import {
-  forgotPassword,
-  clearForgotPasswordState,
-} from "@/store/authSlice";
+import { forgotPassword, clearForgotPasswordState } from "@/store/authSlice";
 import { AppDispatch, RootState } from "@/store/store";
 
 import { Button } from "@/components/ui/button";
@@ -51,7 +48,7 @@ const ForgotPasswordForm = () => {
     };
   }, [dispatch]);
 
-  const onSubmit = async (values: { email: any }) => {
+  const onSubmit = async (values: { email: string }) => {
     await dispatch(forgotPassword({ email: values.email }));
   };
 

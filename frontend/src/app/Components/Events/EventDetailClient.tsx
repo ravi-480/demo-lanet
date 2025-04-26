@@ -9,9 +9,9 @@ import {
   singleEvent,
 } from "@/store/eventSlice";
 import EventHeader from "@/app/Components/Events/EventHeader";
-import EventTabs from "./EventTabComponent";
 import ErrorMessage from "../Error/ErrorMessage";
 import { notFound } from "next/navigation";
+import EventOverView from "./EventOverView";
 
 const EventDetailClient = ({ id }: { id: string }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -49,7 +49,7 @@ const EventDetailClient = ({ id }: { id: string }) => {
   return (
     <div className="p-5">
       <EventHeader event={event} />
-      <EventTabs id={id} />
+      <EventOverView event={event} />
     </div>
   );
 };

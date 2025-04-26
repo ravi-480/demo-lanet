@@ -3,6 +3,7 @@ import axios from "../utils/axiosConfig";
 import type { RootState } from "./store";
 import Cookies from "js-cookie";
 import {
+  AuthResponseData,
   LoginResponse,
   SignupPayload,
   StandardResponse,
@@ -58,7 +59,7 @@ const initialState: AuthState = {
 // Define the type for API response
 interface ApiResponse {
   success: boolean;
-  data?: any;
+  data?: AuthResponseData;
   message?: string;
 }
 
@@ -97,12 +98,12 @@ const makeAuthRequest = async (
 
 export const loginUser = createAsyncThunk<
   LoginResponse, // response type
-  { email: string; password: string }, // arguement type
+  { email: string; password: string }, // argument type
   { rejectValue: string }
 >("auth/login", async (credentials, { rejectWithValue }) => {
   const result = await makeAuthRequest("login", credentials);
 
-  if (result.success) {
+  if (result.success && result.data) {
     // Handle nested data structure from API
     const data = result.data.data || result.data;
     const user = data.user;
@@ -133,12 +134,12 @@ export const loginUser = createAsyncThunk<
 
 export const signupUser = createAsyncThunk<
   StandardResponse, // return type
-  SignupPayload, // arguement type we are expecting
+  SignupPayload, // argument type we are expecting
   { rejectValue: string }
 >("auth/signup", async (userData, { rejectWithValue }) => {
   const result = await makeAuthRequest("signup", userData);
 
-  if (result.success) {
+  if (result.success && result.data) {
     return {
       success: true,
       message:
@@ -156,7 +157,7 @@ export const forgotPassword = createAsyncThunk<
 >("auth/forgotPassword", async (data, { rejectWithValue }) => {
   const result = await makeAuthRequest("forgot-password", data);
 
-  if (result.success) {
+  if (result.success && result.data) {
     return {
       success: true,
       message: result.data.message || "Reset link sent to your email.",
@@ -173,7 +174,7 @@ export const resetPassword = createAsyncThunk<
 >("auth/resetPassword", async (data, { rejectWithValue }) => {
   const result = await makeAuthRequest("reset-password", data);
 
-  if (result.success) {
+  if (result.success && result.data) {
     return {
       success: true,
       message: result.data.message || "Password reset successful.",

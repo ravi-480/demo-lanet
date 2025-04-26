@@ -4,13 +4,14 @@ import React, { useState, useCallback } from "react";
 import Image from "next/image";
 import { Carousel } from "antd";
 import { ImageSliderProps } from "@/Interface/interface";
+import { CarouselRef } from "antd/es/carousel";
 
 const ImageSlider: React.FC<ImageSliderProps> = ({
   images,
   autoplay = true,
   autoplaySpeed = 5000,
 }) => {
-  const [carouselRef, setCarouselRef] = useState<any>(null);
+  const [carouselRef, setCarouselRef] = useState<CarouselRef | null>(null);
 
   useCallback(() => {
     carouselRef?.next();

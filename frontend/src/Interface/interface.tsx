@@ -102,7 +102,7 @@ export interface SignupPayload {
 }
 
 export interface StandardResponse {
-  [x: string]: any;
+  [x: string]: unknown;
   success: boolean;
   message: string;
 }
@@ -278,7 +278,7 @@ export interface INotification {
   message: string;
   type: "response" | "payment" | "reminder" | "message";
   status: "read" | "unread";
-  metadata: Record<string, any>;
+  metadata: Record<string, string>;
   createdAt: Date;
 }
 
@@ -335,4 +335,27 @@ export interface SearchVendorProps {
   eventLocation: string;
   noOfAddedGuest: number;
   eventId?: string;
+}
+
+export interface GuestStatus {
+  status: "Confirmed" | "Pending" | "Declined" | string;
+}
+
+export interface IGuest extends GuestStatus {
+  name: string;
+  email: string;
+  eventId: string;
+}
+
+export interface AuthResponseData {
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+    [key: string]: unknown;
+  };
+  accessToken?: string;
+  message?: string;
+  data?: AuthResponseData;
+  [key: string]: unknown;
 }

@@ -11,11 +11,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { DollarSign } from "lucide-react";
 import SplitTabsDialog from "./SplitModalDialog";
+import { SplitUser } from "@/Interface/interface";
 
 interface CreateSplitButtonProps {
   isLoading: boolean;
   eventId?: string;
-  users: any[];
+  users: SplitUser[];
 }
 
 export const CreateSplitButton = ({

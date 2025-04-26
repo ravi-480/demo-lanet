@@ -46,7 +46,7 @@ const EventOverView = ({ event }: { event: IEvent }) => {
   );
 
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-6 p-8">
       <div style={{ minHeight: "300px" }}>
         <MyPieChart event={event} rsvpData={rsvpData} />
       </div>

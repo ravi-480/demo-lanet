@@ -64,16 +64,7 @@ const EventTabComponent = memo(() => {
       allowedCategories,
       eventLocation: event.location,
     };
-  }, [
-    event?.durationInDays,
-    event?._id,
-    event?.noOfGuestAdded,
-    event?.creator,
-    event?.guestLimit,
-    event?.eventType,
-    allowedCategories,
-    event?.location,
-  ]);
+  }, [event, allowedCategories]);
 
   if (!event) {
     return (

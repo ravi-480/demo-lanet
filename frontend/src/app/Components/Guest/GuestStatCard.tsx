@@ -2,12 +2,9 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { IGuest } from "@/Interface/interface";
 
-interface GuestStatProps {
-  guests: any[];
-}
-
-const GuestStats = ({ guests }: GuestStatProps) => {
+const GuestStats = ({ guests }: { guests: IGuest[] }) => {
   const totalGuests = guests.length;
 
   // Count stats
