@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "../utils/axiosConfig";
 import type { RootState } from "./store";
-import Cookies from "js-cookie";
 import {
   AuthResponseData,
   LoginResponse,
@@ -28,26 +27,10 @@ interface AuthState {
   resetPasswordMessage: string | null;
 }
 
-// Initialize state from cookies with safer parsing
-let storedUser = null;
-try {
-  const userCookie = Cookies.get("user");
-  if (userCookie && userCookie !== "undefined") {
-    storedUser = JSON.parse(userCookie);
-  }
-} catch (error: unknown) {
-  const errorMessage = error instanceof Error ? error.message : String(error);
-  toast.error(`Error parsing user cookie: ${errorMessage}`);
-  // Clear the invalid cookie
-  Cookies.remove("user");
-}
-
-const storedToken = Cookies.get("token") || null;
-
 const initialState: AuthState = {
-  user: storedUser,
+  user: null,
   isAuthenticated: false,
-  token: storedToken,
+  token: null,
   status: "idle",
   error: null,
   forgotPasswordSuccess: false,
@@ -96,6 +79,20 @@ const makeAuthRequest = async (
   }
 };
 
+// get current user
+
+export const getCurrentUser = createAsyncThunk(
+  "auth/getCurrentUser",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await axios.get("/auth/me");
+      return res.data.data;
+    } catch (error) {
+      return rejectWithValue("Failed to fetch user");
+    }
+  }
+);
+
 export const loginUser = createAsyncThunk<
   LoginResponse, // response type
   { email: string; password: string }, // argument type
@@ -109,20 +106,7 @@ export const loginUser = createAsyncThunk<
     const user = data.user;
     const accessToken = data.accessToken;
 
-    // Validate data before storing in cookies
     if (user && accessToken) {
-      // Store in cookies
-      Cookies.set("token", accessToken, {
-        expires: 7,
-        path: "/",
-        sameSite: "lax",
-      });
-      Cookies.set("user", JSON.stringify(user), {
-        expires: 7,
-        path: "/",
-        sameSite: "lax",
-      });
-
       return { user, token: accessToken };
     } else {
       return rejectWithValue("Invalid login data received from server");
@@ -206,18 +190,6 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
       state.status = "succeeded";
       state.error = null;
-
-      try {
-        Cookies.set("user", JSON.stringify(action.payload), {
-          expires: 7,
-          path: "/",
-          sameSite: "lax",
-        });
-      } catch (error: unknown) {
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
-        toast.error(`Error setting user cookie: ${errorMessage}`);
-      }
     },
     logout: (state) => {
       state.user = null;
@@ -230,11 +202,6 @@ const authSlice = createSlice({
       state.resetPasswordSuccess = false;
       state.resetPasswordMessage = null;
 
-      // Remove cookies
-      Cookies.remove("token");
-      Cookies.remove("user");
-
-      // Call logout API endpoint
       axios
         .post("/auth/logout", {}, { withCredentials: true })
         .catch((error: unknown) => {
@@ -308,6 +275,9 @@ const authSlice = createSlice({
         setRejected(state, action);
         state.resetPasswordSuccess = false;
         state.resetPasswordMessage = null;
+      })
+      .addCase(getCurrentUser.fulfilled, (state, action) => {
+        state.user = action.payload;
       });
   },
 });

@@ -1,10 +1,26 @@
-
-import Budget from "../../Components/DashBoard/Budget";
-import Testimonials from "../../Components/DashBoard/Testimonial";
-import EventDisplay from "../../Components/DashBoard/EventDisplay";
+"use client";
+import LoadingSpinner from "@/app/Components/Loader/LoadingSpinner";
 import Welcome from "../../Components/DashBoard/Welcome";
-import EventCalendar from "@/app/Components/DashBoard/EventCalendar";
+import dynamic from "next/dynamic";
+import { lazy, Suspense } from "react";
 
+const EventDisplay = dynamic(
+  () => import("../../Components/DashBoard/EventDisplay"),
+  {
+    loading: () => <LoadingSpinner />,
+    ssr: false,
+  }
+);
+
+const EventCalendar = dynamic(
+  () => import("../../Components/DashBoard/EventCalendar"),
+  { loading: () => <LoadingSpinner />, ssr: false }
+);
+
+const Budget = lazy(() => import("../../Components/DashBoard/Budget"));
+const Testimonials = lazy(
+  () => import("../../Components/DashBoard/Testimonial")
+);
 const Dashboard = () => {
   return (
     <div className="min-h-screen px-4 sm:px-6 md:px-8 lg:px-16 py-4 sm:py-7 bg-gray-900">
@@ -18,10 +34,14 @@ const Dashboard = () => {
           <EventCalendar />
         </div>
       </div>
-      
-      <Budget />
-      
-      <Testimonials />
+
+      <Suspense fallback={<LoadingSpinner />}>
+        <Budget />
+      </Suspense>
+
+      <Suspense fallback={<LoadingSpinner />}>
+        <Testimonials />
+      </Suspense>
     </div>
   );
 };

@@ -1,8 +1,8 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import axios from "@/utils/axiosConfig";
 import type { RootState } from "./store";
 import { IEvent } from "@/Interface/interface";
 import { AxiosError } from "axios";
+import api from "@/utils/api";
 
 interface EventState {
   events: IEvent[];
@@ -23,9 +23,7 @@ export const createEvent = createAsyncThunk(
   "events/createEvent",
   async (eventData: FormData, { rejectWithValue }) => {
     try {
-      const response = await axios.post("/events/create-new-event", eventData, {
-        withCredentials: true,
-      });
+      const response = await api.post("/events/create-new-event", eventData);
 
       return response.data;
     } catch (error: unknown) {
@@ -46,9 +44,7 @@ export const fetchEvents = createAsyncThunk(
   "events/fetchEvents",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("/events", {
-        withCredentials: true,
-      });
+      const response = await api.get("/events");
       return response.data.events;
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
@@ -67,9 +63,7 @@ export const fetchById = createAsyncThunk(
   "events/fetchById",
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`/events/${id}`, {
-        withCredentials: true,
-      });
+      const response = await api.get(`/events/${id}`);
 
       return response.data.event;
     } catch (error: unknown) {
@@ -89,11 +83,10 @@ export const updateEvent = createAsyncThunk(
   "event/updateEvent",
   async (data: FormData, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`/events/updateEvent`, data, {
+      const response = await api.put(`/events/updateEvent`, data, {
         headers: {
           "Content-Type": "multipart/form-data", // without this file wont go in backend
         },
-        withCredentials: true,
       });
 
       return response.data;
@@ -114,9 +107,7 @@ export const deleteEvent = createAsyncThunk(
   "event/deleteEvent",
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(`/events/deleteEvent/${id}`, {
-        withCredentials: true,
-      });
+      const response = await api.delete(`/events/deleteEvent/${id}`);
 
       return response.data;
     } catch (error: unknown) {

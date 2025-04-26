@@ -17,6 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import axios from "../../../../utils/axiosConfig";
 import { usePathname } from "next/navigation";
 import { markAllAsRead } from "@/store/notificationSlice";
+import api from "@/utils/api";
 
 const Header = () => {
   const dispatch = useDispatch();
@@ -33,7 +34,7 @@ const Header = () => {
     if (!userId) return;
 
     try {
-      await axios.patch(`/notifications/mark-all-read`, { userId });
+      await api.patch(`/notifications/mark-all-read`, { userId });
 
       dispatch(markAllAsRead());
     } catch (error) {

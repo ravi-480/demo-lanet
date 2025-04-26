@@ -35,11 +35,11 @@ const eventSchema = new mongoose.Schema(
       default: 0,
     },
 
-    status: {
-      type: String,
-      enum: ["upcoming", "completed", "cancelled"],
-      default: "upcoming",
-    },
+    // status: {
+    //   type: String,
+    //   enum: ["upcoming", "completed", "cancelled"],
+    //   default: "upcoming",
+    // },
 
   
     includedInSplit: {

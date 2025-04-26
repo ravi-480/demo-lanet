@@ -29,7 +29,6 @@ export default function LoginForm() {
   const router = useRouter();
 
   const {
-    user,
     error: authError,
     status: authStatus,
   } = useSelector((state: RootState) => state.auth);
@@ -47,24 +46,17 @@ export default function LoginForm() {
   });
 
   useEffect(() => {
-    // Check if already logged in
     const token = Cookies.get("token");
     if (token) {
       router.replace("/events");
     }
   }, [router]);
 
-  // Handle redirection after login
-  useEffect(() => {
-    if (user && authStatus === "succeeded") {
-      router.replace("/events");
-    }
-  }, [user, authStatus, router]);
-
   const onSubmit = async (values: { email: string; password: string }) => {
     const response = await dispatch(loginUser(values));
     if (response.type === "auth/login/fulfilled") {
       toast.success("Login successfull");
+      router.replace("/events");
     } else {
       toast.error(response.payload as string);
     }

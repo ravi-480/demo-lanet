@@ -13,7 +13,6 @@ interface AuthGuardProps {
   children: React.ReactNode;
 }
 
-// Define a proper error interface
 interface ApiError extends Error {
   message: string;
 }
@@ -24,22 +23,18 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
 
-  // Store original console functions to restore them later
   const originalConsoleError =
     typeof window !== "undefined" ? console.error : null;
 
   useEffect(() => {
-    // Set up auth error handler
     api.onAuthError = () => {
       router.push("/login");
     };
 
     if (typeof window !== "undefined" && originalConsoleError) {
       console.error = (...args) => {
-        // Filter out common expected errors
         const errorString = args[0]?.toString?.() || "";
 
-        // Don't log these errors to console
         if (
           errorString.includes("SERVER_DOWN") ||
           errorString.includes("Network Error") ||
@@ -59,7 +54,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
         const user = response.data.user;
 
         if (user) {
-          dispatch(setUser(user));
+          dispatch(setUser(user)); // No cookie set here anymore
         } else {
           router.push("/login");
           return;

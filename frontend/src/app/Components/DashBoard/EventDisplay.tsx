@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../store/store";
 import { fetchEvents } from "../../../store/eventSlice";
@@ -18,13 +18,17 @@ const EventDisplay = () => {
   const { activeTab, setActiveTab, filteredEvents } = useEventFilter({
     events,
   });
+  const initialFetchDone = useRef(false);
 
   useEffect(() => {
     let retryTimeout: NodeJS.Timeout;
 
     const loadEvents = async () => {
+      if (initialFetchDone.current) return;
+
       try {
         await dispatch(fetchEvents()).unwrap();
+        initialFetchDone.current = true;
       } catch (error) {
         console.log(error);
         retryTimeout = setTimeout(() => loadEvents(), 10000); // retry after 10 seconds
@@ -65,7 +69,6 @@ const EventDisplay = () => {
         <EventTabs
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          className=""
         />
         {filteredEvents.length > 3 && (
           <Link

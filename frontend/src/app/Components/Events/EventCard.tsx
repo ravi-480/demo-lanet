@@ -30,7 +30,7 @@ const EventCard: React.FC<EventCardProps> = ({
   return (
     <div
       className={`rounded-lg overflow-hidden border ${
-        isDetailed ? "border-gray-700 bg-gray-800 hover:bg-gray-750" : ""
+        isDetailed ? "border-gray-700 bg-gray-800 hover:bg-gray-750 mt-6" : ""
       } flex flex-col`}
     >
       <Image

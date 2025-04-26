@@ -8,6 +8,7 @@ import {
   IResetPasswordRequest,
   AuthenticatedRequest,
 } from "../interfaces/user.interface";
+import User from "../models/UserModel";
 
 export const signup = asyncHandler(async (req: Request, res: Response) => {
   const userData: ISignupRequest = req.body;
@@ -29,10 +30,16 @@ export const authGuard = asyncHandler(
   }
 );
 
+export const getMe = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const user = await User.findById(req.user!.id).select("-password");
+    res.status(200).json({ success: true, data: user });
+  }
+);
+
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const loginData: ILoginRequest = req.body;
   const result = await authService.login(loginData);
-
 
   res.cookie("refreshToken", result.refreshToken, {
     httpOnly: true,
@@ -42,14 +49,12 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     path: "/",
   });
 
-
-
   // Store refresh token in HttpOnly cookie
   res.cookie("token", result.accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 40*60 * 1000,
+    maxAge: 40 * 60 * 1000,
     path: "/",
   });
 
@@ -123,7 +128,6 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
     path: "/",
   });
 
-  // If we have a user ID, also clear the token in the database
   if (userId) {
     await authService.logout(userId);
   }

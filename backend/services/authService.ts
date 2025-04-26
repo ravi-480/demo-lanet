@@ -14,11 +14,11 @@ import {
   ISignupResponse,
 } from "../interfaces/user.interface";
 
-// Environment variables with fallbacks (use actual env vars in production)
+// Environment variables with fallbacks
 const JWT_ACCESS_SECRET = process.env.JWT_SECRET as string;
-const JWT_REFRESH_SECRET = "refresh-secret-key";
-const ACCESS_TOKEN_EXPIRY = "1h";
-const REFRESH_TOKEN_EXPIRY = "7d";
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as string;
+const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY as string;
+const REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY as string;
 
 // Generate tokens
 export const generateAccessToken = (
@@ -27,13 +27,13 @@ export const generateAccessToken = (
   name: string
 ): string => {
   return jwt.sign({ id: userId, email, name }, JWT_ACCESS_SECRET, {
-    expiresIn: ACCESS_TOKEN_EXPIRY,
+    expiresIn: ACCESS_TOKEN_EXPIRY as jwt.SignOptions["expiresIn"],
   });
 };
 
 const generateRefreshToken = (userId: string): string => {
   return jwt.sign({ id: userId }, JWT_REFRESH_SECRET, {
-    expiresIn: REFRESH_TOKEN_EXPIRY,
+    expiresIn: REFRESH_TOKEN_EXPIRY as jwt.SignOptions["expiresIn"],
   });
 };
 
@@ -144,7 +144,6 @@ export const forgotPassword = async (email: string): Promise<void> => {
   // Find user by email
   const user = await User.findOne({ email });
 
-  // Even if user doesn't exist, don't reveal that information
   if (!user) return;
 
   // Generate random token

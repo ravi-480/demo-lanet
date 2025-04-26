@@ -77,7 +77,7 @@ const EventTabComponent = memo(() => {
   return (
     <div className="w-full sm:w-[95%] bg-gray-900 border mt-2 sm:mt-4 border-b rounded-lg sm:rounded-2xl p-3 sm:p-5 mx-auto">
       <Tabs className="w-full" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="flex w-full gap-2 sm:gap-6 border-b-2 border-gray-300 overflow-x-auto">
+        <TabsList className="flex w-full gap-2 sm:gap-6 border-b-2 border-gray-500 overflow-x-auto">
           {tabs.map(({ value, label }) => (
             <TabsTrigger
               key={value}
@@ -118,4 +118,4 @@ const EventTabComponent = memo(() => {
   );
 });
 
-EventTabComponent.displayName = "EventTabComponent";
+export default EventTabComponent

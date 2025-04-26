@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "./Components/Home/Header/Header";
-import ReduxProvider from "@/store/storeProvider";
 import Footer from "./Components/Home/Footer/Footer";
+import ReduxProvider from "@/store/storeProvider";
+import AuthInitializer from "@/store/AuthInitializer";
 import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -24,6 +25,7 @@ export default function RootLayout({
         className={`${inter.className} bg-gray-950 text-white min-h-screen flex flex-col`}
       >
         <ReduxProvider>
+          <AuthInitializer />
           <Header />
           <main className="flex-1">{children}</main>
           <Toaster richColors />

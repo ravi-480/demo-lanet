@@ -1,8 +1,8 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "../utils/axiosConfig";
 import { RootState } from "./store";
 import { VendorType } from "@/Interface/interface";
-import { AxiosError } from "axios"; // Import AxiosError for better error typing
+import { AxiosError } from "axios";
+import api from "@/utils/api";
 
 type StatusType = "idle" | "loading" | "succeeded" | "failed";
 
@@ -17,7 +17,7 @@ interface ManualVendorExpenseData {
   title: string;
   price: number;
   description?: string;
-  [key: string]: string | number | undefined; // For any additional properties
+  [key: string]: string | number | undefined;
 }
 
 const initialState: VendorState = {
@@ -33,11 +33,10 @@ export const createVendor = createAsyncThunk<
   { rejectValue: { message: string } }
 >("vendors/createVendor", async (vendorId, { rejectWithValue }) => {
   try {
-    const response = await axios.post("/vendors/add", vendorId);
+    const response = await api.post("/vendors/add", vendorId);
     return response.data;
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
-      // Handle Axios error and access response correctly
       const errorMsg =
         error.response?.data?.message || error.response?.data || error.message;
       return rejectWithValue({ message: errorMsg });
@@ -55,7 +54,7 @@ export const getVendorsByEvent = createAsyncThunk<
   "vendors/getVendorsByEvent",
   async ({ eventId, includeSplit }, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`/vendors/event/${eventId}`, {
+      const response = await api.get(`/vendors/event/${eventId}`, {
         params: {
           includeSplit: includeSplit ? "true" : undefined,
         },
@@ -77,9 +76,7 @@ export const getVendorByUser = createAsyncThunk<
   { rejectValue: string }
 >("vendors/fetchByUser", async (_, { rejectWithValue }) => {
   try {
-    const response = await axios.get("/vendors/getByUser", {
-      withCredentials: true,
-    });
+    const response = await api.get("/vendors/getByUser");
     return response.data;
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
@@ -96,7 +93,7 @@ export const removeAddedVendor = createAsyncThunk<
   { rejectValue: string }
 >("vendor/removeVendor", async (id, { rejectWithValue }) => {
   try {
-    const response = await axios.delete(`/vendors/remove-vendor/${id}`);
+    const response = await api.delete(`/vendors/remove-vendor/${id}`);
     return response.data;
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
@@ -113,9 +110,7 @@ export const addManualVendorExpense = createAsyncThunk<
   { rejectValue: string }
 >("vendor/addOtherExpense", async (data, { rejectWithValue }) => {
   try {
-    const response = await axios.post("/vendors/addManualExpense", data, {
-      withCredentials: true,
-    });
+    const response = await api.post("/vendors/addManualExpense", data);
     return response.data;
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
@@ -132,9 +127,8 @@ export const removeAllVendor = createAsyncThunk<
   { rejectValue: string }
 >("vendor/removeAllVendor", async (data, { rejectWithValue }) => {
   try {
-    const response = await axios.delete("/guest/removeAllGuestOrVendor", {
+    const response = await api.delete("/guest/removeAllGuestOrVendor", {
       data,
-      withCredentials: true,
     });
     return response.data;
   } catch (error: unknown) {

@@ -67,7 +67,6 @@ export interface IEvent {
   placeId: number;
   guestLimit: number;
   durationInDays: number;
-  status: string;
   noOfGuestAdded: number;
   includedInSplit: {
     _id?: string;

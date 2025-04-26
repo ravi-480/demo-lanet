@@ -1,7 +1,7 @@
 "use client";
 
 import { getVendorByUser, vendorByUser } from "@/store/vendorSlice";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../../../store/store";
 import {
@@ -17,14 +17,35 @@ import { Button } from "@/components/ui/button";
 const Budget = () => {
   const dispatch = useDispatch<AppDispatch>();
   const vendorDetail = useSelector(vendorByUser);
+  const [loaded, setLoaded] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5; // Number of items per page
 
   useEffect(() => {
-    dispatch(getVendorByUser());
-  }, [dispatch]);
+    // Set up intersection observer to detect when component is visible
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // If component is visible and data not already loaded
+        if (entries[0].isIntersecting && !loaded) {
+          dispatch(getVendorByUser());
+          setLoaded(true);
+          observer.disconnect(); // Disconnect after loading once
+        }
+      },
+      { threshold: 0.1 } // Trigger when 10% of the component is visible
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [dispatch, loaded]);
 
   // Helper function to safely format dates
   const formatDate = (dateString: string | number | Date | undefined) => {
@@ -35,8 +56,12 @@ const Budget = () => {
   };
 
   // Loading and error states
-  if (vendorDetail.status === "loading") {
-    return <div className="text-center py-10">Loading...</div>;
+  if (vendorDetail.status === "loading" || !loaded) {
+    return (
+      <div className="text-center py-10" ref={containerRef}>
+        Loading...
+      </div>
+    );
   }
 
   if (vendorDetail.status === "failed") {
@@ -72,7 +97,7 @@ const Budget = () => {
   );
 
   return (
-    <div className="w-full">
+    <div className="w-full" ref={containerRef}>
       <h1 className="pl-2 md:pl-4 mb-2 text-lg md:text-xl font-medium">
         Recent Expenses
       </h1>

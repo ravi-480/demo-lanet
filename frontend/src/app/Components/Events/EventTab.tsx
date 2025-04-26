@@ -8,13 +8,9 @@ interface EventTabsProps {
   className?: string;
 }
 
-const EventTabs: React.FC<EventTabsProps> = ({
-  activeTab,
-  setActiveTab,
-  className = "border-b border-gray-500 pb-4 mb-4",
-}) => {
+const EventTabs: React.FC<EventTabsProps> = ({ activeTab, setActiveTab }) => {
   return (
-    <div className={className}>
+    <div >
       <div className="flex flex-wrap gap-2">
         {tabs.map((tab) => (
           <Button

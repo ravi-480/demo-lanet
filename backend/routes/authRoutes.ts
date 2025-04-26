@@ -7,12 +7,14 @@ import {
   authGuard,
   forgotPassword,
   resetPassword,
+  getMe,
 } from "../controllers/authController";
 import { authenticate } from "../middleware/authMiddleware";
 
 const router = express.Router();
 
 // Authentication routes
+router.get("/me", authenticate, getMe);
 router.post("/signup", signup);
 router.post("/login", login);
 router.post("/refresh-token", refreshToken);

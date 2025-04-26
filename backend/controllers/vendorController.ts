@@ -21,13 +21,16 @@ export const getVendor = asyncHandler(async (req: Request, res: Response) => {
       .json({ success: false, error: "Missing query or location" });
   }
 
+  if (!process.env.SERPAPI_KEY) {
+    throw new Error("Missing SerpAPI key in environment variables");
+  }
+
   const serpRes = await axios.get("https://serpapi.com/search.json", {
     params: {
       engine: "google_local",
       q: query,
       location,
-      api_key:
-        "b3bccdaf11dd046d844638f975547d22bc9d21ef313c4e6917b8a6f1615b52cd",
+      api_key: process.env.SERPAPI_KEY,
     },
   });
 

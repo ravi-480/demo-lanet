@@ -108,8 +108,8 @@ const EventForm: React.FC<EventFormProps> = ({
       date: formatDateForInput(initialData?.date),
       location: initialData?.location || "",
       description: initialData?.description || "",
-      budget: initialData?.budget?.allocated || undefined, // Remove default 0
-      guestLimit: initialData?.guestLimit || undefined, // Remove default 0
+      budget: initialData?.budget?.allocated || undefined, 
+      guestLimit: initialData?.guestLimit || undefined, 
       eventType: initialData?.eventType || "",
       durationInDays: initialData?.durationInDays || 1,
     },
@@ -120,6 +120,7 @@ const EventForm: React.FC<EventFormProps> = ({
     if (!file) return;
 
     const validImageTypes = ["image/jpeg", "image/png", "image/webp"];
+console.log(file);
 
     if (!validImageTypes.includes(file.type)) {
       alert("Only JPEG, PNG, or WEBP images are allowed.");
@@ -129,14 +130,14 @@ const EventForm: React.FC<EventFormProps> = ({
 
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
+    console.log(URL.createObjectURL);
+    
   };
 
   const submitHandler = (data: EventFormValues) => {
     const formData = new FormData();
 
-    // Ensure numeric values are properly converted to numbers
     Object.entries(data).forEach(([key, value]) => {
-      // Convert string numbers to actual numbers where appropriate
       if (
         ["budget", "guestLimit", "durationInDays"].includes(key) &&
         value !== undefined

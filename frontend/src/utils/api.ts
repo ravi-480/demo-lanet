@@ -1,5 +1,4 @@
 import axios, { AxiosInstance } from "axios";
-import Cookies from "js-cookie";
 import { toast } from "sonner";
 
 interface CustomAxiosInstance extends AxiosInstance {
@@ -11,28 +10,21 @@ const api: CustomAxiosInstance = axios.create({
   withCredentials: true,
 });
 
-// Add request interceptor to include token in every request
 api.interceptors.request.use(
   (config) => {
-    const token = Cookies.get("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Update in your api.ts interceptor
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // TRUE server/network error
     if (!error.response) {
       toast.error("Server might be down. Please try again later.", {
-        id: "server-down", // Using an ID prevents duplicate toasts
+        id: "server-down",
       });
 
       return Promise.reject(new Error("SERVER_DOWN"));
@@ -49,31 +41,29 @@ api.interceptors.response.use(
         const ans = await api.post("/auth/refresh-token");
         const newToken = ans.data?.accessToken;
         if (newToken) {
-          Cookies.set("token", newToken, { path: "/", sameSite: "lax" });
           return api(originalRequest);
         }
-        // If no new token received, handle as auth error
         if (api.onAuthError) {
           api.onAuthError();
         }
         return Promise.reject(new Error("AUTH_ERROR"));
       } catch (refreshError) {
         console.log(refreshError);
-        
+
         if (api.onAuthError) {
           api.onAuthError();
         }
-        // Return a custom error that we can filter
         return Promise.reject(new Error("AUTH_ERROR"));
       }
     }
 
-    if (error.response?.status !== 401) {
+    if (error.response?.status !== 401 && error.response?.status !== 404) {
       const message =
         error.response?.data?.message ||
         error.message ||
         "Something went wrong";
-      toast.error(message);
+
+      toast.error(message + "hh");
     }
 
     return Promise.reject(error);

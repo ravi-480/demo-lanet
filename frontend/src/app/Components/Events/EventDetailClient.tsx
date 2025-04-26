@@ -11,7 +11,7 @@ import {
 import EventHeader from "@/app/Components/Events/EventHeader";
 import ErrorMessage from "../Error/ErrorMessage";
 import { notFound } from "next/navigation";
-import EventOverView from "./EventOverView";
+import EventTabComponent from "./EventTabComponent";
 
 const EventDetailClient = ({ id }: { id: string }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -49,7 +49,7 @@ const EventDetailClient = ({ id }: { id: string }) => {
   return (
     <div className="p-5">
       <EventHeader event={event} />
-      <EventOverView event={event} />
+      <EventTabComponent />
     </div>
   );
 };

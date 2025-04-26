@@ -20,17 +20,11 @@ export const useEventFilter = ({
   const filteredEvents = useMemo(() => {
     return (
       events?.filter((event) => {
-        // First apply tab filter
         if (activeTab !== "all") {
           const eventDate = new Date(event.date).getTime();
           if (activeTab === "upcoming" && eventDate <= now) return false;
           if (activeTab === "past" && eventDate > now) return false;
-          if (
-            activeTab !== "upcoming" &&
-            activeTab !== "past" &&
-            event.status !== activeTab
-          )
-            return false;
+          if (activeTab !== "upcoming" && activeTab !== "past") return false;
         }
 
         // Apply search filter

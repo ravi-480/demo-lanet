@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "./store";
 import axios from "../utils/axiosConfig";
+import api from "@/utils/api";
 
 interface Vendor {
   // Define properties for vendor
@@ -38,11 +39,7 @@ export const addVendorInSplitOrRemove = createAsyncThunk<
   { rejectValue: string }
 >("vendorSplit/addToSplit", async (vendorId, { rejectWithValue }) => {
   try {
-    const response = await axios.post(
-      "/vendors/addToSplit",
-      { vendorId },
-      { withCredentials: true }
-    );
+    const response = await api.post("/vendors/addToSplit", { vendorId });
     return response.data;
   } catch (error: unknown) {
     return rejectWithValue(
@@ -64,9 +61,7 @@ export const addUserInSplit = createAsyncThunk<
   "addUser/addToSplit",
   async (userData: AddUserPayload, { rejectWithValue }) => {
     try {
-      const response = await axios.post("/vendors/addUserToSplit", userData, {
-        withCredentials: true,
-      });
+      const response = await api.post("/vendors/addUserToSplit", userData);
       return response.data;
     } catch (error: unknown) {
       return rejectWithValue(
@@ -76,16 +71,14 @@ export const addUserInSplit = createAsyncThunk<
   }
 );
 
-// Remove added user in split
 export const deleteUserFromSplit = createAsyncThunk<
-  string, // Return type (a message or the ID of the deleted user)
+  string, // Return type
   { id: string; userId: string }, // Payload type
   { rejectValue: string }
 >("split/deleteFromSplit", async (data, { rejectWithValue }) => {
   try {
-    const response = await axios.delete("/vendors/delete/addedInSplit", {
+    const response = await api.delete("/vendors/delete/addedInSplit", {
       data,
-      withCredentials: true,
     });
     return response.data;
   } catch (error: unknown) {
@@ -95,18 +88,13 @@ export const deleteUserFromSplit = createAsyncThunk<
   }
 });
 
-// Edit user details which were included in split
 export const editUserInSplit = createAsyncThunk<
   User, // The returned data type from the API (User type)
   { user: User; id: string }, // Payload type
   { rejectValue: string }
 >("split/editUserInSplit", async (data, { rejectWithValue }) => {
   try {
-    const response = await axios.patch(
-      "/vendors/split/users/edituser",
-      data, // Send data directly
-      { withCredentials: true }
-    );
+    const response = await api.patch("/vendors/split/users/edituser", data);
     return response.data;
   } catch (error: unknown) {
     return rejectWithValue(

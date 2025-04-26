@@ -101,7 +101,7 @@ const BudgetDialog = ({ eventId, isOpen, setIsOpen }: BudgetDialogProps) => {
       }}
     >
       <DialogTrigger asChild>
-        <Button size="sm" className="flex sm:w-full py-5 items-center gap-1">
+        <Button size="sm" className="flex sm:w-full md:w-50 py-5 items-center gap-1">
           <PlusCircle size={16} />
           Add Other Expenses
         </Button>

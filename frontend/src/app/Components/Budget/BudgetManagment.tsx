@@ -67,7 +67,7 @@ const BudgetManagement = ({ eventId }: { eventId: string }) => {
           <Wallet className="mr-2" />
           Budget Management
         </h1>
-        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+        <div className="flex  px-2 gap-2 w-full sm:w-auto">
           <Link
             href="vendor-cart/splitted-vendors"
             className="w-full sm:w-auto"

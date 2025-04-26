@@ -1,7 +1,7 @@
 import { Guest } from "@/Interface/interface";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import axios from "../utils/axiosConfig";
 import { AxiosError } from "axios";
+import api from "@/utils/api";
 
 interface RSVPState {
   rsvpData: Guest[];
@@ -19,11 +19,10 @@ export const uploadFile = createAsyncThunk(
   "rsvp/uploadRsvp",
   async (formData: FormData, { rejectWithValue }) => {
     try {
-      const response = await axios.post("/guest/upload-guest-excel", formData, {
+      const response = await api.post("/guest/upload-guest-excel", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-        withCredentials: true,
       });
       return response.data.message;
     } catch (error: unknown) {
@@ -42,9 +41,7 @@ export const fetchGuests = createAsyncThunk(
   "rsvp/fetchGuest",
   async (eventId: string, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`/guest/${eventId}`, {
-        withCredentials: true,
-      });
+      const response = await api.get(`/guest/${eventId}`);
       return response.data.rsvpList;
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
@@ -62,9 +59,8 @@ export const removeAllGuest = createAsyncThunk(
   "rsvp/remove-guest",
   async (data: { id: string; query: string }, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(`/guest/removeAllGuestOrVendor`, {
+      const response = await api.delete(`/guest/removeAllGuestOrVendor`, {
         data,
-        withCredentials: true,
       });
       // Return the full response data which may include preservedVendors
       return response.data;
@@ -90,9 +86,7 @@ export const addSingleGuest = createAsyncThunk(
   "guest/add",
   async (guestData: Guest, { rejectWithValue }) => {
     try {
-      const response = await axios.post("/guest/addSingleGuest", guestData, {
-        withCredentials: true,
-      });
+      const response = await api.post("/guest/addSingleGuest", guestData);
       return response.data;
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
@@ -110,9 +104,8 @@ export const removeSingleGuest = createAsyncThunk(
   "rsvp/removeSingleGuest",
   async (guestId: string, { rejectWithValue }) => {
     try {
-      const response = await axios.delete("/guest/removeSingleGuest", {
+      const response = await api.delete("/guest/removeSingleGuest", {
         params: { guestId },
-        withCredentials: true,
       });
       return response.data;
     } catch (error: unknown) {
@@ -133,6 +126,7 @@ export const removeSingleGuest = createAsyncThunk(
   }
 );
 
+
 // edit user details
 export const updateSingleGuest = createAsyncThunk(
   "rsvp/updateSingleGuest",
@@ -145,9 +139,7 @@ export const updateSingleGuest = createAsyncThunk(
     thunkAPI
   ) => {
     try {
-      const response = await axios.put(`/guest/${eventId}/${guestId}`, data, {
-        withCredentials: true,
-      });
+      const response = await api.put(`/guest/${eventId}/${guestId}`, data);
       return response.data;
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
@@ -165,9 +157,7 @@ export const sendInviteAll = createAsyncThunk(
   "rsvp/sendInviteAll",
   async (data: Record<string, unknown>, { rejectWithValue }) => {
     try {
-      const response = await axios.post("/guest/inviteAll", data, {
-        withCredentials: true,
-      });
+      const response = await api.post("/guest/inviteAll", data);
       return response.data;
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
@@ -185,9 +175,7 @@ export const sendReminder = createAsyncThunk(
   "rsvp/sendReminder",
   async (data: { eventId: string; guestId: string }, { rejectWithValue }) => {
     try {
-      const response = await axios.post("/guest/sendReminder", data, {
-        withCredentials: true,
-      });
+      const response = await api.post("/guest/sendReminder", data);
       return response.data;
     } catch (error: unknown) {
       if (error instanceof AxiosError) {

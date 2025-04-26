@@ -86,6 +86,17 @@ const SignupForm = () => {
               placeholder="John Doe"
               className="bg-transparent"
               {...register("name")}
+              onKeyDown={(e) => {
+                if (/\d/.test(e.key)) {
+                  e.preventDefault(); // block number keys
+                }
+              }}
+              onPaste={(e) => {
+                const pasted = e.clipboardData.getData("text");
+                if (/\d/.test(pasted)) {
+                  e.preventDefault(); // block pasting numbers
+                }
+              }}
             />
             {errors.name && (
               <p className="text-sm text-red-500">{errors.name.message}</p>

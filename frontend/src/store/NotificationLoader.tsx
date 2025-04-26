@@ -10,6 +10,7 @@ import {
 import axios from "../utils/axiosConfig"; // Add AxiosError import
 import { AxiosError } from "axios";
 import { useSocket } from "@/hooks/useSocket";
+import api from "@/utils/api";
 
 const NotificationLoader = () => {
   const dispatch = useDispatch();
@@ -26,8 +27,7 @@ const NotificationLoader = () => {
 
     const fetchNotifications = async () => {
       try {
-        const response = await axios.get(`/notifications`, {
-          withCredentials: true,
+        const response = await api.get(`/notifications`, {
           params: { userId: user.id },
           timeout: 5000,
         });

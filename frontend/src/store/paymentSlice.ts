@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "../utils/axiosConfig";
+import api from "@/utils/api";
 
 interface PaymentState {
   status: string;
@@ -19,7 +20,7 @@ export const fetchPaymentStatus = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const res = await axios.get("/vendors/payment-status", {
+      const res = await api.get("/vendors/payment-status", {
         params: { eventId, userId },
       });
       return res.data;
@@ -42,7 +43,7 @@ export const confirmPayment = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const res = await axios.post("/vendors/confirm-payment", {
+      const res = await api.post("/vendors/confirm-payment", {
         eventId,
         userId,
       });
