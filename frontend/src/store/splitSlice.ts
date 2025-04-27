@@ -1,6 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "./store";
-import axios from "../utils/axiosConfig";
 import api from "@/utils/api";
 
 interface Vendor {
@@ -14,7 +13,7 @@ interface Vendor {
 interface User {
   name: string;
   email: string;
-  _id: string;
+  _id?: string;
 }
 
 interface SplitState {

@@ -51,17 +51,22 @@ export const createEvent = asyncHandler(
         data: newEvent,
       });
     } catch (error: any) {
+      console.log(error);
+
       throw new ApiError(500, "Error in creating events");
     }
   }
 );
+
+// fetch all events
 
 export const fetchEvents = async (
   req: AuthenticatedRequest,
   res: Response
 ): Promise<void> => {
   try {
-    // Check if req.user exists first
+    console.log(req.user);
+
     if (!req.user) {
       res
         .status(401)
@@ -93,9 +98,13 @@ export const fetchEvents = async (
   }
 };
 
+// fetch events by id
 export const fetchById = asyncHandler(async (req: Request, res: Response) => {
   try {
+    console.log("helloooooooooo");
+
     const eventId = req.params.id;
+    console.log(eventId);
 
     if (!eventId) {
       return res.status(400).json({

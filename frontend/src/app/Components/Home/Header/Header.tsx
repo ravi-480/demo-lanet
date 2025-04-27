@@ -14,7 +14,6 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import axios from "../../../../utils/axiosConfig";
 import { usePathname } from "next/navigation";
 import { markAllAsRead } from "@/store/notificationSlice";
 import api from "@/utils/api";

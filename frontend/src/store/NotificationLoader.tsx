@@ -1,13 +1,11 @@
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "./store";
+import { RootState } from "@/store/store";
 import {
-  addNotification,
   fetchNotificationsFailure,
   fetchNotificationsSuccess,
   fetchNotificationStart,
-} from "./notificationSlice";
-import axios from "../utils/axiosConfig"; // Add AxiosError import
+} from "@/store/notificationSlice";
 import { AxiosError } from "axios";
 import { useSocket } from "@/hooks/useSocket";
 import api from "@/utils/api";
@@ -17,11 +15,10 @@ const NotificationLoader = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const socket = useSocket();
   const [connectionStatus, setConnectionStatus] = useState("connected");
-
-  const hasFetchedNotificationsRef = useRef(false); // Prevents unnecessary re-fetching
+  const hasFetchedNotificationsRef = useRef(false);
 
   useEffect(() => {
-    if (!user?.id || hasFetchedNotificationsRef.current) return; // Don't refetch if notifications have already been fetched
+    if (!user?.id || hasFetchedNotificationsRef.current) return;
 
     dispatch(fetchNotificationStart());
 
@@ -31,12 +28,9 @@ const NotificationLoader = () => {
           params: { userId: user.id },
           timeout: 5000,
         });
-
         dispatch(fetchNotificationsSuccess(response.data.notifications));
-        hasFetchedNotificationsRef.current = true; // Mark notifications as fetched
+        hasFetchedNotificationsRef.current = true;
       } catch (error: unknown) {
-        // Change error type from any to unknown
-        // Use error in a log message to avoid the unused variable warning
         if (error instanceof AxiosError) {
           console.log(
             "Server connection issue - notifications not loaded:",
@@ -56,22 +50,16 @@ const NotificationLoader = () => {
     fetchNotifications();
 
     if (socket) {
-      socket.on("new-notification", (notification) => {
-        dispatch(addNotification(notification)); // Ensure this doesn't trigger another fetch
-      });
-
       socket.on("connect", () => {
         setConnectionStatus("connected");
         if (!hasFetchedNotificationsRef.current) {
-          fetchNotifications(); // Only fetch if not already fetched
+          fetchNotifications();
         }
       });
     }
 
-    // Cleanup on component unmount
     return () => {
       if (socket) {
-        socket.off("new-notification");
         socket.off("connect");
       }
     };

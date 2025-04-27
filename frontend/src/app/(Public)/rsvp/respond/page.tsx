@@ -26,7 +26,7 @@ type ApiError = {
   message?: string;
 };
 
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = process.env.BaseURL;
 
 export default function RSVPRespond() {
   const searchParams = useSearchParams();

@@ -15,6 +15,7 @@ export const authenticate = asyncHandler(
     if (req.headers.authorization?.startsWith("Bearer ")) {
       token = req.headers.authorization.split(" ")[1];
     }
+
     if (!token) {
       throw new ApiError(401, "Authentication required");
     }
@@ -54,7 +55,7 @@ export const authenticate = asyncHandler(
           httpOnly: true,
           sameSite: "lax",
           secure: process.env.NODE_ENV === "production",
-          maxAge: 40 * 60 * 1000,
+          maxAge: 50 * 60 * 1000,
         });
 
         // Attach user to request

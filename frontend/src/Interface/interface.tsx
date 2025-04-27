@@ -127,7 +127,7 @@ export interface CustomEvent {
 
 // Update your VendorType interface to include all necessary properties:
 export interface VendorType {
-  _id: string;
+  _id?: string;
   event: string;
   title: string;
   type: string;
@@ -220,15 +220,16 @@ export interface SplitUser {
   _id: string;
   email: string;
   status: "pending" | "confirmed";
-}
-
-export interface SplitUser {
-  userId: string;
-  name: string;
-  status: "pending" | "confirmed";
-  email: string;
   joinedAt?: Date | undefined;
 }
+
+// export interface SplitUser {
+//   userId: string;
+//   name: string;
+//   status: "pending" | "confirmed";
+//   email: string;
+//   joinedAt?: Date | undefined;
+// }
 
 export interface Vendor {
   title: string;

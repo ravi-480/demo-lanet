@@ -88,6 +88,8 @@ export const getCurrentUser = createAsyncThunk(
       const res = await axios.get("/auth/me");
       return res.data.data;
     } catch (error) {
+      console.log(error);
+
       return rejectWithValue("Failed to fetch user");
     }
   }

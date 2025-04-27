@@ -8,18 +8,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { SplitUser } from "@/Interface/interface";
 import { Edit, Mail, Trash } from "lucide-react";
-// Removed unused import
 
 interface User {
-  _id?: string;
+  _id: string;
   name: string;
   email: string;
-  status?: string;
+  status: "pending" | "confirmed";
+  joinedAt?: Date;
 }
 
 interface UserTableProps {
-  users: User[];
+  users: SplitUser[];
   isLoading: boolean;
   onEdit: (user: User) => void;
   onDelete: (user: User) => void;
@@ -63,7 +64,7 @@ export const UserTable = ({
             <TableCell>
               <span
                 className={`rounded-full py-1 px-3 text-xs font-medium ${
-                  user.status === "Paid"
+                  user.status === "confirmed"
                     ? "bg-green-500/20 text-green-400 border border-green-500/30"
                     : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
                 }`}

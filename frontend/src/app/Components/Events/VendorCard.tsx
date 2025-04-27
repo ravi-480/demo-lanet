@@ -60,6 +60,7 @@ const VendorCard = ({
     minGuestLimit
   );
 
+  // Calculate total estimate
   const totalEstimate = calculateTotalEstimate(
     priceUnit,
     price,
@@ -70,7 +71,14 @@ const VendorCard = ({
   );
 
   useEffect(() => {
-    if (priceUnit === "per day" && Number(units) > localNoOfDay) {
+    // Check for errors regarding day limits
+    if (localNoOfDay > noOfDay) {
+      setError(
+        `Cannot book for more than ${noOfDay} day${
+          noOfDay > 1 ? "s" : ""
+        } (event duration)`
+      );
+    } else if (Number(units) > localNoOfDay) {
       setError(
         `Cannot book for more than the event duration (${localNoOfDay} day${
           localNoOfDay > 1 ? "s" : ""
@@ -85,19 +93,47 @@ const VendorCard = ({
     }
   }, [
     units,
-    priceUnit,
     localNoOfDay,
     isBelowMinGuestLimit,
     minGuestLimit,
     checkNoOfGuest,
+    noOfDay,
   ]);
+
+  const handleLocalNoOfDayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value);
+
+    // Always set the value, but we'll show an error if it exceeds noOfDay
+    setLocalNoOfDay(value);
+
+    // Immediately show error if the value exceeds noOfDay
+    if (value > noOfDay) {
+      setError(
+        `Cannot book for more than ${noOfDay} day${
+          noOfDay > 1 ? "s" : ""
+        } (event duration)`
+      );
+    }
+  };
 
   const handleConfirmAdd = async () => {
     if (!eventId || !addedBy) return;
 
-    if (priceUnit === "per day" && Number(units) > localNoOfDay) {
+    // Validate day-based restrictions for all categories
+    if (localNoOfDay > noOfDay) {
       toast.error(
-        `Cannot book for more than the event duration (${localNoOfDay} days)`
+        `Cannot book for more than ${noOfDay} day${
+          noOfDay > 1 ? "s" : ""
+        } (event duration)`
+      );
+      return;
+    }
+
+    if (Number(units) > localNoOfDay) {
+      toast.error(
+        `Cannot book for more than the event duration (${localNoOfDay} day${
+          localNoOfDay > 1 ? "s" : ""
+        })`
       );
       return;
     }
@@ -120,13 +156,13 @@ const VendorCard = ({
       directionsLink: vendor.links?.directions || "",
       placeId: vendor.place_id || vendor.placeId || "",
       phone: vendor.phone || "",
-      price:
-        priceUnit === "per day" ? totalEstimate * localNoOfDay : totalEstimate,
+      price: totalEstimate,
       pricingUnit: priceUnit,
       category,
       numberOfGuests: checkNoOfGuest,
       addedBy,
-      days: priceUnit === "per day" ? Number(units) : undefined,
+      days: Number(units),
+      eventDuration: localNoOfDay,
       minGuestLimit,
     };
 
@@ -154,75 +190,99 @@ const VendorCard = ({
             value={units}
             onChange={(e) => setUnits(e.target.value)}
             min={1}
+            className={Number(units) > localNoOfDay ? "border-red-500" : ""}
           />
           <Label htmlFor="days">Enter number of days</Label>
           <Input
             id="days"
             type="number"
             value={localNoOfDay}
-            onChange={(e) => setLocalNoOfDay(Number(e.target.value))}
+            onChange={handleLocalNoOfDayChange}
             min={1}
+            className={localNoOfDay > noOfDay ? "border-red-500" : ""}
           />
+          {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
           <p className="text-muted-foreground">
-            Estimated Total: ₹
-            {calculateTotalEstimate(
-              priceUnit,
-              price,
-              Number(units),
-              checkNoOfGuest,
-              category,
-              localNoOfDay
-            ).toLocaleString()}
+            Estimated Total: ₹{totalEstimate.toLocaleString()}
+          </p>
+          <p className="text-xs text-cyan-400">
+            Note: Event max duration is {noOfDay} day{noOfDay > 1 ? "s" : ""}
           </p>
         </>
       ) : priceUnit === "per day" ? (
-        category.toLowerCase() === "venue" ? (
-          <>
-            <p>This venue is priced at ₹{price.toLocaleString()} per day.</p>
-            <p className="text-muted-foreground">
-              Event duration: {localNoOfDay} day
-              {localNoOfDay > 1 ? "s" : ""} × ₹{price.toLocaleString()} ={" "}
-              <strong>₹{(price * localNoOfDay).toLocaleString()}</strong>
-            </p>
-          </>
-        ) : (
-          <>
-            <Label htmlFor="units">Enter days</Label>
-            <Input
-              id="units"
-              type="number"
-              value={units}
-              onChange={(e) => setUnits(e.target.value)}
-              min={1}
-              max={localNoOfDay}
-              className={error ? "border-red-500" : ""}
-            />
-            {error && <p className="text-red-500 text-xs">{error}</p>}
-            <p className="text-muted-foreground">
-              Estimated Total: ₹{totalEstimate.toLocaleString()}
-            </p>
-            <p className="text-xs text-cyan-400">
-              Note: Event duration is {localNoOfDay} day
-              {localNoOfDay > 1 ? "s" : ""}
-            </p>
-          </>
-        )
+        <>
+          <Label htmlFor="units">Enter days</Label>
+          <Input
+            id="units"
+            type="number"
+            value={units}
+            onChange={(e) => setUnits(e.target.value)}
+            min={1}
+            className={Number(units) > localNoOfDay ? "border-red-500" : ""}
+          />
+          <Label htmlFor="days">Event days</Label>
+          <Input
+            id="days"
+            type="number"
+            value={localNoOfDay}
+            onChange={handleLocalNoOfDayChange}
+            min={1}
+            className={localNoOfDay > noOfDay ? "border-red-500" : ""}
+          />
+          {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+          <p className="text-muted-foreground">
+            Estimated Total: ₹{totalEstimate.toLocaleString()}
+          </p>
+          <p className="text-xs text-cyan-400">
+            Note: Event max duration is {noOfDay} day{noOfDay > 1 ? "s" : ""}
+          </p>
+        </>
       ) : priceUnit === "per plate" ? (
         <>
+          <Label htmlFor="days">Enter number of days</Label>
+          <Input
+            id="days"
+            type="number"
+            value={localNoOfDay}
+            onChange={handleLocalNoOfDayChange}
+            min={1}
+            className={localNoOfDay > noOfDay ? "border-red-500" : ""}
+          />
+          {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
           <p>
-            Approx cost for <strong>{checkNoOfGuest}</strong> guests:
+            Approx cost for <strong>{checkNoOfGuest}</strong> guests over{" "}
+            <strong>{localNoOfDay}</strong> day{localNoOfDay > 1 ? "s" : ""}:
             <strong> ₹{totalEstimate.toLocaleString()}</strong>
           </p>
-          {minGuestLimit && category.toLowerCase() === "catering" && (
+          <p className="text-xs text-cyan-400">
+            Note: Event max duration is {noOfDay} day{noOfDay > 1 ? "s" : ""}
+          </p>
+          {minGuestLimit && (
             <p className="text-xs text-cyan-400">
               Minimum requirement: {minGuestLimit} guests
             </p>
           )}
         </>
       ) : (
-        <p>
-          Flat rate cost: <strong>₹{totalEstimate.toLocaleString()}</strong>
-        </p>
+        <>
+          <Label htmlFor="days">Enter number of days</Label>
+          <Input
+            id="days"
+            type="number"
+            value={localNoOfDay}
+            onChange={handleLocalNoOfDayChange}
+            min={1}
+            className={localNoOfDay > noOfDay ? "border-red-500" : ""}
+          />
+          {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+          <p>
+            Flat rate cost for {localNoOfDay} day{localNoOfDay > 1 ? "s" : ""}:{" "}
+            <strong>₹{totalEstimate.toLocaleString()}</strong>
+          </p>
+          <p className="text-xs text-cyan-400">
+            Note: Event max duration is {noOfDay} day{noOfDay > 1 ? "s" : ""}
+          </p>
+        </>
       )}
     </div>
   );

@@ -18,15 +18,18 @@ const GuestUpload = ({ eventId }: GuestUploadProps) => {
   const dispatch = useDispatch<AppDispatch>();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const validImageTypes = [".xlsx, .xls, .csv"];
+    const validFileTypes = ["xlsx", "xls", "csv"]; // Allow file extensions
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
 
-    if (!validImageTypes.includes(selectedFile.type)) {
+    const fileExtension = selectedFile.name.split(".").pop()?.toLowerCase(); // Extract file extension
+
+    if (!validFileTypes.includes(fileExtension || "")) {
       alert("Only xlsx, xls, or csv files are allowed.");
-      e.target.value = "";
+      e.target.value = ""; // Clear the file input
       return;
     }
+
     setFile(selectedFile);
   };
 

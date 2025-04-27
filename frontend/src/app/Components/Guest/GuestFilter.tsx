@@ -43,7 +43,7 @@ const GuestFilters = ({
         return;
       }
 
-      await dispatch(sendInviteAll(pendingGuests));
+      await dispatch(sendInviteAll({ pendingGuests }));
       toast.success("Invitations sent to all pending guests");
     } catch (error) {
       toast.error("Failed to send invitations");

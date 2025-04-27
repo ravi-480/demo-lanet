@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Loader } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Loader, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 
 import VendorCard from "./VendorCard";
-import { getRandomPrice } from "@/StaticData/Static";
+import { getRandomPrice, eventVendorMapping } from "@/StaticData/Static";
 import { enrichVendor } from "@/utils/vendorUtils";
 import {
   SearchVendorProps,
@@ -19,6 +19,7 @@ import {
   PricingUnit,
 } from "@/Interface/interface";
 import { toast } from "sonner";
+import api from "@/utils/api";
 
 type SortOption = "lowToHigh" | "highToLow" | "rating" | "";
 
@@ -32,19 +33,100 @@ const SearchVendor = ({
   eventId,
 }: SearchVendorProps) => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [vendors, setVendors] = useState<VendorType[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [sortOption, setSortOption] = useState<SortOption>("");
   const [locationError, setLocationError] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  // Get suggested vendor categories based on event type
+  useEffect(() => {
+    const generateSuggestions = () => {
+      if (!searchTerm.trim()) {
+        setSuggestions([]);
+        setShowSuggestions(false);
+        return;
+      }
+
+      // Get vendor categories for this event type
+      const eventCategories =
+        eventVendorMapping[
+          eventType?.toLowerCase() as keyof typeof eventVendorMapping
+        ] || [];
+      const categories = eventCategories.map((item) => item.category);
+
+      // Filter categories that match the search term
+      const matchingCategories = categories.filter((category) =>
+        category.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+
+      // Also include common vendor terms
+      const commonTerms = [
+        "photographer",
+        "catering",
+        "decorator",
+        "dj",
+        "music",
+        "band",
+        "flowers",
+        "cake",
+        "dessert",
+        "lighting",
+        "sound",
+        "hotel",
+        "garden",
+        "videographer",
+        "makeup",
+        "mehendi",
+        "bartender",
+        "entertainment",
+      ];
+
+      const matchingTerms = commonTerms.filter(
+        (term) =>
+          term.toLowerCase().includes(searchTerm.toLowerCase()) &&
+          !matchingCategories.some(
+            (cat) => cat.toLowerCase() === term.toLowerCase()
+          )
+      );
+
+      // Combine and limit suggestions
+      const allSuggestions = [...matchingCategories, ...matchingTerms].slice(
+        0,
+        5
+      );
+      setSuggestions(allSuggestions);
+      setShowSuggestions(allSuggestions.length > 0);
+    };
+
+    generateSuggestions();
+  }, [searchTerm, eventType]);
+
+  // Handle clicks outside the suggestion box
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const validateLocation = (location: string) => {
     const locationRegex = /^[a-zA-Z\s,]+$/;
     return locationRegex.test(location);
   };
 
-  const fetchVendors = async (pageNum = 1) => {
+  const fetchVendors = async (pageNum = 1, term = searchTerm) => {
     if (!validateLocation(eventLocation)) {
       setLocationError(true);
       return;
@@ -55,23 +137,27 @@ const SearchVendor = ({
     setPage(pageNum);
 
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/vendors?query=${searchTerm}&location=${eventLocation}&page=${pageNum}`,
-        { credentials: "include" }
-      );
-      const data = await res.json();
+      const { data } = await api.get("/vendors", {
+        params: {
+          query: term,
+          location: eventLocation,
+          page: pageNum,
+        },
+      });
+
       if (data.vendors.length === 0) {
         toast.error("No vendors found for the specified location.");
       }
 
       const enrichedVendors = (data.vendors || []).map((vendor: VendorType) =>
-        enrichVendor(vendor, searchTerm, getRandomPrice, noOfGuest)
+        enrichVendor(vendor, term, getRandomPrice, noOfGuest)
       );
 
       setVendors(enrichedVendors);
       setHasMore(data.pagination?.hasMore ?? false);
     } catch (error) {
-      // Fix the error handling for toast
+      console.log(error);
+
       toast.error(
         `Vendor fetch error: ${
           error instanceof Error ? error.message : "Unknown error"
@@ -82,9 +168,31 @@ const SearchVendor = ({
     }
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
+  // Handle search form submission
+  const handleSearchSubmit = (
+    e: React.FormEvent<HTMLFormElement> | React.KeyboardEvent<HTMLInputElement>
+  ) => {
     e.preventDefault();
+
+    // Handle only when the search term is not empty
+    if (searchTerm.trim() === "") {
+      return;
+    }
+
+    // Check if it's a keyboard event and if the key is Enter
+    if ("key" in e && e.key !== "Enter") {
+      return; // Only proceed if the Enter key is pressed
+    }
+
+    setShowSuggestions(false);
     fetchVendors();
+  };
+
+  // Handle suggestion click
+  const handleSuggestionClick = (suggestion: string) => {
+    setSearchTerm(suggestion);
+    setShowSuggestions(false);
+    fetchVendors(1, suggestion);
   };
 
   const getSortedVendors = () => {
@@ -97,24 +205,52 @@ const SearchVendor = ({
   };
 
   const renderSearchBar = () => (
-    <form
-      onSubmit={handleSearchSubmit}
-      className="flex flex-col sm:flex-row items-center gap-2"
-    >
-      <Input
-        placeholder={`Search vendors for ${eventType}...`}
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            handleSearchSubmit(e);
-          }
-        }}
-      />
-      <Button type="submit" disabled={!searchTerm} className="w-full sm:w-auto">
-        Search
-      </Button>
-    </form>
+    <div className="relative" ref={searchRef}>
+      <form
+        onSubmit={handleSearchSubmit}
+        className="flex flex-col sm:flex-row items-center gap-2"
+      >
+        <div className="relative w-full">
+          <Input
+            placeholder={`Search vendors for ${eventType}...`}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onFocus={() => setShowSuggestions(suggestions.length > 0)}
+            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+              if (e.key === "Enter") {
+                handleSearchSubmit(e);
+              }
+            }}
+            className="pr-10"
+          />
+          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+        </div>
+        <Button
+          type="submit"
+          disabled={!searchTerm}
+          className="w-full sm:w-auto"
+        >
+          Search
+        </Button>
+      </form>
+
+      {/* Suggestions dropdown */}
+      {showSuggestions && (
+        <div className="absolute z-10 mt-1 w-full bg-gray-800 border border-gray-700 rounded-md shadow-lg">
+          <ul className="py-1 max-h-56 overflow-auto">
+            {suggestions.map((suggestion, index) => (
+              <li
+                key={index}
+                onClick={() => handleSuggestionClick(suggestion)}
+                className="px-4 py-2 hover:bg-gray-700 cursor-pointer text-white text-sm"
+              >
+                {suggestion}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
   );
 
   const renderSortOptions = () => (

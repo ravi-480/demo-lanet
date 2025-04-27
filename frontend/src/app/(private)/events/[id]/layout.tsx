@@ -17,7 +17,9 @@ export default async function EventLayout({
     const headerList = await headers();
     const cookieHeader = headerList.get("cookie") || "";
 
-    const res = await fetch(`http://localhost:5000/api/events/${eventId}`, {
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+    const res = await fetch(`${API_BASE_URL}/events/${eventId}`, {
       headers: {
         Cookie: cookieHeader,
       },

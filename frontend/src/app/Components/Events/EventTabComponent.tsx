@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import { eventVendorMapping } from "@/StaticData/Static";
 import { RootState } from "@/store/store";
 import { SearchVendorProps } from "@/Interface/interface";
+
 const EventOverView = dynamic(() => import("./EventOverView"), {
   loading: () => (
     <div className="h-64 w-full bg-gray-800 animate-pulse rounded-lg"></div>
@@ -118,4 +119,7 @@ const EventTabComponent = memo(() => {
   );
 });
 
-export default EventTabComponent
+// Set display name explicitly
+EventTabComponent.displayName = "EventTabComponent";
+
+export default EventTabComponent;

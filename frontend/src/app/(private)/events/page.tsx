@@ -2,7 +2,6 @@
 import LoadingSpinner from "@/app/Components/Loader/LoadingSpinner";
 import Welcome from "../../Components/DashBoard/Welcome";
 import dynamic from "next/dynamic";
-import { lazy, Suspense } from "react";
 
 const EventDisplay = dynamic(
   () => import("../../Components/DashBoard/EventDisplay"),
@@ -14,13 +13,25 @@ const EventDisplay = dynamic(
 
 const EventCalendar = dynamic(
   () => import("../../Components/DashBoard/EventCalendar"),
-  { loading: () => <LoadingSpinner />, ssr: false }
+  {
+    loading: () => <LoadingSpinner />,
+    ssr: false,
+  }
 );
 
-const Budget = lazy(() => import("../../Components/DashBoard/Budget"));
-const Testimonials = lazy(
-  () => import("../../Components/DashBoard/Testimonial")
+const Budget = dynamic(() => import("../../Components/DashBoard/Budget"), {
+  loading: () => <LoadingSpinner />,
+  ssr: false,
+});
+
+const Testimonials = dynamic(
+  () => import("../../Components/DashBoard/Testimonial"),
+  {
+    loading: () => <LoadingSpinner />,
+    ssr: false,
+  }
 );
+
 const Dashboard = () => {
   return (
     <div className="min-h-screen px-4 sm:px-6 md:px-8 lg:px-16 py-4 sm:py-7 bg-gray-900">
@@ -35,13 +46,9 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <Suspense fallback={<LoadingSpinner />}>
-        <Budget />
-      </Suspense>
+      <Budget />
 
-      <Suspense fallback={<LoadingSpinner />}>
-        <Testimonials />
-      </Suspense>
+      <Testimonials />
     </div>
   );
 };

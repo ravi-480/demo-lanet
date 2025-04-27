@@ -32,7 +32,7 @@ const ConfirmCard = ({ eventId, userId }: Props) => {
         } confirmed their payment for the event.`,
         metadata: {
           paymentStatus: "confirmed",
-          amount: user?.amount || "split amount",
+          amount: "split amount",
           timestamp: new Date().toISOString(),
         },
       });
@@ -48,7 +48,9 @@ const ConfirmCard = ({ eventId, userId }: Props) => {
   return (
     <div className="flex justify-center items-center min-h-[80vh]">
       <div className="bg-white w-full max-w-md rounded-xl shadow-xl p-8 text-center border border-gray-200">
-        <h2 className="text-3xl font-bold text-gray-900 mb-3">Confirm Your Split</h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-3">
+          Confirm Your Split
+        </h2>
         <p className="text-md text-gray-600 mb-6">
           Tap below to confirm your payment distribution for the event.
         </p>
@@ -69,7 +71,11 @@ const ConfirmCard = ({ eventId, userId }: Props) => {
             Something went wrong
           </div>
         ) : (
-          <Button onClick={handleConfirm} disabled={status === "loading"} className="w-full mt-4">
+          <Button
+            onClick={handleConfirm}
+            disabled={status === "loading"}
+            className="w-full mt-4"
+          >
             {status === "loading" ? (
               <span className="flex items-center justify-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />

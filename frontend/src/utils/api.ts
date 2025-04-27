@@ -5,8 +5,10 @@ interface CustomAxiosInstance extends AxiosInstance {
   onAuthError?: () => void;
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const api: CustomAxiosInstance = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: API_BASE_URL,
   withCredentials: true,
 });
 

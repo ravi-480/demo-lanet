@@ -18,7 +18,7 @@ const limiter = rateLimit({
   message: "Too many request please try again later",
 });
 // Middleware
-app.use(limiter);
+// app.use(limiter);
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

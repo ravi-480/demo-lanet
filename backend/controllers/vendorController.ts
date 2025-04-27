@@ -6,6 +6,7 @@ import { sendEmail } from "../utils/emailService";
 import { v4 as uuidv4 } from "uuid";
 const axios = require("axios");
 
+
 interface AuthenticatedRequest extends Request {
   user: {
     id: string;
@@ -25,6 +26,8 @@ export const getVendor = asyncHandler(async (req: Request, res: Response) => {
     throw new Error("Missing SerpAPI key in environment variables");
   }
 
+  
+
   const serpRes = await axios.get("https://serpapi.com/search.json", {
     params: {
       engine: "google_local",
@@ -33,6 +36,7 @@ export const getVendor = asyncHandler(async (req: Request, res: Response) => {
       api_key: process.env.SERPAPI_KEY,
     },
   });
+  
 
   const allVendors = serpRes.data.local_results || [];
   const perPage = 6;

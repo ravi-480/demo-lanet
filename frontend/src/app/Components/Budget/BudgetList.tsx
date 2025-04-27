@@ -49,13 +49,13 @@ const VendorActions = ({
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="text-gray-950"
-          onClick={() => handleAddOrRemoveFromSplit(item._id)}
+          onClick={() => item._id && handleAddOrRemoveFromSplit(item._id)}
         >
           {item.isIncludedInSplit ? "Remove Split" : "Add to Split"}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onClick={() => onRemove(item._id)}
+          onClick={() => item._id && onRemove(item._id)}
           className="text-red-600"
         >
           Remove Vendor

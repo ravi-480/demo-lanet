@@ -1,6 +1,6 @@
 import axios from "../utils/axiosConfig";
 import { toast } from "sonner";
-import { VendorType, IEvent } from "@/Interface/interface"; 
+import { VendorType, IEvent } from "@/Interface/interface";
 
 // Get filtered vendors based on search term, price range, and rating filter
 export function getFilteredVendors(

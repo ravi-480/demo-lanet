@@ -1,19 +1,20 @@
+// hooks/useSocket.ts
 import { AppDispatch, RootState } from "@/store/store";
 import { Socket, io } from "socket.io-client";
 import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addNotification, markAllAsRead } from "@/store/notificationSlice";
+import { addNotification } from "@/store/notificationSlice";
 import { INotification } from "@/Interface/interface";
 
 export const useSocket = () => {
   const dispatch = useDispatch<AppDispatch>();
   const socketRef = useRef<Socket | null>(null);
   const { user } = useSelector((state: RootState) => state.auth);
-
+  const SOCKET_URL = process.env.NEXT_SOCKET;
   useEffect(() => {
-    // Only initialize the socket once
     if (!socketRef.current) {
-      const socket = io("http://localhost:5000", {
+      console.log("Initializing socket connection...");
+      const socket = io(SOCKET_URL, {
         transports: ["websocket"],
         withCredentials: true,
         reconnection: true,
@@ -28,51 +29,40 @@ export const useSocket = () => {
       socket.on("connect", () => {
         console.log("Socket connected:", socket.id);
 
-        // Only authenticate when the user is available and hasn't been authenticated
         if (user?.id) {
+          console.log("Authenticating user:", user.id);
           socket.emit("authenticate", user.id);
-          console.log("Authenticated user:", user.id);
         }
       });
 
-      socket.on("new-notification", (notification: INotification) => {
-        console.log("New notification:", notification);
-        dispatch(addNotification(notification));
+      socket.on("authenticated", () => {
+        console.log("Socket authenticated successfully");
       });
-      socket.on("notifications-marked-read", () => {
-        console.log("All notifications marked as read");
-        dispatch(markAllAsRead());
+
+      socket.on("new-notification", (notification: INotification) => {
+        console.log("New notification received:", notification);
+        dispatch(addNotification(notification));
       });
 
       socket.on("connect_error", (err) => {
-        console.log("Socket connection error:", err);
+        console.error("Socket connection error:", err);
       });
 
-      socket.on("reconnect_attempt", (attempt) => {
-        console.log(`Reconnect attempt: ${attempt}`);
-        // Optionally: Handle reconnect attempts or show a loading/reconnecting state.
-      });
-
-      socket.on("reconnect", () => {
-        console.log("Socket reconnected!");
-        // Optionally: Re-fetch some data or send additional requests upon reconnection.
-      });
-
-      socket.on("disconnect", () => {
-        console.log("Socket disconnected");
+      socket.on("disconnect", (reason) => {
+        console.log("Socket disconnected, reason:", reason);
       });
     }
 
-    // Clean up when the component unmounts or when the user changes
     return () => {
       if (socketRef.current) {
-        socketRef.current.off("new-notification");
-        socketRef.current.off("notifications-marked-read");
+        console.log("Cleaning up socket connection");
+        socketRef.current.off("new-notification"); // Only remove what was added here
+        socketRef.current.off("connect");
         socketRef.current.disconnect();
         socketRef.current = null;
       }
     };
-  }, [user?.id, dispatch]); // Only re-run when user.id changes
+  }, [user?.id, dispatch]);
 
   return socketRef.current;
 };
