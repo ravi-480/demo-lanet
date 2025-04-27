@@ -3,9 +3,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import http from "http";
-import app from "./app";
-import connectDB from "./config/db";
-import { initializeSocketIP } from "./utils/socketUtils";
+import app from "../app";
+import connectDB from "../config/db";
+import { initializeSocketIP } from "../utils/socketUtils";
 
 // Connect to MongoDB
 connectDB();

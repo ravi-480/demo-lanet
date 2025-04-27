@@ -1,0 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const eventControllers_1 = require("../controllers/eventControllers");
+const Cloudinary_1 = require("../utils/Cloudinary");
+const authMiddleware_1 = require("../middleware/authMiddleware");
+const router = (0, express_1.Router)();
+router.use(authMiddleware_1.authenticate);
+router.post("/create-new-event", Cloudinary_1.uploadEventImage, eventControllers_1.createEvent);
+router.get("/", eventControllers_1.fetchEvents);
+router.get("/:id", eventControllers_1.fetchById);
+router.put("/updateEvent", Cloudinary_1.uploadEventImage, eventControllers_1.updateEvent);
+router.delete("/deleteEvent/:id", eventControllers_1.deleteEvent);
+exports.default = router;
