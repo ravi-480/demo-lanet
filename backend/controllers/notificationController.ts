@@ -1,59 +1,51 @@
 import { asyncHandler } from "../utils/asyncHandler";
 import { Request, Response } from "express";
-import Event from "../models/eventModel";
-import Notification from "../models/notificationModel";
-import ApiError from "../utils/ApiError";
+import { sendResponse } from "../utils/responseHandler";
 import { getIO } from "../utils/socketUtils";
+import {
+  createNotificationService,
+  markAllReadService,
+  getNotificationsForUserService,
+} from "../services/notificationService";
 
 export const createNewNotification = asyncHandler(
   async (req: Request, res: Response): Promise<any> => {
-    const { eventId, senderId, recipientId, message, type, metadata } =
-      req.body;
+    const notification = await createNotificationService(req.body);
 
-    let targetUserId = recipientId;
-
-    if (!targetUserId) {
-      const event = await Event.findById(eventId);
-      if (!event) {
-        throw new ApiError(404, "Event not found");
-      }
-      targetUserId = event.creator.toString();
+    // Emit socket event for real-time update
+    const io = getIO();
+    if (io) {
+      io.to(`user:${notification.userId}`).emit(
+        "new-notification",
+        notification
+      );
     }
 
-    // Create the notification
-    const notification = await Notification.create({
-      userId: targetUserId,
-      eventId,
-      type,
-      message,
-      metadata: {
-        ...metadata,
-        senderId,
-      },
+    return sendResponse(res, 201, true, "Notification created successfully", {
+      notification,
     });
-
-    return res.status(201).json({ success: true, notification });
   }
 );
 
 export const markAllRead = asyncHandler(
   async (req: Request, res: Response): Promise<any> => {
     const { userId } = req.body;
-    if (!userId) {
-      throw new ApiError(400, "User ID is required");
-    }
-    await Notification.updateMany(
-      { userId, status: "unread" },
-      { $set: { status: "read" } }
-    );
 
+    await markAllReadService(userId);
+
+    // Emit socket event for real-time update
     const io = getIO();
-    io.to(`user:${userId}`).emit("notifications-marked-read");
+    if (io) {
+      io.to(`user:${userId}`).emit("notifications-marked-read");
+    }
 
-    return res.status(200).json({
-      status: "success",
-      msg: "All notification marked as Read successfully",
-    });
+    return sendResponse(
+      res,
+      200,
+      true,
+      "All notifications marked as Read successfully",
+      null
+    );
   }
 );
 
@@ -61,17 +53,10 @@ export const getNotificationForUser = asyncHandler(
   async (req: Request, res: Response): Promise<any> => {
     const userId = req.query.userId as string;
 
-    if (!userId) {
-      throw new ApiError(400, "User Id is required");
-    }
+    const notifications = await getNotificationsForUserService(userId);
 
-    const notifications = await Notification.find({
-      userId,
-      status: "unread",
-    })
-      .sort({ createdAt: -1 })
-      .limit(20);
-
-    return res.status(200).json({ success: true, notifications });
+    return sendResponse(res, 200, true, "Notifications fetched successfully", {
+      notifications,
+    });
   }
 );

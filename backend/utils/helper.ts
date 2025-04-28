@@ -1,5 +1,6 @@
-import Notification from "../models/notificationModel";
 import { getIO } from "./socketUtils";
+import { createNotificationService } from "../services/notificationService";
+
 export const createNotification = async (
   userId: string,
   eventId: string,
@@ -7,15 +8,16 @@ export const createNotification = async (
   type: string,
   metadata: any
 ) => {
-  const notification = await Notification.create({
-    userId,
+  const notification = await createNotificationService({
     eventId,
+    senderId: metadata.senderId || "",
+    recipientId: userId,
     message,
     type,
-    status: "unread",
     metadata,
   });
 
+  // Emit real-time notification via socket
   const io = getIO();
   if (io) {
     io.to(`user:${userId}`).emit("new-notification", notification);

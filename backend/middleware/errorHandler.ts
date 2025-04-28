@@ -9,10 +9,34 @@ export const errorConverter = (
 ) => {
   let error = err;
 
+  // Mongoose validation error
+  if (err.name === "ValidationError") {
+    const message = Object.values(err.errors)
+      .map((val: any) => val.message)
+      .join(", ");
+    error = new ApiError(400, message, true, err.stack);
+  }
+
+  // Mongoose duplicate key error
+  if (err.code === 11000) {
+    const field = Object.keys(err.keyValue)[0];
+    const message = `Duplicate value for ${field}`;
+    error = new ApiError(409, message, true, err.stack);
+  }
+
+  // JWT errors
+  if (err.name === "JsonWebTokenError") {
+    error = new ApiError(401, "Invalid token", true, err.stack);
+  }
+
+  if (err.name === "TokenExpiredError") {
+    error = new ApiError(401, "Token expired", true, err.stack);
+  }
+
+  // Default error conversion
   if (!(error instanceof ApiError)) {
     const statusCode = error.statusCode || 500;
     const message = error.message || "Internal Server Error";
-
     error = new ApiError(statusCode, message, false, err.stack);
   }
 

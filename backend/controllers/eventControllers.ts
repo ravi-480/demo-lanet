@@ -101,8 +101,6 @@ export const fetchEvents = async (
 // fetch events by id
 export const fetchById = asyncHandler(async (req: Request, res: Response) => {
   try {
-    console.log("helloooooooooo");
-
     const eventId = req.params.id;
     console.log(eventId);
 
@@ -160,22 +158,18 @@ export const updateEvent = asyncHandler(
     }
     const updatedData = buildEventData(req.body, image || undefined);
 
-    try {
-      const updatedEvent = await Event.findByIdAndUpdate(eventId, updatedData, {
-        new: true,
-      });
+    const updatedEvent = await Event.findByIdAndUpdate(eventId, updatedData, {
+      new: true,
+    });
 
-      if (!updatedEvent) {
-        throw new ApiError(404, "Event not found");
-      }
-
-      return res.status(200).json({
-        success: true,
-        message: "Event updated successfully",
-      });
-    } catch (error) {
-      throw new ApiError(500, "Failed to update data");
+    if (!updatedEvent) {
+      throw new ApiError(404, "Event not found");
     }
+
+    return res.status(200).json({
+      success: true,
+      message: "Event updated successfully",
+    });
   }
 );
 

@@ -23,7 +23,7 @@ api.interceptors.response.use(
   (response) => {
     if (response.config.method !== "get") {
       console.log(response);
-      
+
       const successMessage =
         response.data?.message || "Action completed successfully!";
 
@@ -43,8 +43,22 @@ api.interceptors.response.use(
       return Promise.reject(new Error("SERVER_DOWN"));
     }
 
+    const status = error.response?.status;
+
+    if (status === 429) {
+      const message =
+        error.response?.data?.message ||
+        "Too many requests, please try again later.";
+
+      toast.error(message, {
+        id: "rate-limit",
+      });
+
+      return Promise.reject(new Error("RATE_LIMIT"));
+    }
+
     if (
-      error.response?.status === 401 &&
+      status === 401 &&
       !originalRequest._retry &&
       originalRequest.url !== "/auth/refresh-token"
     ) {
@@ -69,8 +83,6 @@ api.interceptors.response.use(
         return Promise.reject(new Error("AUTH_ERROR"));
       }
     }
-
-    const status = error.response?.status;
 
     if (status !== 401 && status !== 404 && status >= 500) {
       const message =

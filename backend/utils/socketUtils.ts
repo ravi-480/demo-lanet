@@ -1,11 +1,11 @@
 import { Server as SocketIOServer } from "socket.io";
 import { Server as HttpServer } from "http";
 import Event from "../models/eventModel";
-import Notification from "../models/notificationModel";
+import { createNotification } from "./helper";
 
 let io: SocketIOServer;
 
-export const initializeSocketIP = (httpServer: HttpServer) => {
+export const initializeSocketIO = (httpServer: HttpServer) => {
   io = new SocketIOServer(httpServer, {
     cors: {
       origin: "http://localhost:3000",
@@ -26,6 +26,7 @@ export const initializeSocketIP = (httpServer: HttpServer) => {
     socket.on("disconnect", () => {
       console.log("Client disconnected:", socket.id);
     });
+
     socket.on("notify-organizer", async (data) => {
       try {
         const { eventId, senderId, type, message, metadata } = data;
@@ -34,24 +35,26 @@ export const initializeSocketIP = (httpServer: HttpServer) => {
         const event = await Event.findById(eventId);
         if (!event) {
           console.log("Event not found:", eventId);
+          socket.emit("notification-sent", {
+            success: false,
+            error: "Event not found",
+          });
           return;
         }
 
         const organizerId = event.creator.toString();
 
-        // Create a new notification
-        const notification = await Notification.create({
-          userId: organizerId,
+        // Create notification using helper (which uses service)
+        const notification = await createNotification(
+          organizerId,
           eventId,
           message,
           type,
-          metadata: { ...metadata, senderId },
-        });
+          { ...metadata, senderId }
+        );
 
-        // Emit the notification to the specific user's room
-        io.to(`user:${organizerId}`).emit("new-notification", notification);
+        // Send confirmation back to the sender
         socket.emit("notification-sent", { success: true, notification });
-
         console.log("Notification sent to organizer:", organizerId);
       } catch (error) {
         console.error("Error sending notification:", error);
@@ -67,7 +70,3 @@ export const initializeSocketIP = (httpServer: HttpServer) => {
 };
 
 export const getIO = () => io;
-
-
-
-
