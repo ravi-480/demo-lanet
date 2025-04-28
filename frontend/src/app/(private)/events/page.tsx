@@ -2,22 +2,8 @@
 import LoadingSpinner from "@/app/Components/Loader/LoadingSpinner";
 import Welcome from "../../Components/DashBoard/Welcome";
 import dynamic from "next/dynamic";
-
-const EventDisplay = dynamic(
-  () => import("../../Components/DashBoard/EventDisplay"),
-  {
-    loading: () => <LoadingSpinner />,
-    ssr: false,
-  }
-);
-
-const EventCalendar = dynamic(
-  () => import("../../Components/DashBoard/EventCalendar"),
-  {
-    loading: () => <LoadingSpinner />,
-    ssr: false,
-  }
-);
+import EventCalendar from "../../Components/DashBoard/EventCalendar";
+import EventDisplay from "@/app/Components/DashBoard/EventDisplay";
 
 const Budget = dynamic(() => import("../../Components/DashBoard/Budget"), {
   loading: () => <LoadingSpinner />,

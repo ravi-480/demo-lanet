@@ -121,6 +121,31 @@ export const deleteEvent = createAsyncThunk(
   }
 );
 
+// update event budget
+
+export const adjustEventBudget = createAsyncThunk(
+  "event/adjustEvent",
+  async (
+    data: { eventId: string; adjustAmount: number },
+    { rejectWithValue }
+  ) => {
+    console.log(data);
+
+    try {
+      const response = await api.post(`/events/adjustBudget`, { data });
+
+      return response.data;
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        return rejectWithValue(
+          error.response?.data?.message || "Failed to adjust Event Budget"
+        );
+      }
+      return rejectWithValue("Failed to adjust Event Budget");
+    }
+  }
+);
+
 const eventSlice = createSlice({
   name: "event",
   initialState,
@@ -223,6 +248,20 @@ const eventSlice = createSlice({
           typeof action.payload == "string"
             ? action.payload
             : "Failed to delete Event";
+      })
+      .addCase(adjustEventBudget.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(adjustEventBudget.fulfilled, (state, action) => {
+        state.isLoading = false;
+      })
+      .addCase(adjustEventBudget.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error =
+          typeof action.payload === "string"
+            ? action.payload
+            : "Failed to adjust event budget";
       });
   },
 });

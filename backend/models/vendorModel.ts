@@ -16,10 +16,10 @@ const vendorSchema = new Schema(
     directionsLink: { type: String },
     phone: { type: String },
     price: { type: Number, required: true },
-    placeId: { type: String, required: true, unique: true },
+    placeId: { type: String, required: true },
     pricingUnit: { type: String, required: true },
     category: { type: String, required: true },
-    numberOfGuests: { type: Number, default: 0},
+    numberOfGuests: { type: Number, default: 0 },
     isIncludedInSplit: { type: Boolean, default: false },
     minGuestLimit: { type: Number }, // Added this field for minimum guest requirement
     addedBy: {

@@ -12,11 +12,49 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Props } from "@/Interface/interface";
 import { AppDispatch, RootState } from "@/store/store";
 import { getVendorsByEvent } from "@/store/vendorSlice";
-import { handleSendRequest } from "@/utils/helper";
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner";
 
-const SplitTabsDialog = ({ users, eventId }: Props) => {
+const SplitTabsDialog = ({ users, eventId, onClose }: Props) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleSendRequest = async (
+    usersWithCost: {
+      name: string;
+      email: string;
+      amount: number;
+      eventId: string;
+      _id: string;
+    }[]
+  ) => {
+    const recipients = usersWithCost.map((user) => user.email);
+    const amounts = usersWithCost.map((user) => user.amount);
+    const eventId = usersWithCost.map((user) => user.eventId);
+    const userId = usersWithCost.map((user) => user._id);
+    setLoading(true);
+    try {
+      await axios.post("/vendors/send-mail", {
+        recipients,
+        amounts,
+        eventId,
+        userId,
+      });
+      toast.success("Emails sent successfully!");
+      setLoading(false);
+      onClose();
+    } catch (err: unknown) {
+      setLoading(false);
+      if (err instanceof Error) {
+        toast.error(`Failed to send email: ${err.message}`);
+      } else {
+        toast.error("Failed to send email: An unknown error occurred.");
+      }
+      alert("Something went wrong.");
+    }
+  };
+
   const [mode, setMode] = useState<"equal" | "custom">("equal");
   const [customSplit, setCustomSplit] = useState<string[]>(
     Array(users.length).fill("")
@@ -179,7 +217,13 @@ const SplitTabsDialog = ({ users, eventId }: Props) => {
         disabled={isCustomInvalid || vendors.length === 0}
         className="bg-cyan-500 mt-3 hover:bg-cyan-600 cursor-pointer"
       >
-        {vendors.length === 0 ? "Add Vendors First" : "Send Request"}
+        {loading ? (
+          <span>Sending...</span>
+        ) : vendors.length === 0 ? (
+          "Add Vendors First"
+        ) : (
+          "Send Request"
+        )}
       </Button>
     </Tabs>
   );

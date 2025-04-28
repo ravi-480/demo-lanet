@@ -22,7 +22,6 @@ const EventHeader = ({ event }: { event: IEvent }) => {
     dispatch(deleteEvent(event._id))
       .unwrap()
       .then(() => {
-        toast.success("Event Deleted successfully");
         router.push("/events");
       })
       .catch(() => toast.error("Error deleting event"));

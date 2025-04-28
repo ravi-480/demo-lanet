@@ -15,7 +15,6 @@ class ApiError extends Error {
     if (stack) {
       this.stack = stack;
     } else {
-      // Use type assertion to avoid TypeScript error
       (Error as any).captureStackTrace?.(this, this.constructor);
     }
   }

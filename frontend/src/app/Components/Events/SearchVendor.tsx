@@ -221,7 +221,7 @@ const SearchVendor = ({
                 handleSearchSubmit(e);
               }
             }}
-            className="pr-10"
+            className="pr-10 border border-gray-500"
           />
           <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
         </div>

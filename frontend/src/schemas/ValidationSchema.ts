@@ -14,7 +14,11 @@ export const signupformSchema = z
     password: z
       .string()
       .trim()
-      .min(8, { message: "Password must be at least 8 characters." }),
+      .min(8, { message: "Password must be at least 8 characters." })
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+        "password should be mixture of one uppercase, lowecase, number & special character"
+      ),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -22,10 +26,7 @@ export const signupformSchema = z
     path: ["confirmPassword"],
   });
 
-
-
-export   const loginformSchema = z.object({
-    email: z.string().email({ message: "Please enter a valid email address." }),
-    password: z.string().min(1, { message: "Password is required." }),
-  });
-  
+export const loginformSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email address." }),
+  password: z.string().min(1, { message: "Password is required." }),
+});

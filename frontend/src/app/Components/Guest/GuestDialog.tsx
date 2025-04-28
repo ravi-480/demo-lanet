@@ -89,7 +89,6 @@ const GuestDialog = ({
           })
         );
         if (updateSingleGuest.fulfilled.match(result)) {
-          toast.success("Guest updated successfully");
           await dispatch(fetchGuests(eventId));
           handleClose();
         } else {
@@ -107,7 +106,6 @@ const GuestDialog = ({
           } as Guest)
         );
         if (addSingleGuest.fulfilled.match(result)) {
-          toast.success("Guest added successfully");
           await dispatch(fetchGuests(eventId));
           handleClose();
         } else {
@@ -161,6 +159,17 @@ const GuestDialog = ({
               <div className="col-span-3">
                 <Input
                   placeholder="Enter guest name"
+                  onKeyDown={(e) => {
+                    if (/\d/.test(e.key)) {
+                      e.preventDefault(); // block number keys
+                    }
+                  }}
+                  onPaste={(e) => {
+                    const pasted = e.clipboardData.getData("text");
+                    if (/\d/.test(pasted)) {
+                      e.preventDefault(); // block pasting numbers
+                    }
+                  }}
                   {...register("name", { required: "Name is required" })}
                 />
                 {errors.name && (

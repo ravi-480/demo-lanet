@@ -15,7 +15,6 @@ const CreateEventForm = () => {
     dispatch(createEvent(data))
       .unwrap()
       .then(() => {
-        toast.success("Event created successfuly");
         router.push("/events");
       })
       .catch((error: unknown) => {

@@ -1,4 +1,3 @@
-// hooks/useSocket.ts
 import { AppDispatch, RootState } from "@/store/store";
 import { Socket, io } from "socket.io-client";
 import { useEffect, useRef } from "react";
@@ -10,7 +9,8 @@ export const useSocket = () => {
   const dispatch = useDispatch<AppDispatch>();
   const socketRef = useRef<Socket | null>(null);
   const { user } = useSelector((state: RootState) => state.auth);
-  const SOCKET_URL = process.env.NEXT_SOCKET;
+  const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL;
+
   useEffect(() => {
     if (!socketRef.current) {
       console.log("Initializing socket connection...");

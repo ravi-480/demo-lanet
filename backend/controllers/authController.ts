@@ -103,6 +103,7 @@ export const refreshToken = asyncHandler(
 
     res.status(200).json({
       success: true,
+      message: "Login successful!",
       data: {
         accessToken,
       },

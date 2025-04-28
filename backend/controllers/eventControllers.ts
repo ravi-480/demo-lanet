@@ -197,3 +197,31 @@ export const deleteEvent = asyncHandler(async (req: Request, res: Response) => {
     .status(201)
     .json({ success: true, message: "Event Deleted successfully" });
 });
+
+// adjust event budget amount
+
+export const adjustEventBudget = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { eventId, adjustAmount } = req.body.data;
+
+    if (!eventId || adjustAmount === undefined) {
+      throw new ApiError(400, "Event ID and adjust amount are required.");
+    }
+    const event = await Event.findById(eventId);
+    if (!event) throw new ApiError(404, "Event Not Found");
+    if (event.budget.allocated > event.budget.spent) {
+      throw new ApiError(
+        400,
+        "Allocated budget is already greater than spent amount."
+      );
+    }
+    event.budget.allocated = event.budget.allocated + adjustAmount;
+
+    await event.save();
+    res.status(200).json({
+      success: true,
+      message: "Budget updated successfully",
+      updatedBudget: event.budget,
+    });
+  }
+);

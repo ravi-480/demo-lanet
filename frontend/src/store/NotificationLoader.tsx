@@ -18,7 +18,9 @@ const NotificationLoader = () => {
   const hasFetchedNotificationsRef = useRef(false);
 
   useEffect(() => {
-    if (!user?.id || hasFetchedNotificationsRef.current) return;
+    console.log(user?.id);
+
+    if (!user?.id) return;
 
     dispatch(fetchNotificationStart());
 

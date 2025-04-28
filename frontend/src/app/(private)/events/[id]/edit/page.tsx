@@ -24,7 +24,6 @@ const EditEvent = () => {
     dispatch(updateEvent(formData))
       .unwrap()
       .then(() => {
-        toast.success("Event updated successfully");
         router.push("/events");
       })
       .catch((err: unknown) => {

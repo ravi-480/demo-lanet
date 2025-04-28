@@ -27,6 +27,7 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
   const [searchFilter, setSearchFilter] = useState("");
   const [open, setOpen] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [editGuest, setEditGuest] = useState<Guest | null>(null);
   const [showMinGuestAlert, setShowMinGuestAlert] = useState(false);
   const [preservedVendors, setPreservedVendors] = useState<
@@ -46,8 +47,10 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
     }
   }, [dispatch, eventId]);
 
-  const refreshData = () => {
-    dispatch(fetchGuests(eventId));
+  const refreshData = async () => {
+    setIsRefreshing(true);
+    await dispatch(fetchGuests(eventId));
+    setIsRefreshing(false);
   };
 
   // Filter and paginate the guest data
@@ -79,11 +82,6 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
       if (result.preservedVendors && result.preservedVendors.length > 0) {
         setPreservedVendors(result.preservedVendors);
         setShowMinGuestAlert(true);
-        toast.info(
-          "All guests removed. Some vendor budgets were preserved due to minimum guest requirements."
-        );
-      } else {
-        toast.success("All guests removed successfully");
       }
     } catch (error: unknown) {
       const err = error as { message?: string };
@@ -122,7 +120,10 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
                 onClick={refreshData}
                 className="flex items-center text-sm text-gray-300 hover:text-white"
               >
-                <RefreshCcw className="mr-1" size={16} />
+                <RefreshCcw
+                  className={`mr-1 ${isRefreshing ? "animate-spin" : ""}`}
+                  size={16}
+                />
                 <span className="hidden sm:inline">Refresh</span>
               </button>
 

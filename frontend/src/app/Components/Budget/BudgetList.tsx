@@ -72,7 +72,6 @@ const BudgetList = ({ items }: { items: VendorType[] }) => {
     if (confirm("Are you sure you want to remove this vendor?")) {
       try {
         await dispatch(removeAddedVendor(vendorId));
-        toast.success("Vendor removed successfully");
         if (items.length > 0) {
           dispatch(
             getVendorsByEvent({ eventId: items[0].event, includeSplit: false })
@@ -80,7 +79,6 @@ const BudgetList = ({ items }: { items: VendorType[] }) => {
         }
       } catch (error) {
         toast.error("Failed to remove vendor");
-        console.error(error);
       }
     }
   };

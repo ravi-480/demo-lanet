@@ -4,8 +4,9 @@ import { asyncHandler } from "../utils/asyncHandler";
 import { Request, Response } from "express";
 import { sendEmail } from "../utils/emailService";
 import { v4 as uuidv4 } from "uuid";
+import ApiError from "../utils/ApiError";
+import { log } from "util";
 const axios = require("axios");
-
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -26,8 +27,6 @@ export const getVendor = asyncHandler(async (req: Request, res: Response) => {
     throw new Error("Missing SerpAPI key in environment variables");
   }
 
-  
-
   const serpRes = await axios.get("https://serpapi.com/search.json", {
     params: {
       engine: "google_local",
@@ -36,7 +35,6 @@ export const getVendor = asyncHandler(async (req: Request, res: Response) => {
       api_key: process.env.SERPAPI_KEY,
     },
   });
-  
 
   const allVendors = serpRes.data.local_results || [];
   const perPage = 6;
@@ -55,44 +53,34 @@ export const getVendor = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-export const addVendors = async (req: Request, res: Response) => {
-  try {
-    const vendorData = req.body;
+export const addVendors = asyncHandler(async (req: Request, res: Response) => {
+  const vendorData = req.body;
 
-    const existing = await Vendor.findOne({ placeId: vendorData.placeId });
-    if (existing) {
-      res.status(400).json({ success: false, message: "Vendor already added" });
-      return;
-    }
-
-    const vendor = await Vendor.create(vendorData);
-
-    // Find the related event and cast as EventDocument
-    const event = await Event.findById(vendor.event);
-
-    if (!event) {
-      res
-        .status(404)
-        .json({ success: false, message: "Associated event not found" });
-      return;
-    }
-
-    // Update the event budget
-    event.budget.spent += vendor.price;
-    await event.save();
-
-    res
-      .status(201)
-      .json({ sucess: true, message: "Vendor added successfully", vendor });
-  } catch (err: any) {
-    console.error("Vendor creation failed:", err);
-    res.status(500).json({
-      success: false,
-      message: "Failed to create vendor",
-      error: err.message,
-    });
+  const existing = await Vendor.findOne({
+    placeId: vendorData.placeId,
+    event: vendorData.event,
+  });
+  if (existing) {
+    throw new ApiError(400, "vendor already added");
   }
-};
+
+  const vendor = await Vendor.create(vendorData);
+
+  // Find the related event and cast as EventDocument
+  const event = await Event.findById(vendor.event);
+
+  if (!event) {
+    throw new ApiError(404, "Associated event not found");
+  }
+
+  // Update the event budget
+  event.budget.spent += vendor.price;
+  await event.save();
+
+  res
+    .status(201)
+    .json({ sucess: true, message: "Vendor added successfully", vendor });
+});
 
 export const getVendorsByEvent = asyncHandler(
   async (req: Request, res: Response) => {
@@ -115,15 +103,13 @@ export const getByUser = asyncHandler(async (req: Request, res: Response) => {
   const userId = reqUser.user.id;
 
   if (!userId) {
-    return res.status(401).json({ success: false, message: "unauthorized" });
+    throw new ApiError(401, "unauthorized");
   }
   const vendors = await Vendor.find({ addedBy: userId }).sort({
     createdAt: -1,
   });
   if (!vendors) {
-    return res
-      .status(404)
-      .json({ success: false, message: "no vendors found" });
+    throw new ApiError(404, "no vendors found");
   }
 
   return res.status(200).json(vendors);
@@ -136,7 +122,7 @@ export const addVendorInSplitOrRemove = asyncHandler(
 
     const vendor = await Vendor.findById(vendorId);
 
-    if (!vendor) return res.status(404).json({ message: "Event not found" });
+    if (!vendor) throw new ApiError(404, "Event not found");
 
     vendor.isIncludedInSplit = !vendor.isIncludedInSplit;
 
@@ -157,7 +143,7 @@ export const addUserInSplit = asyncHandler(
 
     const event = await Event.findById(id);
     if (!event) {
-      return res.status(404).json({ message: "Event not found" });
+      throw new ApiError(404, "Event not found");
     }
 
     // Check if user with same email already exists
@@ -166,9 +152,7 @@ export const addUserInSplit = asyncHandler(
     );
 
     if (alreadyIncluded) {
-      return res
-        .status(400)
-        .json({ message: "User already included in split" });
+      throw new ApiError(400, "User already included in split");
     }
 
     event.includedInSplit.push(user);
@@ -206,10 +190,9 @@ export const sendMailToUser = asyncHandler(async (req, res) => {
       });
     }
 
-    res.status(200).json({ message: "Emails sent successfully!" });
+    return res.status(200).json({ message: "Emails sent successfully!" });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to send emails." });
+    throw new ApiError(500, "Failed to send emails.");
   }
 });
 
@@ -219,15 +202,12 @@ export const removeAddedVendor = asyncHandler(
   async (req: Request, res: Response) => {
     const { id } = req.params;
 
-    if (!id) return res.status(400).json({ message: "Vendor ID is required" });
+    if (!id) throw new ApiError(400, "Vendor ID is required");
 
     // Find and delete the vendor
     const vendor = await Vendor.findByIdAndDelete(id);
 
-    if (!vendor)
-      return res
-        .status(404)
-        .json({ success: false, message: "Vendor not found" });
+    if (!vendor) throw new ApiError(404, "Vendor not found");
 
     // Subtract the price from the event's spent budget
     const updatedEvent = await Event.findByIdAndUpdate(
@@ -236,10 +216,7 @@ export const removeAddedVendor = asyncHandler(
       { new: true }
     );
 
-    if (!updatedEvent)
-      return res
-        .status(404)
-        .json({ success: false, message: "Event not found" });
+    if (!updatedEvent) throw new ApiError(404, "Event not found");
 
     return res.status(200).json({
       success: true,
@@ -255,17 +232,13 @@ export const confirmPayment = asyncHandler(
     const { eventId, userId } = req.body;
     const event = await Event.findById(eventId);
     if (!event) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Event not found" });
+      throw new ApiError(404, "Event not found");
     }
     const user = event?.includedInSplit.find(
       (item: any) => item._id?.toString() == userId
     );
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: "failed", message: "Invalid User Id" });
+      throw new ApiError(400, "Invalid User Id");
     }
 
     user.status = "Paid";
@@ -282,14 +255,12 @@ export const checkPaymentStatus = asyncHandler(
   async (req: Request, res: Response) => {
     const { eventId, userId } = req.query;
     const event = await Event.findById(eventId);
-    if (!event) return res.status(404).json({ message: "Event not found" });
+    if (!event) throw new ApiError(404, "Event not found");
     const user = event?.includedInSplit.find(
       (item: any) => item._id?.toString() == userId
     );
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Invalid User Id" });
+      throw new ApiError(400, "Invalid User Id");
     }
     return res.status(200).json({ success: true, status: user.status });
   }
@@ -302,7 +273,7 @@ export const removeFromSplit = asyncHandler(
     const { userId, id } = req.body;
 
     const event = await Event.findById(id);
-    if (!event) return res.status(404).json({ message: "Event not found" });
+    if (!event) throw new ApiError(404, "Event not found");
 
     event.includedInSplit = event?.includedInSplit.filter(
       (person: any) => person._id.toString() !== userId
@@ -320,108 +291,85 @@ export const editUserInSplit = asyncHandler(
     const { user, id } = req.body;
 
     if (!user || !id) {
-      res.status(400);
-      throw new Error("Missing required fields: user details or event ID");
-    }
-
-    try {
-      const event = await Event.findById(id);
-
-      if (!event) {
-        res.status(404);
-        throw new Error("Event not found");
-      }
-
-      // Find the user in the includedInSplit array
-      const userIndex = event.includedInSplit.findIndex(
-        (u: any) => u._id.toString() === user._id
+      throw new ApiError(
+        400,
+        "Missing required fields: user details or event ID"
       );
-
-      if (userIndex === -1) {
-        res.status(404);
-        throw new Error("User not found in split");
-      }
-
-      // Update the user details
-      event.includedInSplit[userIndex].name = user.name;
-      event.includedInSplit[userIndex].email = user.email;
-
-      await event.save();
-
-      return res.status(200).json({
-        success: true,
-        message: "User updated successfully",
-        data: event.includedInSplit[userIndex],
-      });
-    } catch (error: any) {
-      res.status(500);
-      throw new Error(error.message || "Failed to update user");
     }
+
+    const event = await Event.findById(id);
+
+    if (!event) {
+      throw new ApiError(404, "Event not found");
+    }
+
+    // Find the user in the includedInSplit array
+    const userIndex = event.includedInSplit.findIndex(
+      (u: any) => u._id.toString() === user._id
+    );
+
+    if (userIndex === -1) {
+      throw new ApiError(404, "User not found in split");
+    }
+
+    // Update the user details
+    event.includedInSplit[userIndex].name = user.name;
+    event.includedInSplit[userIndex].email = user.email;
+
+    await event.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      data: event.includedInSplit[userIndex],
+    });
   }
 );
 
 // add manual expense
 export const addManualExpense = asyncHandler(
   async (req: Request, res: Response) => {
-    try {
-      const { title, price, status, eventId, pricingUnit } = req.body;
-      console.log(req.body);
+    const { title, price, status, eventId, pricingUnit } = req.body;
+    console.log(req.body);
 
-      if (!title || !price || !status || !eventId || !pricingUnit) {
-        return res.status(400).json({
-          success: false,
-          message: "Missing required fields",
-        });
-      }
-
-      const priceAsNumber = Number(price);
-
-      // Find the event
-      const event = await Event.findById(eventId);
-      if (!event) {
-        return res.status(404).json({
-          success: false,
-          message: "Associated event not found",
-        });
-      }
-
-      const addedBy = event.creator;
-      if (!addedBy) {
-        return res.status(500).json({
-          success: false,
-          message: "Event creator not found",
-        });
-      }
-      const randomPlaceId = uuidv4();
-
-      const manualVendor = await Vendor.create({
-        title,
-        price: priceAsNumber,
-        category: status,
-        pricingUnit,
-        event: eventId,
-        placeId: randomPlaceId,
-        addedBy,
-
-        isIncludedInSplit: false,
-      });
-
-      // Update event budget
-      event.budget.spent += priceAsNumber;
-      await event.save();
-
-      res.status(201).json({
-        success: true,
-        message: "Manual expense added successfully",
-        vendor: manualVendor,
-      });
-    } catch (error) {
-      console.error("Error adding manual expense:", error);
-      res.status(500).json({
-        success: false,
-        message: "Failed to add manual expense",
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
+    if (!title || !price || !status || !eventId || !pricingUnit) {
+      throw new ApiError(400, "Missing required fields");
     }
+
+    const priceAsNumber = Number(price);
+
+    // Find the event
+    const event = await Event.findById(eventId);
+    if (!event) {
+      throw new ApiError(404, "Associated event not found");
+    }
+
+    const addedBy = event.creator;
+    if (!addedBy) {
+      throw new ApiError(404, "Event creator not found");
+    }
+    const randomPlaceId = uuidv4();
+
+    const manualVendor = await Vendor.create({
+      title,
+      price: priceAsNumber,
+      category: status,
+      pricingUnit,
+      event: eventId,
+      placeId: randomPlaceId,
+      addedBy,
+
+      isIncludedInSplit: false,
+    });
+
+    // Update event budget
+    event.budget.spent += priceAsNumber;
+    await event.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Manual expense added successfully",
+      vendor: manualVendor,
+    });
   }
 );
