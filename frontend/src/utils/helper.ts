@@ -39,36 +39,6 @@ export const getEventStatus = (date?: string | Date): string => {
   }
 };
 
-export const handleSendRequest = async (
-  usersWithCost: {
-    name: string;
-    email: string;
-    amount: number;
-    eventId: string;
-    _id: string;
-  }[]
-) => {
-  const recipients = usersWithCost.map((user) => user.email);
-  const amounts = usersWithCost.map((user) => user.amount);
-  const eventId = usersWithCost.map((user) => user.eventId);
-  const userId = usersWithCost.map((user) => user._id);
-  try {
-    await axios.post("/vendors/send-mail", {
-      recipients,
-      amounts,
-      eventId,
-      userId,
-    });
-    alert("Emails sent!");
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      toast.error(`Failed to send email: ${err.message}`);
-    } else {
-      toast.error("Failed to send email: An unknown error occurred.");
-    }
-    alert("Something went wrong.");
-  }
-};
 
 // Get the number of upcoming events
 export const getNoOfUpcomingEvent = (events: IEvent[]) => {

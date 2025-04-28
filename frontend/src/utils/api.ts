@@ -20,7 +20,18 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (response.config.method !== "get") {
+      console.log(response);
+      
+      const successMessage =
+        response.data?.message || "Action completed successfully!";
+
+      toast.success(successMessage);
+    }
+
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
 
@@ -59,13 +70,16 @@ api.interceptors.response.use(
       }
     }
 
-    if (error.response?.status !== 401 && error.response?.status !== 404) {
+    const status = error.response?.status;
+
+    if (status !== 401 && status !== 404 && status >= 500) {
       const message =
         error.response?.data?.message ||
         error.message ||
         "Something went wrong";
+      console.log(error);
 
-      toast.error(message + "hh");
+      toast.error(message);
     }
 
     return Promise.reject(error);

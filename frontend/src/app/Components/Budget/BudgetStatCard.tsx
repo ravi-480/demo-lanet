@@ -1,7 +1,25 @@
+"use client";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { IEvent } from "@/Interface/interface";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/store/store";
+import { adjustEventBudget } from "@/store/eventSlice";
+import { toast } from "sonner";
 
 interface StatCardProps {
   title: string;
@@ -51,7 +69,9 @@ const StatCard = ({
 
 const BudgetStats = ({ eventBudget }: { eventBudget: IEvent | null }) => {
   if (!eventBudget?.budget) return null;
-
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [adjustAmount, setAdjustAmount] = useState<number>(0);
+  const dispatch = useDispatch<AppDispatch>();
   const totalBudget = Number(eventBudget.budget.allocated);
   const spent = Number(eventBudget.budget.spent);
   const remaining = totalBudget - spent;
@@ -63,16 +83,77 @@ const BudgetStats = ({ eventBudget }: { eventBudget: IEvent | null }) => {
       : 0;
   };
 
+  const handleBudgetAdjust = async () => {
+    try {
+      await dispatch(
+        adjustEventBudget({ eventId: eventBudget._id, adjustAmount })
+      ).unwrap();
+
+      setIsDialogOpen(false);
+
+      toast.success("Budget updated successfully!");
+    } catch (error: unknown) {
+      toast.error(` ${error} `);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {isOverBudget && (
-        <Alert variant="destructive" className="bg-red-50 border-red-300 mb-4">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle className="font-medium">Budget Warning</AlertTitle>
-          <AlertDescription>
-            You have exceeded your allocated budget by ₹
-            {Math.abs(remaining).toFixed(2)}
-          </AlertDescription>
+        <Alert
+          variant="destructive"
+          className="bg-red-50 flex items-center justify-between border-red-300 mb-4"
+        >
+          <div>
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle className="font-medium">Budget Warning</AlertTitle>
+            </div>
+            <AlertDescription>
+              You have exceeded your allocated budget by ₹{" "}
+              {Math.abs(remaining).toFixed(2)}
+            </AlertDescription>
+          </div>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                onClick={() => setIsDialogOpen(true)}
+                variant="outline"
+                className="border border-red-500 hover:text-red-600 cursor-pointer"
+              >
+                Adjust Budget
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Adjust Budget</DialogTitle>
+                <DialogDescription>
+                  Make changes to your Budget here. Click save when you're done.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="username" className="text-right">
+                    Adjust Amt :
+                  </Label>
+                  <Input
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setAdjustAmount(Number(e.target.value))
+                    }
+                    id="username"
+                    type="number"
+                    max={10000000}
+                    className="col-span-3"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button onClick={handleBudgetAdjust} type="button">
+                  Save changes
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </Alert>
       )}
 

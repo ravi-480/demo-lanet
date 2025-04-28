@@ -26,7 +26,7 @@ type ApiError = {
   message?: string;
 };
 
-const API_BASE_URL = process.env.BaseURL;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function RSVPRespond() {
   const searchParams = useSearchParams();

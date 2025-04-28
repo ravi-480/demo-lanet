@@ -101,7 +101,6 @@ const SplitOverviewClient = () => {
       ).unwrap();
 
       await refreshEventData();
-      toast.success("User added to split successfully!");
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
@@ -172,7 +171,6 @@ const SplitOverviewClient = () => {
         deleteUserFromSplit({ id: id as string, userId: userToDelete._id })
       ).unwrap();
       await refreshEventData();
-      toast.success("User removed successfully!");
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);

@@ -8,30 +8,31 @@ export const errorConverter = (
   next: NextFunction
 ) => {
   let error = err;
+
   if (!(error instanceof ApiError)) {
     const statusCode = error.statusCode || 500;
     const message = error.message || "Internal Server Error";
+
     error = new ApiError(statusCode, message, false, err.stack);
   }
+
   next(error);
 };
 
+// Middleware to handle all errors centrally
 export const errorHandler = (
   err: ApiError,
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const { statusCode, message } = err;
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
 
   const response = {
-    status: "error",
+    success: false,
     message,
-    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
   };
 
   res.status(statusCode).json(response);
 };
-
-
-

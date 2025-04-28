@@ -22,8 +22,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signupformSchema } from "@/schemas/ValidationSchema";
 import { SignupPayload } from "@/Interface/interface";
 import { toast } from "sonner";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 const SignupForm = () => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const { error: authError, status: authStatus } = useSelector(
@@ -46,9 +50,8 @@ const SignupForm = () => {
 
   const onSubmit = async (values: SignupPayload) => {
     const resultAction = await dispatch(signupUser(values));
-
     if (signupUser.fulfilled.match(resultAction)) {
-      toast.success(resultAction.payload.message);
+      
       router.push("/");
     } else {
       toast.error(resultAction.payload);
@@ -124,29 +127,45 @@ const SignupForm = () => {
             )}
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1 relative">
             <label htmlFor="password">Password</label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="********"
-              className="bg-transparent"
-              {...register("password")}
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="********"
+                className="bg-transparent pr-10 h-12" // Add padding-right and fixed height
+                {...register("password")}
+              />
+              <div
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                onClick={() => setShowPassword(!showPassword)} // Toggle show/hide for password
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </div>
+            </div>
             {errors.password && (
               <p className="text-sm text-red-500">{errors.password.message}</p>
             )}
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1 relative">
             <label htmlFor="confirmPassword">Confirm Password</label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              placeholder="********"
-              className="bg-transparent"
-              {...register("confirmPassword")}
-            />
+            <div className="relative">
+              <Input
+                id="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="********"
+                className="bg-transparent pr-10 h-12" // Add padding-right and fixed height
+                {...register("confirmPassword")}
+              />
+              <div
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)} // Toggle show/hide for confirm password
+              >
+                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </div>
+            </div>
             {errors.confirmPassword && (
               <p className="text-sm text-red-500">
                 {errors.confirmPassword.message}

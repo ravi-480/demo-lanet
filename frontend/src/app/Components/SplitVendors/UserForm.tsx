@@ -32,6 +32,17 @@ export const UserForm = ({
       <Input
         id="name"
         placeholder="Enter full name"
+        onKeyDown={(e) => {
+          if (/\d/.test(e.key)) {
+            e.preventDefault(); // block number keys
+          }
+        }}
+        onPaste={(e) => {
+          const pasted = e.clipboardData.getData("text");
+          if (/\d/.test(pasted)) {
+            e.preventDefault(); // block pasting numbers
+          }
+        }}
         className="border-gray-300 focus:border-cyan-500 focus:ring-cyan-500"
         {...register("name", { required: "Name is required" })}
       />

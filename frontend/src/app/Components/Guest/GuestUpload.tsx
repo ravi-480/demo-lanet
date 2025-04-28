@@ -43,7 +43,7 @@ const GuestUpload = ({ eventId }: GuestUploadProps) => {
     try {
       const result = await dispatch(uploadFile(formData));
       if (uploadFile.fulfilled.match(result)) {
-        toast.success("Guest file uploaded successfully");
+        
         dispatch(fetchGuests(eventId)); // refreshing
         setFile(null); // Reset file input
 

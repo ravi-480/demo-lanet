@@ -1,7 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import multer from "multer";
 
-console.log( process.env.CLOUDINARY_API_SECRET);
 
 
 cloudinary.config({

@@ -23,6 +23,7 @@ const BudgetManagement = ({ eventId }: { eventId: string }) => {
   const [isAddBudgetOpen, setIsAddBudgetOpen] = useState(false);
   const [searchFilter, setSearchFilter] = useState("");
   const [open, setOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [priceSortOrder, setPriceSortOrder] = useState<
     "lowToHigh" | "highToLow"
   >("highToLow");
@@ -55,9 +56,12 @@ const BudgetManagement = ({ eventId }: { eventId: string }) => {
     dispatch(removeAllVendor({ id: eventId, query: "vendor" }));
   };
 
-  const refreshData = () => {
-    dispatch(getVendorsByEvent({ eventId, includeSplit: false }));
-    dispatch(fetchById(eventId));
+  const refreshData = async () => {
+    setIsRefreshing(true);
+
+    await dispatch(getVendorsByEvent({ eventId, includeSplit: false }));
+    await dispatch(fetchById(eventId));
+    setIsRefreshing(false);
   };
 
   return (
@@ -67,7 +71,7 @@ const BudgetManagement = ({ eventId }: { eventId: string }) => {
           <Wallet className="mr-2" />
           Budget Management
         </h1>
-        <div className="flex  px-2 gap-2 w-full sm:w-auto">
+        <div className="flex gap-2 w-full sm:w-auto">
           <Link
             href="vendor-cart/splitted-vendors"
             className="w-full sm:w-auto"
@@ -90,25 +94,31 @@ const BudgetManagement = ({ eventId }: { eventId: string }) => {
         <CardHeader className="pb-2 sm:pb-3">
           <div className="flex flex-col gap-3">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-              <CardTitle className="flex flex-wrap items-center text-gray-200 gap-2 sm:gap-3">
-                <div className="text-gray-200 text-base sm:text-lg font-semibold">
-                  Expense Details
+              <CardTitle className="text-gray-200">
+                <div className="flex flex-wrap items-center justify-between w-full gap-2 sm:gap-4">
+                  <div className="flex items-center space-x-2 flex-wrap">
+                    <span className="text-gray-200 text-base sm:text-lg font-semibold">
+                      Expense Details
+                    </span>
+                    <div
+                      className="flex items-center gap-1 cursor-pointer"
+                      onClick={refreshData}
+                    >
+                      <RefreshCcw
+                        size={19}
+                        className={isRefreshing ? "animate-spin" : ""}
+                      />
+                      <span className="text-sm sm:text-base">sync</span>
+                    </div>
+                    <Button
+                      className="bg-red-500 hover:bg-red-600 text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-3 h-auto ml-2"
+                      onClick={() => setOpen(true)}
+                      disabled={items.length === 0}
+                    >
+                      Remove vendors
+                    </Button>
+                  </div>
                 </div>
-                <span className="flex items-center gap-1">
-                  <RefreshCcw
-                    onClick={refreshData}
-                    className="inline cursor-pointer"
-                    size={19}
-                  />
-                  <p className="text-sm sm:text-base">sync</p>
-                </span>
-                <Button
-                  className="bg-red-500 hover:bg-red-600 text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-3 h-auto"
-                  onClick={() => setOpen(true)}
-                  disabled={items.length === 0}
-                >
-                  Remove all vendors
-                </Button>
               </CardTitle>
               <ConfirmDialog
                 onOpenChange={setOpen}
@@ -119,8 +129,6 @@ const BudgetManagement = ({ eventId }: { eventId: string }) => {
                 description="Are you sure want to remove all vendors"
                 title="Remove all vendors"
               />
-            </div>
-            <div className="w-full">
               <BudgetFilters
                 searchFilter={searchFilter}
                 setSearchFilter={setSearchFilter}

@@ -239,6 +239,7 @@ export interface Vendor {
 export interface Props {
   eventId: string;
   users: SplitUser[];
+  onClose: () => void;
 }
 
 export interface Guest {

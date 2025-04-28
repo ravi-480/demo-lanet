@@ -7,38 +7,32 @@ import { getIO } from "../utils/socketUtils";
 
 export const createNewNotification = asyncHandler(
   async (req: Request, res: Response): Promise<any> => {
-    try {
-      const { eventId, senderId, recipientId, message, type, metadata } =
-        req.body;
+    const { eventId, senderId, recipientId, message, type, metadata } =
+      req.body;
 
-      // If no recipientId is provided, we need to find it from the event
-      let targetUserId = recipientId;
+    let targetUserId = recipientId;
 
-      if (!targetUserId) {
-        const event = await Event.findById(eventId);
-        if (!event) {
-          throw new ApiError(404, "Event not found");
-        }
-        targetUserId = event.creator.toString();
+    if (!targetUserId) {
+      const event = await Event.findById(eventId);
+      if (!event) {
+        throw new ApiError(404, "Event not found");
       }
-
-      // Create the notification
-      const notification = await Notification.create({
-        userId: targetUserId,
-        eventId,
-        type,
-        message,
-        metadata: {
-          ...metadata,
-          senderId,
-        },
-      });
-
-      return res.status(201).json({ success: true, notification });
-    } catch (error) {
-      console.error("Notification send error:", error);
-      throw new ApiError(500, "Internal server error");
+      targetUserId = event.creator.toString();
     }
+
+    // Create the notification
+    const notification = await Notification.create({
+      userId: targetUserId,
+      eventId,
+      type,
+      message,
+      metadata: {
+        ...metadata,
+        senderId,
+      },
+    });
+
+    return res.status(201).json({ success: true, notification });
   }
 );
 
@@ -65,24 +59,19 @@ export const markAllRead = asyncHandler(
 
 export const getNotificationForUser = asyncHandler(
   async (req: Request, res: Response): Promise<any> => {
-    try {
-      const userId = req.query.userId as string;
+    const userId = req.query.userId as string;
 
-      if (!userId) {
-        throw new ApiError(400, "User Id is required");
-      }
-
-      const notifications = await Notification.find({
-        userId,
-        status: "unread",
-      })
-        .sort({ createdAt: -1 })
-        .limit(20);
-
-      return res.status(200).json({ success: true, notifications });
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-      throw new ApiError(500, "Internal server error");
+    if (!userId) {
+      throw new ApiError(400, "User Id is required");
     }
+
+    const notifications = await Notification.find({
+      userId,
+      status: "unread",
+    })
+      .sort({ createdAt: -1 })
+      .limit(20);
+
+    return res.status(200).json({ success: true, notifications });
   }
 );
