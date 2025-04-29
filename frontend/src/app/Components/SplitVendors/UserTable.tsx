@@ -15,7 +15,7 @@ interface User {
   _id: string;
   name: string;
   email: string;
-  status: "pending" | "confirmed";
+  status: "pending" |  "Paid";
   joinedAt?: Date;
 }
 
@@ -64,7 +64,7 @@ export const UserTable = ({
             <TableCell>
               <span
                 className={`rounded-full py-1 px-3 text-xs font-medium ${
-                  user.status === "confirmed"
+                  user.status === "Paid"
                     ? "bg-green-500/20 text-green-400 border border-green-500/30"
                     : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
                 }`}

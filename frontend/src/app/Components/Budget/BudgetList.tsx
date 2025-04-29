@@ -21,21 +21,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { AppDispatch } from "@/store/store";
-import { addVendorInSplitOrRemove } from "@/store/splitSlice";
 import { getVendorsByEvent, removeAddedVendor } from "@/store/vendorSlice";
 import { VendorType } from "@/Interface/interface";
 
 interface VendorActionProps {
   item: VendorType;
   onRemove: (id: string) => void;
-  handleAddOrRemoveFromSplit: (id: string) => void;
 }
 
-const VendorActions = ({
-  item,
-  onRemove,
-  handleAddOrRemoveFromSplit,
-}: VendorActionProps) => {
+const VendorActions = ({ item, onRemove }: VendorActionProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -46,13 +40,6 @@ const VendorActions = ({
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className="text-gray-950"
-          onClick={() => item._id && handleAddOrRemoveFromSplit(item._id)}
-        >
-          {item.isIncludedInSplit ? "Remove Split" : "Add to Split"}
-        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => item._id && onRemove(item._id)}
@@ -83,10 +70,6 @@ const BudgetList = ({ items }: { items: VendorType[] }) => {
     }
   };
 
-  const handleAddOrRemoveFromSplit = (vendorId: string) => {
-    dispatch(addVendorInSplitOrRemove(vendorId));
-  };
-
   return (
     <div className="rounded-md border">
       <Table>
@@ -96,7 +79,7 @@ const BudgetList = ({ items }: { items: VendorType[] }) => {
             <TableHead className="text-gray-200">Category</TableHead>
             <TableHead className="text-gray-200">Amount</TableHead>
             <TableHead className="text-gray-200">Pricing unit</TableHead>
-            <TableHead className="text-gray-200">InSplit</TableHead>
+            <TableHead className="text-gray-200">Contact no</TableHead>
             <TableHead className="text-right text-gray-200">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -117,23 +100,9 @@ const BudgetList = ({ items }: { items: VendorType[] }) => {
                 </TableCell>
                 <TableCell>₹ {item.price}</TableCell>
                 <TableCell>{item.pricingUnit}</TableCell>
-                <TableCell>
-                  {item.isIncludedInSplit ? (
-                    <p className="text-green-300 bg-green-500/50 w-10 text-center py-[2px] rounded-xl">
-                      Yes
-                    </p>
-                  ) : (
-                    <p className="text-orange-300 font-semibold py-[2px] bg-orange-500/30 w-10 text-center rounded-xl px-3">
-                      No
-                    </p>
-                  )}
-                </TableCell>
+                <TableCell>{item.phone ? item.phone : "N/A"}</TableCell>
                 <TableCell className="text-right">
-                  <VendorActions
-                    item={item}
-                    handleAddOrRemoveFromSplit={handleAddOrRemoveFromSplit}
-                    onRemove={handleRemoveVendor}
-                  />
+                  <VendorActions item={item} onRemove={handleRemoveVendor} />
                 </TableCell>
               </TableRow>
             ))

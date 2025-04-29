@@ -219,17 +219,9 @@ export interface SplitUser {
   name: string;
   _id: string;
   email: string;
-  status: "pending" | "confirmed";
+  status: "pending" | "Paid";
   joinedAt?: Date | undefined;
 }
-
-// export interface SplitUser {
-//   userId: string;
-//   name: string;
-//   status: "pending" | "confirmed";
-//   email: string;
-//   joinedAt?: Date | undefined;
-// }
 
 export interface Vendor {
   title: string;

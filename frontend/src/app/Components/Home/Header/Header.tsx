@@ -4,7 +4,7 @@ import { Bell, Calendar } from "lucide-react";
 import { AuthButtons } from "./AuthButton";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
-import NotificationLoader from "@/store/NotificationLoader";
+// Remove this import: import NotificationLoader from "@/store/NotificationLoader";
 
 import {
   Popover,
@@ -68,7 +68,7 @@ const Header = () => {
             </nav>
 
             <div className="flex items-center">
-              {user?.id && <NotificationLoader />}
+              {/* Remove NotificationLoader from here */}
 
               <div className="flex items-center space-x-4">
                 <Popover>

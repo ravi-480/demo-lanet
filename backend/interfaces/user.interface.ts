@@ -71,10 +71,13 @@ export interface IEvent {
   includedInSplit: {
     _id?: string;
     userId: string;
-    status: string;
+    amount: number;
+    status: "pending" | "Paid" | "declined";
     name: string;
     email: string;
     joinedAt?: Date;
+    paymentId?: string | null;
+    paymentTimestamp?: Date | null;
   }[];
 
   eventType: string;

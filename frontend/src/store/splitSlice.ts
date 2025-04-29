@@ -3,11 +3,9 @@ import { RootState } from "./store";
 import api from "@/utils/api";
 
 interface Vendor {
-  // Define properties for vendor
   id: string;
   title: string;
   price: number;
-  // Add other properties as per your API response
 }
 
 interface User {
@@ -18,8 +16,8 @@ interface User {
 
 interface SplitState {
   eventId: string;
-  splittedVendors: Vendor[]; // Typed vendors array
-  personInSplit: User[]; // Typed personInSplit array
+  splittedVendors: Vendor[];
+  personInSplit: User[];
   status: "idle" | "loading" | "success" | "failed";
   error: string | null;
 }
@@ -32,29 +30,14 @@ const initialState: SplitState = {
   error: null,
 };
 
-export const addVendorInSplitOrRemove = createAsyncThunk<
-  Vendor, // The returned data type from the API (Vendor type)
-  string, // Payload type (vendorId)
-  { rejectValue: string }
->("vendorSplit/addToSplit", async (vendorId, { rejectWithValue }) => {
-  try {
-    const response = await api.post("/vendors/addToSplit", { vendorId });
-    return response.data;
-  } catch (error: unknown) {
-    return rejectWithValue(
-      error instanceof Error ? error.message : "Failed to add vendor to split"
-    );
-  }
-});
-
 interface AddUserPayload {
   user: User; // Use User type for user data
   id: string;
 }
 
 export const addUserInSplit = createAsyncThunk<
-  User, // The returned data type from the API (User type)
-  AddUserPayload, // Payload type
+  User,
+  AddUserPayload,
   { rejectValue: string }
 >(
   "addUser/addToSplit",
@@ -113,19 +96,6 @@ const splitVendorPrice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Add to split vendors
-      .addCase(addVendorInSplitOrRemove.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
-      .addCase(addVendorInSplitOrRemove.fulfilled, (state, action) => {
-        state.status = "success";
-        state.splittedVendors.push(action.payload); // Add vendor to split
-      })
-      .addCase(addVendorInSplitOrRemove.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = (action.payload as string) || "Unknown error occurred";
-      })
 
       // Add user to split
       .addCase(addUserInSplit.pending, (state) => {

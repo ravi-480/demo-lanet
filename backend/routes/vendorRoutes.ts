@@ -2,7 +2,6 @@ import { Router } from "express";
 import { authenticate } from "../middleware/authMiddleware";
 
 import {
-  addVendorInSplitOrRemove,
   addUserInSplit,
   addVendors,
   getByUser,
@@ -10,8 +9,6 @@ import {
   getVendorsByEvent,
   removeAddedVendor,
   sendMailToUser,
-  confirmPayment,
-  checkPaymentStatus,
   removeFromSplit,
   editUserInSplit,
   addManualExpense,
@@ -25,29 +22,19 @@ router.get("/event/:eventId", getVendorsByEvent);
 router.get("/getByUser", authenticate, getByUser);
 
 // add to split
-router.post("/addToSplit", addVendorInSplitOrRemove);
 router.post("/addUserToSplit", addUserInSplit);
 
 // remove vendor
 router.delete("/remove-vendor/:id", removeAddedVendor);
 
-// send mail rout
+// send mail route
 
 router.post("/send-mail", sendMailToUser);
-
-// confirm payment request
-
-router.post("/confirm-payment", confirmPayment);
-
-// confirm status
-
-router.get("/payment-status", checkPaymentStatus);
 
 // remove added user for split
 router.delete("/delete/addedInSplit", removeFromSplit);
 
 // edit user from split
-
 router.patch("/split/users/edituser", editUserInSplit);
 
 // add manual expense

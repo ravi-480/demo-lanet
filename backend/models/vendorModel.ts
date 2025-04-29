@@ -20,7 +20,6 @@ const vendorSchema = new Schema(
     pricingUnit: { type: String, required: true },
     category: { type: String, required: true },
     numberOfGuests: { type: Number, default: 0 },
-    isIncludedInSplit: { type: Boolean, default: false },
     minGuestLimit: { type: Number }, // Added this field for minimum guest requirement
     addedBy: {
       type: Schema.Types.ObjectId,

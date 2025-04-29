@@ -29,10 +29,16 @@ const SplitTabsDialog = ({ users, eventId, onClose }: Props) => {
       _id: string;
     }[]
   ) => {
+
+    console.log(usersWithCost);
+    
     const recipients = usersWithCost.map((user) => user.email);
     const amounts = usersWithCost.map((user) => user.amount);
     const eventId = usersWithCost.map((user) => user.eventId);
     const userId = usersWithCost.map((user) => user._id);
+
+    console.log(userId);
+    
     setLoading(true);
     try {
       await axios.post("/vendors/send-mail", {
@@ -63,7 +69,7 @@ const SplitTabsDialog = ({ users, eventId, onClose }: Props) => {
 
   useEffect(() => {
     if (eventId) {
-      dispatch(getVendorsByEvent({ eventId, includeSplit: true }));
+      dispatch(getVendorsByEvent({ eventId, includeSplit: false }));
     }
   }, [dispatch, eventId]);
 

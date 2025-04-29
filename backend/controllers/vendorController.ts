@@ -114,26 +114,6 @@ export const getByUser = asyncHandler(async (req: Request, res: Response) => {
   return res.status(200).json(vendors);
 });
 
-// add vendor in split
-export const addVendorInSplitOrRemove = asyncHandler(
-  async (req: Request, res: Response) => {
-    const { vendorId } = req.body;
-
-    const vendor = await Vendor.findById(vendorId);
-
-    if (!vendor) throw new ApiError(404, "Event not found");
-
-    vendor.isIncludedInSplit = !vendor.isIncludedInSplit;
-
-    await vendor.save();
-
-    res.status(200).json({
-      status: "success",
-      message: "Vendor added in split successfully",
-    });
-  }
-);
-
 // add user in split
 
 export const addUserInSplit = asyncHandler(
@@ -167,31 +147,48 @@ export const addUserInSplit = asyncHandler(
 // send mail to users
 
 export const sendMailToUser = asyncHandler(async (req, res) => {
-  const { recipients, amounts, eventId, userId } = req.body;
+  const { recipients, amounts, eventId, userId, names } = req.body;
+  console.log(recipients, amounts, eventId, userId, names);
 
   try {
+    for (let i = 0; i < recipients.length; i++) {
+      await Event.findOneAndUpdate(
+        { _id: eventId[i], "includedInSplit.email": recipients[i] },
+        {
+          $set: {
+            "includedInSplit.$.amount": amounts[i],
+            "includedInSplit.$.joinedAt": new Date(),
+          },
+        },
+        { new: true }
+      );
+    }
+
+    // Send emails
     for (let i = 0; i < recipients.length; i++) {
       await sendEmail({
         to: recipients[i],
         subject: "Split Expense Request",
         text: "",
         html: `
-      <h3>Hello from Split App</h3>
-      <p>You’ve been asked to confirm a split expense of <strong>₹${amounts[i]}</strong>.</p>
-      <p>
-    <a href="http://localhost:3000/split/confirm?eventId=${eventId[i]}&userId=${userId[i]}"
-       style="background-color:#0ea5e9;padding:10px 20px;color:white;text-decoration:none;border-radius:5px;">
-      Confirm Your Share
-    </a>
-        </a>
-      </p>
-    `,
+          <h3>Hello from Split App</h3>
+          <p>You’ve been asked to confirm a split expense of <strong>₹${amounts[i]}</strong>.</p>
+          <p>
+            <a href="http://localhost:3000/split/confirm?eventId=${eventId[i]}&userId=${userId[i]}"
+               style="background-color:#0ea5e9;padding:10px 20px;color:white;text-decoration:none;border-radius:5px;">
+              Confirm Your Share
+            </a>
+          </p>
+        `,
       });
     }
 
-    return res.status(200).json({ message: "Emails sent successfully!" });
+    return res
+      .status(200)
+      .json({ message: "Amounts updated and emails sent successfully!" });
   } catch (error) {
-    throw new ApiError(500, "Failed to send emails.");
+    console.error(error);
+    throw new ApiError(500, "Failed to send emails or update split data.");
   }
 });
 
@@ -221,47 +218,6 @@ export const removeAddedVendor = asyncHandler(
       success: true,
       message: "Vendor removed successfully and budget updated!",
     });
-  }
-);
-
-// confirm payment request
-
-export const confirmPayment = asyncHandler(
-  async (req: Request, res: Response) => {
-    const { eventId, userId } = req.body;
-    const event = await Event.findById(eventId);
-    if (!event) {
-      throw new ApiError(404, "Event not found");
-    }
-    const user = event?.includedInSplit.find(
-      (item: any) => item._id?.toString() == userId
-    );
-    if (!user) {
-      throw new ApiError(400, "Invalid User Id");
-    }
-
-    user.status = "Paid";
-    await event.save();
-    return res
-      .status(200)
-      .json({ success: true, message: "User Paid Successfully" });
-  }
-);
-
-// check payment status
-
-export const checkPaymentStatus = asyncHandler(
-  async (req: Request, res: Response) => {
-    const { eventId, userId } = req.query;
-    const event = await Event.findById(eventId);
-    if (!event) throw new ApiError(404, "Event not found");
-    const user = event?.includedInSplit.find(
-      (item: any) => item._id?.toString() == userId
-    );
-    if (!user) {
-      throw new ApiError(400, "Invalid User Id");
-    }
-    return res.status(200).json({ success: true, status: user.status });
   }
 );
 

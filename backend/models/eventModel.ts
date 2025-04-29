@@ -35,20 +35,20 @@ const eventSchema = new mongoose.Schema(
       default: 0,
     },
 
-    // status: {
-    //   type: String,
-    //   enum: ["upcoming", "completed", "cancelled"],
-    //   default: "upcoming",
-    // },
-
-  
     includedInSplit: {
       type: [
         {
-          status: { type: String, default: "pending" },
+          status: {
+            type: String,
+            default: "pending",
+            enum: ["pending", "Paid", "declined"],
+          },
           name: String,
           email: String,
+          amount: { type: Number, default: 0 },
           joinedAt: { type: Date, default: Date.now },
+          paymentId: { type: String, default: null },
+          paymentTimestamp: { type: Date, default: null },
         },
       ],
       default: [],
