@@ -3,7 +3,7 @@ dotenv.config();
 
 import http from "http";
 import connectDB from "../config/db";
-import { initializeSocketIO } from "../utils/socketUtils";
+import { initializeSocketIP } from "../utils/socketUtils";
 import app from "../app";
 
 // Connect to MongoDB
@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 5000;
 
 // Create HTTP server and attach Socket.IO
 const server = http.createServer(app);
-initializeSocketIO(server);
+initializeSocketIP(server);
 
 // Start server
 server.listen(PORT, () => {

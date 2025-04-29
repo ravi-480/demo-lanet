@@ -5,7 +5,6 @@ import { Request, Response } from "express";
 import { sendEmail } from "../utils/emailService";
 import { v4 as uuidv4 } from "uuid";
 import ApiError from "../utils/ApiError";
-import { log } from "util";
 const axios = require("axios");
 
 interface AuthenticatedRequest extends Request {

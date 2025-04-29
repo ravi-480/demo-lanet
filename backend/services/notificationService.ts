@@ -11,11 +11,6 @@ interface NotificationData {
   metadata: any;
 }
 
-/**
- * Creates a notification in the database
- * @param data - Notification data
- * @returns Created notification
- */
 export const createNotificationService = async (data: NotificationData) => {
   const { eventId, senderId, recipientId, message, type, metadata } = data;
 
@@ -46,10 +41,7 @@ export const createNotificationService = async (data: NotificationData) => {
   return notification;
 };
 
-/**
- * Marks all notifications as read for a user
- * @param userId - User ID
- */
+
 export const markAllReadService = async (userId: string) => {
   if (!userId) {
     throw new ApiError(400, "User ID is required");
@@ -63,11 +55,7 @@ export const markAllReadService = async (userId: string) => {
   return { success: true };
 };
 
-/**
- * Gets unread notifications for a user
- * @param userId - User ID
- * @returns List of unread notifications
- */
+
 export const getNotificationsForUserService = async (userId: string) => {
   if (!userId) {
     throw new ApiError(400, "User ID is required");

@@ -11,11 +11,10 @@ const connectDB = async (retries = 5): Promise<void> => {
 
   try {
     const conn = await mongoose.connect(
-      mongoUri || "mongodb://localhost:27017/eventwise",
+      mongoUri || "mongodb://localhost:27017/EventWise",
       {
         serverSelectionTimeoutMS: 5000,
         maxPoolSize: 10,
-        socketTimeoutMS: 45000,
         // Always use TLS for Atlas connections regardless of environment
         tls: true,
         tlsAllowInvalidCertificates: process.env.NODE_ENV !== "production",

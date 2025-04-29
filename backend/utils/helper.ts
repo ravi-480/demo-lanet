@@ -71,7 +71,7 @@ export const formatEmailTemplate = (
       
       <p>${
         isReminder
-          ? "Please respond by clicking the button below:"
+          ? "Please response by clicking the button below:"
           : "Please let us know if you can attend by clicking the button below:"
       }</p>
       

@@ -65,8 +65,6 @@ export const fetchEvents = async (
   res: Response
 ): Promise<void> => {
   try {
-    console.log(req.user);
-
     if (!req.user) {
       res
         .status(401)
@@ -88,6 +86,7 @@ export const fetchEvents = async (
     const events = await Event.find({ creator: userId })
       .sort({ date: 1 })
       .lean();
+
 
     res.status(200).json({ success: true, events });
   } catch (error) {

@@ -71,9 +71,11 @@ export const signup = async (
 export const login = async (
   loginData: ILoginRequest
 ): Promise<IAuthResponse> => {
+
   const user = await User.findOne({ email: loginData.email }).select(
     "+password"
   );
+
 
   if (!user || !(await user.comparePassword(loginData.password))) {
     throw new ApiError(401, "Invalid email or password");
