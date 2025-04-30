@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/store/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/store/store";
 import { setUser } from "@/store/authSlice";
 import api from "@/utils/api";
 import { Button } from "@/components/ui/button";
 import { ServerCrash } from "lucide-react";
+import LoadSpinner from "@/app/Components/Shared/LoadSpinner";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -21,12 +22,18 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   const [loading, setLoading] = useState(true);
   const [serverDown, setServerDown] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const router = useRouter();
 
   const originalConsoleError =
     typeof window !== "undefined" ? console.error : null;
 
+  const hasVerifiedSession = useRef(false);
+
   useEffect(() => {
+    if (hasVerifiedSession.current) return;
+    hasVerifiedSession.current = true;
+
     api.onAuthError = () => {
       router.push("/login");
     };
@@ -54,7 +61,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
         const user = response.data.user;
 
         if (user) {
-          dispatch(setUser(user)); // No cookie set here anymore
+          dispatch(setUser(user));
         } else {
           router.push("/login");
           return;
@@ -73,7 +80,6 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
 
     verifySession();
 
-    // Clean up
     return () => {
       api.onAuthError = undefined;
       if (typeof window !== "undefined" && originalConsoleError) {
@@ -82,12 +88,12 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
     };
   }, [dispatch, router, originalConsoleError]);
 
+  if (!isAuthenticated) {
+    return <LoadSpinner />;
+  }
+
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#d4c99e]"></div>
-      </div>
-    );
+    return <LoadSpinner />;
   }
 
   if (serverDown) {

@@ -19,7 +19,6 @@ const EventDisplay = () => {
     events,
   });
   const initialFetchDone = useRef(false);
-
   useEffect(() => {
     let retryTimeout: NodeJS.Timeout;
 
@@ -29,9 +28,21 @@ const EventDisplay = () => {
       try {
         await dispatch(fetchEvents()).unwrap();
         initialFetchDone.current = true;
-      } catch (error) {
-        console.log(error);
-        retryTimeout = setTimeout(() => loadEvents(), 10000); // retry after 10 seconds
+      } catch (error: any) {
+        const errMsg = error?.message || error;
+
+        if (
+          errMsg === "Unauthorized" ||
+          errMsg === "AUTH_ERROR" ||
+          error?.response?.status === 401
+        ) {
+          // Stop retrying and set initialized so component doesn't re-trigger
+          initialFetchDone.current = true;
+          setIsInitialized(true);
+          return;
+        }
+
+        retryTimeout = setTimeout(() => loadEvents(), 10000); // retry only for other errors
       } finally {
         setIsInitialized(true);
       }
@@ -66,10 +77,7 @@ const EventDisplay = () => {
   return (
     <div className="bg-gray-900 border text-gray-200 rounded-lg shadow-sm p-4 sm:p-6 mb-6 w-full">
       <div className="border-b border-gray-500 flex justify-between pb-4 mb-4">
-        <EventTabs
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-        />
+        <EventTabs activeTab={activeTab} setActiveTab={setActiveTab} />
         {filteredEvents.length > 3 && (
           <Link
             href="/events/all"

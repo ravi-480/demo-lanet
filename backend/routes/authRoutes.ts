@@ -6,6 +6,7 @@ import {
   logout,
   authGuard,
   forgotPassword,
+  checkRefreshToken,
   resetPassword,
   getMe,
 } from "../controllers/authController";
@@ -15,6 +16,7 @@ const router = express.Router();
 
 // Authentication routes
 router.get("/me", authenticate, getMe);
+router.get("/session", checkRefreshToken);
 router.post("/signup", signup);
 router.post("/login", login);
 router.post("/refresh-token", refreshToken);

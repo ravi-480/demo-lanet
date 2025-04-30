@@ -46,13 +46,12 @@ export const fetchEvents = createAsyncThunk(
     try {
       const response = await api.get("/events");
       return response.data.events;
-    } catch (error: unknown) {
-      if (error instanceof AxiosError) {
-        return rejectWithValue(
-          error.response?.data?.message || "Failed to fetch events"
-        );
+    } catch (error: any) {
+
+      if (error.response?.status === 401) {
+        return rejectWithValue("Unauthorized");
       }
-      return rejectWithValue("Failed to fetch events");
+      return rejectWithValue(error.message || "Failed to fetch events");
     }
   }
 );

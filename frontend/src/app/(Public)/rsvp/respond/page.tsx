@@ -142,7 +142,7 @@ export default function RSVPRespond() {
             Your response has been successfully submitted.
             {response === "accept"
               ? " We look forward to seeing you at the event!"
-              : " We&apos;re sorry you won&apos;t be able to join us, but appreciate your response."}
+              : " We're sorry you won't be able to join us, but appreciate your response."}
           </p>
           <p className="text-sm text-gray-500">
             You can close this window now.

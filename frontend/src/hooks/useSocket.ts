@@ -1,4 +1,7 @@
+"use client"
 import { RootState } from "@/store/store";
+
+
 import { Socket, io } from "socket.io-client";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";

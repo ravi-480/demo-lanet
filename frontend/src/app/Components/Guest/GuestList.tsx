@@ -83,7 +83,6 @@ const GuestListComponent = ({
           guestId: "",
         })
       );
-      toast.success(`Reminder sent to ${guest.name}`);
     } catch (error) {
       toast.error("Failed to send reminder");
       console.error(error);

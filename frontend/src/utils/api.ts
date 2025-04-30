@@ -57,6 +57,7 @@ api.interceptors.response.use(
       return Promise.reject(new Error("RATE_LIMIT"));
     }
 
+    // Handle 401 Unauthorized errors
     if (
       status === 401 &&
       !originalRequest._retry &&
@@ -64,18 +65,34 @@ api.interceptors.response.use(
     ) {
       originalRequest._retry = true;
 
-      try {
-        const ans = await api.post("/auth/refresh-token");
-        const newToken = ans.data?.accessToken;
-        if (newToken) {
-          return api(originalRequest);
-        }
+      // Check if the error message indicates there's no refresh token
+      const errorMessage = error.response?.data?.message || "";
+      if (errorMessage.startsWith("NO_REFRESH_TOKEN:")) {
+        toast.error( "NO_REFRESH_TOKEN:Session expired. Please log in again.")
+        // No refresh token available, trigger auth error immediately
         if (api.onAuthError) {
           api.onAuthError();
         }
         return Promise.reject(new Error("AUTH_ERROR"));
+      }
+
+      try {
+        // Try to refresh the token
+        const refreshResponse = await api.post("/auth/refresh-token");
+        const newToken = refreshResponse.data?.accessToken;
+
+        if (newToken) {
+          // Successfully refreshed token, retry the original request
+          return api(originalRequest);
+        } else {
+          // No new token was returned
+          if (api.onAuthError) {
+            api.onAuthError();
+          }
+          return Promise.reject(new Error("AUTH_ERROR"));
+        }
       } catch (refreshError) {
-        console.log(refreshError);
+        console.log("Token refresh failed:", refreshError);
 
         if (api.onAuthError) {
           api.onAuthError();

@@ -37,6 +37,18 @@ export const getMe = asyncHandler(
   }
 );
 
+// check refreshToken
+
+export const checkRefreshToken = asyncHandler(
+  async (req: Request, res: Response) => {
+    const refreshToken = req.cookies?.refreshToken;
+    if (!refreshToken) {
+      return res.status(401).json({ success: false });
+    }
+    return res.status(200).json({ success: true });
+  }
+);
+
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const loginData: ILoginRequest = req.body;
   const result = await authService.login(loginData);
@@ -103,7 +115,7 @@ export const refreshToken = asyncHandler(
 
     res.status(200).json({
       success: true,
-      message: "Login successful!",
+      message: "Token regenerated successful!",
       data: {
         accessToken,
       },

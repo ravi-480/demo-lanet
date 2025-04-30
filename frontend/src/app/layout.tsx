@@ -4,9 +4,8 @@ import "./globals.css";
 import Header from "./Components/Home/Header/Header";
 import Footer from "./Components/Home/Footer/Footer";
 import ReduxProvider from "@/store/storeProvider";
-import AuthInitializer from "@/store/AuthInitializer";
 import { Toaster } from "sonner";
-import NotificationInitializer from "@/store/NotificationInitializer";
+import NotificationLoader from "@/store/NotificationLoader";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,8 +25,7 @@ export default function RootLayout({
         className={`${inter.className} bg-gray-950 text-white min-h-screen flex flex-col`}
       >
         <ReduxProvider>
-          <AuthInitializer />
-          <NotificationInitializer /> {/* Add this new component */}
+          <NotificationLoader />
           <Header />
           <main className="flex-1">{children}</main>
           <Toaster richColors />

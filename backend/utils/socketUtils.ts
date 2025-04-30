@@ -48,7 +48,6 @@ export const initializeSocketIP = (httpServer: HttpServer) => {
           metadata: { ...metadata, senderId },
         });
 
-        // Emit the notification to the specific user's room
         io.to(`user:${organizerId}`).emit("new-notification", notification);
         socket.emit("notification-sent", { success: true, notification });
 
