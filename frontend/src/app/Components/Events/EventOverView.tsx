@@ -23,7 +23,7 @@ const EventOverView = ({ event }: { event: IEvent }) => {
   const { rsvpData } = useSelector((state: RootState) => state.rsvp);
 
   useEffect(() => {
-    if (event._id) dispatch(fetchGuests(event._id));
+    if (event._id && !rsvpData) dispatch(fetchGuests(event._id));
   }, [dispatch, event._id]);
 
   const { budget = { allocated: 0, spent: 0 } } = event;

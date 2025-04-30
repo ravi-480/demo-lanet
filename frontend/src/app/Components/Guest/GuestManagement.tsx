@@ -42,7 +42,7 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
   );
 
   useEffect(() => {
-    if (eventId) {
+    if (eventId ) {
       dispatch(fetchGuests(eventId));
     }
   }, [dispatch, eventId]);

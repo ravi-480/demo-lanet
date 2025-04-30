@@ -789,7 +789,5 @@ export const sendReminder = asyncHandler(
   }
 );
 
-
-
 // rzp_test_3OMXA29PCRFzqg
 // pCERZadzAzch9vuHlfHNaB1L
