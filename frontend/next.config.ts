@@ -9,7 +9,7 @@ const withAnalyzer = withBundleAnalyzer({
 const nextConfig: NextConfig = {
   swcMinify: true, // Use SWC for minification
   compress: true, // Enable gzip compression
-  reactStrictMode: true, // React strict mode
+  reactStrictMode: false, // React strict mode
 
   images: {
     domains: [

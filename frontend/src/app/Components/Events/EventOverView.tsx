@@ -20,10 +20,10 @@ import Link from "next/link";
 
 const EventOverView = ({ event }: { event: IEvent }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { rsvpData } = useSelector((state: RootState) => state.rsvp);
+  const { rsvpData, status } = useSelector((state: RootState) => state.rsvp);
 
   useEffect(() => {
-    if (event._id && !rsvpData) dispatch(fetchGuests(event._id));
+    if (event._id && status == "idle") dispatch(fetchGuests(event._id));
   }, [dispatch, event._id]);
 
   const { budget = { allocated: 0, spent: 0 } } = event;

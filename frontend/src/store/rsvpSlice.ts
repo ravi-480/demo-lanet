@@ -6,11 +6,13 @@ import api from "@/utils/api";
 interface RSVPState {
   rsvpData: Guest[];
   loading: boolean;
+  status: "idle" | "loading" | "succeeded" | "failed";
   error: null | string;
 }
 
 const initialState: RSVPState = {
   rsvpData: [],
+  status: "idle",
   loading: false,
   error: null,
 };
@@ -126,7 +128,6 @@ export const removeSingleGuest = createAsyncThunk(
   }
 );
 
-
 // edit user details
 export const updateSingleGuest = createAsyncThunk(
   "rsvp/updateSingleGuest",
@@ -200,12 +201,14 @@ const rsvpSlice = createSlice({
     builder
       .addCase(fetchGuests.pending, (state) => {
         state.loading = true;
+        state.status = "loading";
         state.error = null;
       })
       .addCase(
         fetchGuests.fulfilled,
         (state, action: PayloadAction<Guest[]>) => {
           state.rsvpData = action.payload;
+          state.status = "succeeded";
           state.loading = false;
         }
       )
@@ -216,6 +219,7 @@ const rsvpSlice = createSlice({
 
       .addCase(uploadFile.pending, (state) => {
         state.loading = true;
+        state.status = "failed";
         state.error = null;
       })
       .addCase(uploadFile.fulfilled, (state) => {

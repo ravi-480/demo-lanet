@@ -1,10 +1,10 @@
+
 import FaqSection from "./Components/Home/FaqSection/FaqSection";
 import FeatureSections from "./Components/Home/FeaturedSection/FeatureSections";
 import HeroSection from "./Components/Home/Hero/HeroSection";
 import Testimonials from "./Components/Home/Testimonials/Testimonial";
 
 export default function Home() {
-  
   return (
     <main className="min-h-screen bg-gray-900 flex flex-col">
       <div className="flex-grow">

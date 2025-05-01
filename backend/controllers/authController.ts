@@ -25,18 +25,16 @@ export const signup = asyncHandler(async (req: Request, res: Response) => {
 
 // authGuard
 export const authGuard = asyncHandler(
-  async (req: AuthenticatedRequest, res) => {
-    res.status(200).json({ success: true, user: req.user });
-  }
-);
-
-export const getMe = asyncHandler(
   async (req: AuthenticatedRequest, res: Response) => {
     const user = await User.findById(req.user!.id).select("-password");
-    res.status(200).json({ success: true, data: user });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, user });
   }
 );
-
 // check refreshToken
 
 export const checkRefreshToken = asyncHandler(

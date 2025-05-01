@@ -9,6 +9,7 @@ import api from "@/utils/api";
 import { Button } from "@/components/ui/button";
 import { ServerCrash } from "lucide-react";
 import LoadSpinner from "@/app/Components/Shared/LoadSpinner";
+import { useAuthSession } from "@/hooks/useAuthSession";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -19,45 +20,49 @@ interface ApiError extends Error {
 }
 
 const AuthGuard = ({ children }: AuthGuardProps) => {
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const [serverDown, setServerDown] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, loading } = useAuthSession();
   const router = useRouter();
 
-  const originalConsoleError =
-    typeof window !== "undefined" ? console.error : null;
+  // Store the original console.error function
+  const originalConsoleErrorRef = useRef<typeof console.error | null>(null);
 
+  // Ref to track if we've verified session
   const hasVerifiedSession = useRef(false);
 
   useEffect(() => {
     if (hasVerifiedSession.current) return;
     hasVerifiedSession.current = true;
 
+    // Set up authentication error handler
     api.onAuthError = () => {
       router.push("/login");
     };
 
-    if (typeof window !== "undefined" && originalConsoleError) {
-      console.error = (...args) => {
-        const errorString = args[0]?.toString?.() || "";
+    // Store original console.error
+    originalConsoleErrorRef.current = console.error;
 
-        if (
-          errorString.includes("SERVER_DOWN") ||
-          errorString.includes("Network Error") ||
-          errorString.includes("status code 401") ||
-          errorString.includes("Unauthorized")
-        ) {
-          return;
-        }
+    // Override console.error to suppress certain errors
+    console.error = (...args) => {
+      const errorString = args[0]?.toString?.() || "";
 
-        originalConsoleError.apply(console, args);
-      };
-    }
+      if (
+        errorString.includes("SERVER_DOWN") ||
+        errorString.includes("Network Error") ||
+        errorString.includes("status code 401") ||
+        errorString.includes("Unauthorized")
+      ) {
+        return;
+      }
+
+      originalConsoleErrorRef.current?.apply(console, args);
+    };
 
     const verifySession = async () => {
       try {
-        const response = await api.get("/auth");
+        const response = await api.get("/auth/me");
         const user = response.data.user;
 
         if (user) {
@@ -74,7 +79,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
           return;
         }
       } finally {
-        setLoading(false);
+        // setLoading(false);
       }
     };
 
@@ -82,15 +87,11 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
 
     return () => {
       api.onAuthError = undefined;
-      if (typeof window !== "undefined" && originalConsoleError) {
-        console.error = originalConsoleError;
+      if (originalConsoleErrorRef.current) {
+        console.error = originalConsoleErrorRef.current;
       }
     };
-  }, [dispatch, router, originalConsoleError]);
-
-  if (!isAuthenticated) {
-    return <LoadSpinner />;
-  }
+  }, [dispatch, router]);
 
   if (loading) {
     return <LoadSpinner />;
@@ -98,18 +99,11 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
 
   if (serverDown) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center text-center px-4 bg-gray-900 text-white">
-        <ServerCrash
-          size={48}
-          color="#fa0000"
-          className="mb-4"
-          strokeWidth={2.25}
-        />
-        <h1 className="text-4xl font-bold text-gray-200 mb-4">
-          Oops! Server is down.
-        </h1>
-        <p className="text-lg text-gray-300 mb-6">
-          We&apos;re having trouble connecting to our backend. Please try again
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-4">
+        <ServerCrash className="w-16 h-16 mb-4 text-red-500" />
+        <h1 className="text-2xl font-bold mb-2">Oops! Server is down.</h1>
+        <p className="text-center mb-6">
+          We're having trouble connecting to our backend. Please try again
           later.
         </p>
         <Button
@@ -120,6 +114,10 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
         </Button>
       </div>
     );
+  }
+
+  if (!isAuthenticated) {
+    return null;
   }
 
   return <>{children}</>;

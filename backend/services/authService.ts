@@ -114,9 +114,13 @@ export const refreshAccessToken = async (
     // Find user with this refresh token
     const user = await User.findById(decoded.id).select("+refreshToken");
 
+    
+
     if (!user || user.refreshToken !== token) {
       throw new ApiError(401, "Invalid refresh token");
     }
+
+    
 
     // Generate new tokens
     const accessToken = generateAccessToken(
