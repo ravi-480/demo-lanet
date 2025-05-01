@@ -10,6 +10,7 @@ import {
 } from "../interfaces/user.interface";
 import User from "../models/UserModel";
 
+// signup
 export const signup = asyncHandler(async (req: Request, res: Response) => {
   const userData: ISignupRequest = req.body;
   const result = await authService.signup(userData);
@@ -29,24 +30,16 @@ export const authGuard = asyncHandler(
     const user = await User.findById(req.user!.id).select("-password");
 
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     res.status(200).json({ success: true, user });
   }
 );
-// check refreshToken
 
-export const checkRefreshToken = asyncHandler(
-  async (req: Request, res: Response) => {
-    const refreshToken = req.cookies?.refreshToken;
-    if (!refreshToken) {
-      return res.status(401).json({ success: false });
-    }
-    return res.status(200).json({ success: true });
-  }
-);
-
+// login
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const loginData: ILoginRequest = req.body;
   const result = await authService.login(loginData);
@@ -78,6 +71,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+// refresh-token
 export const refreshToken = asyncHandler(
   async (req: Request, res: Response) => {
     // Get refresh token from cookie
@@ -121,6 +115,7 @@ export const refreshToken = asyncHandler(
   }
 );
 
+// logout from page
 export const logout = asyncHandler(async (req: Request, res: Response) => {
   // Get user ID from request
   const userId = (req as any).user?.id;
@@ -149,6 +144,7 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+// forget-passowrd
 export const forgotPassword = asyncHandler(
   async (req: Request, res: Response) => {
     const { email }: IForgotPasswordRequest = req.body;
@@ -164,6 +160,7 @@ export const forgotPassword = asyncHandler(
   }
 );
 
+// reset-password
 export const resetPassword = asyncHandler(
   async (req: Request, res: Response) => {
     const resetData: IResetPasswordRequest = req.body;

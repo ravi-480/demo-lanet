@@ -22,7 +22,8 @@ const Budget = () => {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5; // Number of items per page
+  const [itemsPerPage] = useState(5); // Number of items per page
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     // Set up intersection observer to detect when component is visible
@@ -30,7 +31,8 @@ const Budget = () => {
       (entries) => {
         // If component is visible and data not already loaded
         if (entries[0].isIntersecting && !loaded) {
-          dispatch(getVendorByUser());
+          // Load first page when component becomes visible
+          fetchPage(1);
           setLoaded(true);
           observer.disconnect(); // Disconnect after loading once
         }
@@ -45,7 +47,26 @@ const Budget = () => {
     return () => {
       observer.disconnect();
     };
-  }, [dispatch, loaded]);
+  }, []);
+
+  // Fetch data whenever the page changes
+  useEffect(() => {
+    if (loaded) {
+      fetchPage(currentPage);
+    }
+  }, [currentPage]);
+
+  // Function to fetch a specific page
+  const fetchPage = (page: number) => {
+    dispatch(getVendorByUser({ page, limit: itemsPerPage }));
+  };
+
+  // Update totalPages when vendor data is received
+  useEffect(() => {
+    if (vendorDetail.status === "succeeded" && vendorDetail.pagination) {
+      setTotalPages(vendorDetail.pagination.totalPages);
+    }
+  }, [vendorDetail]);
 
   // Helper function to safely format dates
   const formatDate = (dateString: string | number | Date | undefined) => {
@@ -87,15 +108,6 @@ const Budget = () => {
     );
   }
 
-  // Pagination logic
-  const totalPages = Math.ceil(vendorDetail.items.length / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = vendorDetail.items.slice(
-    indexOfFirstItem,
-    indexOfLastItem
-  );
-
   return (
     <div className="w-full" ref={containerRef}>
       <h1 className="pl-2 md:pl-4 mb-2 text-lg md:text-xl font-medium">
@@ -104,7 +116,7 @@ const Budget = () => {
       <div className="border border-gray-400 p-2 md:p-4 rounded-lg overflow-x-auto">
         {/* Mobile card view for small screens */}
         <div className="md:hidden">
-          {currentItems.map((vendor, index) => (
+          {vendorDetail.items.map((vendor, index) => (
             <div
               key={vendor._id || `vendor-${index}`}
               className="mb-3 p-2 border-b border-gray-700 last:border-0"
@@ -141,7 +153,7 @@ const Budget = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {currentItems.map((vendor, index) => (
+              {vendorDetail.items.map((vendor, index) => (
                 <TableRow
                   key={vendor._id || `vendor-${index}`}
                   className="hover:bg-transparent"

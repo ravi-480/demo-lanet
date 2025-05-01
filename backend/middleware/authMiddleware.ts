@@ -39,7 +39,6 @@ export const authenticate = asyncHandler(
       return next();
     } catch (err: any) {
       // Token verification failed (expired or invalid)
-      // Just indicate authentication failure without handling refresh
       if (err.message === "jwt expired") {
         throw new ApiError(401, "Token expired");
       } else {

@@ -6,6 +6,7 @@ import Vendor from "../models/vendorModel";
 import { AuthenticatedRequest } from "../interfaces/user.interface";
 import ApiError from "../utils/ApiError";
 import mongoose from "mongoose";
+import { resetBudgetExceedanceAlert } from "./vendorController";
 
 export const createEvent = asyncHandler(
   async (req: AuthenticatedRequest, res: Response) => {
@@ -72,7 +73,6 @@ export const fetchEvents = async (
       return;
     }
 
-    // Now safely access req.user.id
     const userId = req.user.id;
 
     if (!userId) {
@@ -84,9 +84,9 @@ export const fetchEvents = async (
 
     // Fetch only events created by this user
     const events = await Event.find({ creator: userId })
+      .select("-includedInSplit")
       .sort({ date: 1 })
       .lean();
-
 
     res.status(200).json({ success: true, events });
   } catch (error) {
@@ -209,7 +209,7 @@ export const adjustEventBudget = asyncHandler(
       );
     }
     event.budget.allocated = event.budget.allocated + adjustAmount;
-
+    resetBudgetExceedanceAlert(eventId);
     await event.save();
     res.status(200).json({
       success: true,

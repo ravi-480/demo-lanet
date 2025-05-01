@@ -25,3 +25,4 @@ const upload = multer({
 
 export const uploadEventImage = upload.single("image");
 
+

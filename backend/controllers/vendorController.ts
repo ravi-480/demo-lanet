@@ -5,6 +5,11 @@ import { Request, Response } from "express";
 import { sendEmail } from "../utils/emailService";
 import { v4 as uuidv4 } from "uuid";
 import ApiError from "../utils/ApiError";
+import {
+  sendBudgetExceededEmail,
+  sendBudgetWarningEmail,
+} from "../utils/emailTemplate";
+import User from "../models/UserModel";
 const axios = require("axios");
 
 interface AuthenticatedRequest extends Request {
@@ -52,33 +57,135 @@ export const getVendor = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+const budgetAlertsSent = new Map<string, Set<string>>();
+
+// Initialize budget alert tracking for an event
+const initializeEventAlertTracking = (eventId: string) => {
+  if (!budgetAlertsSent.has(eventId)) {
+    budgetAlertsSent.set(eventId, new Set<string>());
+  }
+};
+
+// Check if alert has been sent for this threshold
+const hasAlertBeenSent = (eventId: string, alertType: string): boolean => {
+  const eventAlerts = budgetAlertsSent.get(eventId);
+  return eventAlerts ? eventAlerts.has(alertType) : false;
+};
+
+// Mark alert as sent
+const markAlertAsSent = (eventId: string, alertType: string): void => {
+  const eventAlerts = budgetAlertsSent.get(eventId);
+  if (eventAlerts) {
+    eventAlerts.add(alertType);
+  }
+};
+
+// Reset budget exceedance alert after budget adjustment
+export const resetBudgetExceedanceAlert = (eventId: string): void => {
+  const eventAlerts = budgetAlertsSent.get(eventId);
+  if (eventAlerts) {
+    eventAlerts.delete("BUDGET_EXCEEDED");
+  }
+};
+
 export const addVendors = asyncHandler(async (req: Request, res: Response) => {
   const vendorData = req.body;
 
+  // Check if vendor already exists for this event
   const existing = await Vendor.findOne({
     placeId: vendorData.placeId,
     event: vendorData.event,
   });
+
   if (existing) {
-    throw new ApiError(400, "vendor already added");
+    throw new ApiError(400, "Vendor already added");
   }
 
+  // Create the new vendor
   const vendor = await Vendor.create(vendorData);
 
-  // Find the related event and cast as EventDocument
+  // Find the related event
   const event = await Event.findById(vendor.event);
-
   if (!event) {
     throw new ApiError(404, "Associated event not found");
   }
 
+  // Initialize budget alert tracking for this event
+  initializeEventAlertTracking(event._id.toString());
+
+  // Get the user who added the vendor
+  const user = await User.findById(vendor.addedBy);
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  // Calculate new spent amount and budget percentage
+  const newSpentAmount = event.budget.spent + vendor.price;
+  const budgetLimit = event.budget.allocated;
+  const budgetPercentage = (newSpentAmount / budgetLimit) * 100;
+
   // Update the event budget
-  event.budget.spent += vendor.price;
+  event.budget.spent = newSpentAmount;
   await event.save();
 
-  res
-    .status(201)
-    .json({ sucess: true, message: "Vendor added successfully", vendor });
+  // Send the response immediately
+  res.status(201).json({
+    success: true,
+    message: "Vendor added successfully",
+    vendor,
+  });
+
+  // Process budget alerts asynchronously after sending the response
+  try {
+    // Check if budget is at 90% or more but less than 100%
+    if (budgetPercentage >= 90 && budgetPercentage < 100) {
+      const alertType = "BUDGET_WARNING";
+
+      // Only send the 90% alert if we haven't already for this event
+      if (!hasAlertBeenSent(event._id.toString(), alertType)) {
+        sendBudgetWarningEmail(
+          user.email,
+          event.name,
+          budgetLimit,
+          newSpentAmount,
+          budgetPercentage
+        )
+          .then(() => {
+            // Mark that we've sent the 90% alert for this event
+            markAlertAsSent(event._id.toString(), alertType);
+          })
+          .catch((err) => {
+            console.error("Failed to send budget warning email:", err);
+          });
+      }
+    }
+    // Check if budget has exceeded 100%
+    else if (budgetPercentage >= 100) {
+      const alertType = "BUDGET_EXCEEDED";
+
+      // Only send the budget exceeded alert if we haven't already for this event
+      // since the last time the budget was adjusted
+      if (!hasAlertBeenSent(event._id.toString(), alertType)) {
+        sendBudgetExceededEmail(
+          user.email,
+          event.name,
+          budgetLimit,
+          newSpentAmount,
+          budgetPercentage
+        )
+          .then(() => {
+            // Mark that we've sent the budget exceeded alert for this event
+            markAlertAsSent(event._id.toString(), alertType);
+          })
+          .catch((err) => {
+            console.error("Failed to send budget exceeded email:", err);
+          });
+      }
+    }
+  } catch (error) {
+    // Log any errors but don't affect the response
+    console.error("Error processing budget alerts:", error);
+  }
 });
 
 export const getVendorsByEvent = asyncHandler(
@@ -97,6 +204,7 @@ export const getVendorsByEvent = asyncHandler(
   }
 );
 
+// Backend API with pagination
 export const getByUser = asyncHandler(async (req: Request, res: Response) => {
   let reqUser = req as AuthenticatedRequest;
   const userId = reqUser.user.id;
@@ -104,14 +212,37 @@ export const getByUser = asyncHandler(async (req: Request, res: Response) => {
   if (!userId) {
     throw new ApiError(401, "unauthorized");
   }
-  const vendors = await Vendor.find({ addedBy: userId }).sort({
-    createdAt: -1,
-  });
+
+  // Get pagination parameters from query
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 5;
+
+  // Calculate skip value for pagination
+  const skip = (page - 1) * limit;
+
+  // Get total count for pagination metadata
+  const totalCount = await Vendor.countDocuments({ addedBy: userId });
+
+  // Get paginated vendors
+  const vendors = await Vendor.find({ addedBy: userId })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
   if (!vendors) {
     throw new ApiError(404, "no vendors found");
   }
 
-  return res.status(200).json(vendors);
+  // Return pagination metadata along with vendors
+  return res.status(200).json({
+    vendors,
+    pagination: {
+      totalItems: totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      currentPage: page,
+      itemsPerPage: limit,
+    },
+  });
 });
 
 // add user in split

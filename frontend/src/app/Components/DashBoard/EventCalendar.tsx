@@ -10,12 +10,9 @@ import { selectEvents } from "@/store/eventSlice";
 import { useSelector } from "react-redux";
 import { useState, useRef } from "react";
 import { isSameDay, parseISO, isFuture, format } from "date-fns";
+import { ProcessedEvent } from "@/Interface/interface";
 
-interface ProcessedEvent {
-  date: Date;
-  name: string;
-  location: string;
-}
+
 
 const EventCalendar = () => {
   const events = useSelector(selectEvents) || [];

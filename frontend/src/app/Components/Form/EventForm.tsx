@@ -19,47 +19,8 @@ import { useSelector } from "react-redux";
 import { z } from "zod";
 import { eventTypeOptions, IEvent } from "@/Interface/interface";
 import Image from "next/image";
-
-// Enhanced Zod schema with better validations
-const eventFormSchema = z.object({
-  name: z
-    .string()
-    .min(1, { message: "Event name is required" })
-    .max(20, { message: "Title cannot be longer than 20 character" })
-    .refine((value) => !/^\d+$/.test(value), {
-      message: "Event name cannot contain only numbers",
-    }),
-  date: z
-    .string()
-    .min(1, { message: "Event Date is required" })
-    .refine((value) => !isNaN(Date.parse(value)), {
-      message: "Please provide a valid date",
-    }),
-  location: z
-    .string()
-    .min(3, { message: "Event location is required" })
-    .max(20),
-  description: z
-    .string()
-    .min(1, { message: "Description is required" })
-    .max(200),
-  budget: z.coerce
-    .number()
-    .min(1, { message: "Budget must be at least 1" })
-    .max(1_00_00_000, { message: "Budget cannot exceed ₹1 crore" })
-    .nonnegative({ message: "Budget cannot be negative" }),
-  guestLimit: z.coerce
-    .number()
-    .min(1, { message: "Number of guests must be at least 1" })
-    .max(10000, { message: "Guest limit cannot be exceed 10000" })
-    .nonnegative({ message: "Guest limit cannot be negative" }),
-  eventType: z.string().min(1, { message: "Event type is required" }),
-  durationInDays: z.coerce
-    .number()
-    .min(1, { message: "Duration must be at least 1 day" })
-    .max(30, { message: "Duration cannot be more than 30" })
-    .nonnegative({ message: "Duration cannot be negative" }),
-});
+import { eventFormSchema } from "@/schemas/ValidationSchema";
+import { formatDateForInput } from "@/utils/helper";
 
 type EventFormValues = z.infer<typeof eventFormSchema>;
 
@@ -68,22 +29,6 @@ interface EventFormProps {
   onSubmit: (data: FormData) => void;
   isEditing?: boolean;
 }
-
-// Helper function to properly format dates for input fields
-const formatDateForInput = (dateString?: string | Date): string => {
-  if (!dateString) return "";
-  try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "";
-    const istOffset = 5.5 * 60;
-    const localTime = new Date(date.getTime() + istOffset * 60000);
-    const iso = localTime.toISOString();
-    return iso.slice(0, 16);
-  } catch (e) {
-    console.log(e);
-    return "";
-  }
-};
 
 const EventForm: React.FC<EventFormProps> = ({
   initialData,
@@ -108,8 +53,8 @@ const EventForm: React.FC<EventFormProps> = ({
       date: formatDateForInput(initialData?.date),
       location: initialData?.location || "",
       description: initialData?.description || "",
-      budget: initialData?.budget?.allocated || undefined, 
-      guestLimit: initialData?.guestLimit || undefined, 
+      budget: initialData?.budget?.allocated || undefined,
+      guestLimit: initialData?.guestLimit || undefined,
       eventType: initialData?.eventType || "",
       durationInDays: initialData?.durationInDays || 1,
     },
@@ -120,7 +65,7 @@ const EventForm: React.FC<EventFormProps> = ({
     if (!file) return;
 
     const validImageTypes = ["image/jpeg", "image/png", "image/webp"];
-console.log(file);
+    console.log(file);
 
     if (!validImageTypes.includes(file.type)) {
       alert("Only JPEG, PNG, or WEBP images are allowed.");
@@ -131,7 +76,6 @@ console.log(file);
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
     console.log(URL.createObjectURL);
-    
   };
 
   const submitHandler = (data: EventFormValues) => {

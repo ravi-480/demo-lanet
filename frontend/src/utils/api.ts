@@ -22,7 +22,6 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => {
     if (response.config.method !== "get") {
-
       const successMessage =
         response.data?.message || "Action completed successfully!";
 
@@ -44,6 +43,7 @@ api.interceptors.response.use(
 
     const status = error.response?.status;
 
+    // Handle rate limiting errors
     if (status === 429) {
       const message =
         error.response?.data?.message ||
@@ -67,7 +67,7 @@ api.interceptors.response.use(
       // Check if the error message indicates there's no refresh token
       const errorMessage = error.response?.data?.message || "";
       if (errorMessage.startsWith("NO_REFRESH_TOKEN:")) {
-        toast.error( "Session expired. Please log in again.")
+        toast.error("Session expired. Please log in again.");
         // No refresh token available, trigger auth error immediately
         if (api.onAuthError) {
           api.onAuthError();
@@ -100,7 +100,14 @@ api.interceptors.response.use(
       }
     }
 
-    if (status !== 401 && status !== 404 && status >= 500) {
+    // Handle 400-level client errors (except 401 already handled above and 404)
+    if (status >= 400 && status < 500 && status !== 401 && status !== 404) {
+      const message = error.response?.data?.message || "Request failed";
+      toast.error(message);
+    }
+
+    // Handle 500-level server errors
+    if (status >= 500) {
       const message =
         error.response?.data?.message ||
         error.message ||

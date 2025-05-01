@@ -30,3 +30,46 @@ export const loginformSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
   password: z.string().min(1, { message: "Password is required." }),
 });
+
+
+// create event form schema 
+
+export const eventFormSchema = z.object({
+  name: z
+    .string()
+    .min(1, { message: "Event name is required" })
+    .max(20, { message: "Title cannot be longer than 20 character" })
+    .refine((value) => !/^\d+$/.test(value), {
+      message: "Event name cannot contain only numbers",
+    }),
+  date: z
+    .string()
+    .min(1, { message: "Event Date is required" })
+    .refine((value) => !isNaN(Date.parse(value)), {
+      message: "Please provide a valid date",
+    }),
+  location: z
+    .string()
+    .min(3, { message: "Event location is required" })
+    .max(20),
+  description: z
+    .string()
+    .min(1, { message: "Description is required" })
+    .max(200),
+  budget: z.coerce
+    .number()
+    .min(1, { message: "Budget must be at least 1" })
+    .max(1_00_00_000, { message: "Budget cannot exceed ₹1 crore" })
+    .nonnegative({ message: "Budget cannot be negative" }),
+  guestLimit: z.coerce
+    .number()
+    .min(1, { message: "Number of guests must be at least 1" })
+    .max(10000, { message: "Guest limit cannot be exceed 10000" })
+    .nonnegative({ message: "Guest limit cannot be negative" }),
+  eventType: z.string().min(1, { message: "Event type is required" }),
+  durationInDays: z.coerce
+    .number()
+    .min(1, { message: "Duration must be at least 1 day" })
+    .max(30, { message: "Duration cannot be more than 30" })
+    .nonnegative({ message: "Duration cannot be negative" }),
+});

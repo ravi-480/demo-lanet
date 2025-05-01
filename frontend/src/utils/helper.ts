@@ -53,3 +53,20 @@ export const getNoOfUpcomingEvent = (events: IEvent[]) => {
   }, 0);
   return count;
 };
+
+
+// Helper function to properly format dates for input fields
+export const formatDateForInput = (dateString?: string | Date): string => {
+  if (!dateString) return "";
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
+    const istOffset = 5.5 * 60;
+    const localTime = new Date(date.getTime() + istOffset * 60000);
+    const iso = localTime.toISOString();
+    return iso.slice(0, 16);
+  } catch (e) {
+    console.log(e);
+    return "";
+  }
+};

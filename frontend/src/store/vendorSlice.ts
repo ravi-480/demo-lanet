@@ -6,8 +6,18 @@ import api from "@/utils/api";
 
 type StatusType = "idle" | "loading" | "succeeded" | "failed";
 
+// Adding pagination interface
+interface PaginationMeta {
+  totalItems: number;
+  totalPages: number;
+  currentPage: number;
+  itemsPerPage: number;
+}
+
+// Updated state interface to include pagination
 interface VendorState {
   items: VendorType[];
+  pagination: PaginationMeta | null;
   status: StatusType;
   error: string | { message: string } | null;
 }
@@ -20,8 +30,10 @@ interface ManualVendorExpenseData {
   [key: string]: string | number | undefined;
 }
 
+// Updated initial state with pagination
 const initialState: VendorState = {
   items: [],
+  pagination: null,
   status: "idle",
   error: null,
 };
@@ -69,14 +81,18 @@ export const getVendorsByEvent = createAsyncThunk<
   }
 );
 
-// Get vendor by user account
+// Updated getVendorByUser to support pagination
 export const getVendorByUser = createAsyncThunk<
-  VendorType[],
-  void,
+  { vendors: VendorType[]; pagination: PaginationMeta },
+  { page?: number; limit?: number } | void,
   { rejectValue: string }
->("vendors/fetchByUser", async (_, { rejectWithValue }) => {
+>("vendors/fetchByUser", async (params = {}, { rejectWithValue }) => {
+  const { page = 1, limit = 5 } = params as { page?: number; limit?: number };
+
   try {
-    const response = await api.get("/vendors/getByUser");
+    const response = await api.get("/vendors/getByUser", {
+      params: { page, limit },
+    });
     return response.data;
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
@@ -145,6 +161,7 @@ const vendorSlice = createSlice({
   reducers: {
     clearVendors: (state) => {
       state.items = [];
+      state.pagination = null;
       state.status = "idle";
       state.error = null;
     },
@@ -179,7 +196,8 @@ const vendorSlice = createSlice({
       })
       .addCase(getVendorByUser.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.items = action.payload;
+        state.items = action.payload.vendors;
+        state.pagination = action.payload.pagination;
         state.error = null;
       })
       .addCase(getVendorByUser.rejected, (state, action) => {
@@ -193,6 +211,7 @@ const vendorSlice = createSlice({
       .addCase(removeAllVendor.fulfilled, (state) => {
         state.status = "succeeded";
         state.items = []; // Clear the vendor list
+        state.pagination = null; // Reset pagination
       })
       .addCase(removeAllVendor.rejected, (state, action) => {
         state.status = "failed";
@@ -204,3 +223,5 @@ const vendorSlice = createSlice({
 export const { clearVendors } = vendorSlice.actions;
 export const vendorByUser = (state: RootState) => state.vendors;
 export default vendorSlice.reducer;
+
+

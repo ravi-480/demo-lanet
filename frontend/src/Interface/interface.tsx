@@ -353,3 +353,11 @@ export interface AuthResponseData {
   data?: AuthResponseData;
   [key: string]: unknown;
 }
+
+
+
+export interface ProcessedEvent {
+  date: Date;
+  name: string;
+  location: string;
+}
