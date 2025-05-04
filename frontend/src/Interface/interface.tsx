@@ -125,11 +125,11 @@ export interface CustomEvent {
   };
 }
 
-// Update your VendorType interface to include all necessary properties:
 export interface VendorType {
   _id?: string;
   event: string;
   title: string;
+  status?: string;
   type: string;
   address: string;
   email?: string;
@@ -139,6 +139,7 @@ export interface VendorType {
   directionsLink?: string;
   placeId: string;
   phone?: string;
+  finalPrice?: number;
   price: number;
   pricingUnit: string;
   category: string;
@@ -353,8 +354,6 @@ export interface AuthResponseData {
   data?: AuthResponseData;
   [key: string]: unknown;
 }
-
-
 
 export interface ProcessedEvent {
   date: Date;

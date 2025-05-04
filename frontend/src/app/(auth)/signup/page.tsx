@@ -1,4 +1,4 @@
-import SignupModal from "../../Components/Home/Signup/SignupForm";
+import SignupModal from "../../Components/Authentication/Signup/SignupForm";
 
 export default function SignupPage() {
   return (

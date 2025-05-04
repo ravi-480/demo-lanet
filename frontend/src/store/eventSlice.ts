@@ -47,7 +47,6 @@ export const fetchEvents = createAsyncThunk(
       const response = await api.get("/events");
       return response.data.events;
     } catch (error: any) {
-
       if (error.response?.status === 401) {
         return rejectWithValue("Unauthorized");
       }
@@ -80,11 +79,16 @@ export const fetchById = createAsyncThunk(
 
 export const updateEvent = createAsyncThunk(
   "event/updateEvent",
-  async (data: FormData, { rejectWithValue }) => {
+  async (
+    { id, formData }: { id: string; formData: FormData },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await api.put(`/events/updateEvent`, data, {
+      console.log(id);
+
+      const response = await api.put(`/events/updateEvent/${id}`, formData, {
         headers: {
-          "Content-Type": "multipart/form-data", // without this file wont go in backend
+          "Content-Type": "multipart/form-data", // without this file won't go in backend
         },
       });
 
@@ -123,7 +127,7 @@ export const deleteEvent = createAsyncThunk(
 // update event budget
 
 export const adjustEventBudget = createAsyncThunk(
-  "event/adjustEvent",
+  "event/adjustEventBudget",
   async (
     data: { eventId: string; adjustAmount: number },
     { rejectWithValue }
@@ -131,7 +135,10 @@ export const adjustEventBudget = createAsyncThunk(
     console.log(data);
 
     try {
-      const response = await api.post(`/events/adjustBudget`, { data });
+      // Updated to match backend route structure
+      const response = await api.post(`/events/${data.eventId}/adjustBudget`, {
+        adjustAmount: data.adjustAmount,
+      });
 
       return response.data;
     } catch (error: unknown) {

@@ -24,7 +24,7 @@ const Welcome = () => {
             Welcome back,<span className="capitalize"> {user?.name}</span>
           </h1>
 
-          <p className="text-cyan-300 mt-1">
+          <p className="text-violet-500 mt-1">
             You have <span className="font-semibold">{val}</span> upcoming
             events
           </p>

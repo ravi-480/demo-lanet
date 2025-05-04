@@ -1,6 +1,5 @@
-"use client"
+"use client";
 import { RootState } from "@/store/store";
-
 
 import { Socket, io } from "socket.io-client";
 import { useEffect, useRef, useState } from "react";
@@ -38,7 +37,7 @@ export const useSocket = () => {
 
       socket.on("connect", () => {
         console.log("Socket connected:", socket.id);
-        
+
         // Only authenticate if user exists and has ID
         if (user?.id) {
           console.log("Authenticating user:", user.id);
@@ -53,7 +52,8 @@ export const useSocket = () => {
 
       socket.on("new-notification", (notification: INotification) => {
         console.log("New notification received:", notification);
-        if (notification && notification._id) {  // Validate notification
+        if (notification && notification._id) {
+          // Validate notification
           dispatch(addNotification(notification));
         } else {
           console.error("Received invalid notification:", notification);

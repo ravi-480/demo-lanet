@@ -1,22 +1,7 @@
-"use client";
-import LoadingSpinner from "@/app/Components/Loader/LoadingSpinner";
 import Welcome from "../../Components/DashBoard/Welcome";
-import dynamic from "next/dynamic";
 import EventCalendar from "../../Components/DashBoard/EventCalendar";
 import EventDisplay from "@/app/Components/DashBoard/EventDisplay";
-
-const Budget = dynamic(() => import("../../Components/DashBoard/Budget"), {
-  loading: () => <LoadingSpinner />,
-  ssr: false,
-});
-
-const Testimonials = dynamic(
-  () => import("../../Components/DashBoard/Testimonial"),
-  {
-    loading: () => <LoadingSpinner />,
-    ssr: false,
-  }
-);
+import DashboardSections from "./DashboardSection";
 
 const Dashboard = () => {
   return (
@@ -32,9 +17,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <Budget />
-
-      <Testimonials />
+      <DashboardSections />
     </div>
   );
 };

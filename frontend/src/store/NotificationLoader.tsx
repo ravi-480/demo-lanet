@@ -1,7 +1,7 @@
 "use client";
-
 import { useEffect, useRef } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 import {
   fetchNotificationsFailure,
   fetchNotificationsSuccess,
@@ -10,16 +10,34 @@ import {
 import { AxiosError } from "axios";
 import { useSocket } from "@/hooks/useSocket";
 import api from "@/utils/api";
-import { useAuthSession } from "@/hooks/useAuthSession";
+import { setUser } from "./authSlice";
 
 const NotificationLoader = () => {
   const dispatch = useDispatch();
-  const { user, isAuthenticated } = useAuthSession();
+  const { user } = useSelector((state: RootState) => state.auth);
   const socket = useSocket();
   const hasFetchedNotificationsRef = useRef(false);
+  useEffect(() => {
+    const silentlyCheckAuth = async () => {
+      try {
+        const response = await api.get("/auth", {
+          validateStatus: (status) => status < 500,
+          timeout: 3000,
+        });
+
+        if (response.status === 200 && response.data?.user) {
+          dispatch(setUser(response.data.user));
+        }
+      } catch {
+        // silently ignore
+      }
+    };
+
+    if (!user?.id) silentlyCheckAuth();
+  }, [dispatch, socket?.connected, user?.id]);
 
   const fetchNotifications = async () => {
-    if (!user?.id || hasFetchedNotificationsRef.current) return;
+    if (!user?.id) return;
 
     dispatch(fetchNotificationStart());
 
@@ -60,9 +78,7 @@ const NotificationLoader = () => {
   };
 
   useEffect(() => {
-    // Only proceed if we're authenticated and have a user ID
-    if (!isAuthenticated || !user?.id || hasFetchedNotificationsRef.current)
-      return;
+    if (!user?.id) return;
 
     fetchNotifications();
 
@@ -73,7 +89,7 @@ const NotificationLoader = () => {
       };
 
       const handleReconnect = () => {
-        if (!hasFetchedNotificationsRef.current) fetchNotifications();
+        fetchNotifications();
       };
 
       socket.on("connect", handleConnect);
@@ -86,7 +102,7 @@ const NotificationLoader = () => {
         socket.off("reconnect", handleReconnect);
       };
     }
-  }, [user?.id, socket, dispatch, isAuthenticated]);
+  }, [user?.id, socket, dispatch]);
 
   return null;
 };

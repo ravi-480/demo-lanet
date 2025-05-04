@@ -8,7 +8,7 @@ export interface NotificationState {
 }
 
 const initialState: NotificationState = {
-  items: [],  
+  items: [],
   loading: false,
   error: null,
 };

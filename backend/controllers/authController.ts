@@ -10,7 +10,6 @@ import {
 } from "../interfaces/user.interface";
 import User from "../models/UserModel";
 
-// signup
 export const signup = asyncHandler(async (req: Request, res: Response) => {
   const userData: ISignupRequest = req.body;
   const result = await authService.signup(userData);
@@ -26,20 +25,18 @@ export const signup = asyncHandler(async (req: Request, res: Response) => {
 
 // authGuard
 export const authGuard = asyncHandler(
-  async (req: AuthenticatedRequest, res: Response) => {
-    const user = await User.findById(req.user!.id).select("-password");
-
-    if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
-    }
-
-    res.status(200).json({ success: true, user });
+  async (req: AuthenticatedRequest, res) => {
+    res.status(200).json({ success: true, user: req.user });
   }
 );
 
-// login
+export const getMe = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const user = await User.findById(req.user!.id).select("-password");
+    res.status(200).json({ success: true, data: user });
+  }
+);
+
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const loginData: ILoginRequest = req.body;
   const result = await authService.login(loginData);
@@ -71,7 +68,6 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-// refresh-token
 export const refreshToken = asyncHandler(
   async (req: Request, res: Response) => {
     // Get refresh token from cookie
@@ -115,12 +111,9 @@ export const refreshToken = asyncHandler(
   }
 );
 
-// logout from page
 export const logout = asyncHandler(async (req: Request, res: Response) => {
-  // Get user ID from request
   const userId = (req as any).user?.id;
 
-  // Clear refresh token from cookie
   res.clearCookie("token", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -144,7 +137,6 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-// forget-passowrd
 export const forgotPassword = asyncHandler(
   async (req: Request, res: Response) => {
     const { email }: IForgotPasswordRequest = req.body;
@@ -160,7 +152,6 @@ export const forgotPassword = asyncHandler(
   }
 );
 
-// reset-password
 export const resetPassword = asyncHandler(
   async (req: Request, res: Response) => {
     const resetData: IResetPasswordRequest = req.body;

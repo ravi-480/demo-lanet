@@ -1,15 +1,17 @@
 import Event, { EventDocument } from "../models/eventModel";
-import { buildEventData, uploadImageToCloudinary } from "../utils/eventBuild";
-import ApiError from "../utils/ApiError";
-import mongoose from "mongoose";
 import Vendor from "../models/vendorModel";
+import ApiError from "../utils/ApiError";
+import { uploadImageToCloudinary, buildEventData } from "../utils/eventBuild";
+import { resetBudgetExceedanceAlert } from "../controllers/vendorController";
+import mongoose from "mongoose";
 
-export const createEventService = async (
-  body: any,
+// Create a new event
+
+export const createEvent = async (
+  data: any,
   file: Express.Multer.File | undefined,
   userId: string
-) => {
-  // Validate required fields
+): Promise<EventDocument> => {
   const requiredFields = [
     "name",
     "date",
@@ -17,79 +19,19 @@ export const createEventService = async (
     "description",
     "eventType",
   ];
+
   for (const field of requiredFields) {
-    if (!body[field]) {
+    if (!data[field]) {
       throw new ApiError(400, `Missing field: ${field}`);
     }
   }
 
-  // Validate date
-  const eventDate = new Date(body.date);
+  const eventDate = new Date(data.date);
   if (isNaN(eventDate.getTime())) {
     throw new ApiError(400, "Invalid date format");
   }
 
-  // Upload image if provided
   let image = "";
-  if (file) {
-    try {
-      image = await uploadImageToCloudinary(file);
-    } catch (error) {
-      throw new ApiError(500, "failed to upload image");
-    }
-  }
-
-  // Build event data
-  const eventData = buildEventData(body, image, userId);
-
-  // Create event
-  try {
-    return await Event.create(eventData);
-  } catch (error: any) {
-    console.log(error);
-    throw new ApiError(500, "Error in creating events");
-  }
-};
-
-export const fetchUserEventsService = async (userId: string) => {
-  if (!userId) {
-    throw new ApiError(401, "Unauthorized - Invalid user ID");
-  }
-
-  return await Event.find({ creator: userId }).sort({ date: 1 }).lean();
-};
-
-export const fetchEventByIdService = async (eventId: string) => {
-  if (!eventId) {
-    throw new ApiError(400, "Event ID is required");
-  }
-
-  // Validate MongoDB ObjectId format
-  if (!mongoose.Types.ObjectId.isValid(eventId)) {
-    throw new ApiError(404, "Invalid event ID format or Event Not Found");
-  }
-
-  const event = await Event.findById(eventId);
-
-  if (!event) {
-    throw new ApiError(404, "Event Not Found");
-  }
-
-  return event;
-};
-
-export const updateEventService = async (
-  body: any,
-  file: Express.Multer.File | undefined
-) => {
-  const { eventId } = body;
-
-  if (!eventId) {
-    throw new ApiError(400, "Missing EventID");
-  }
-
-  let image = "";
-
   if (file) {
     try {
       image = await uploadImageToCloudinary(file);
@@ -98,55 +40,100 @@ export const updateEventService = async (
     }
   }
 
-  const updatedData = buildEventData(body, image || undefined);
-
-  try {
-    const updatedEvent = await Event.findByIdAndUpdate(eventId, updatedData, {
-      new: true,
-    });
-
-    if (!updatedEvent) {
-      throw new ApiError(404, "Event not found");
-    }
-
-    return updatedEvent;
-  } catch (error) {
-    throw new ApiError(500, "Failed to update data");
-  }
+  const eventData = buildEventData(data, image, userId);
+  return await Event.create(eventData);
 };
 
-export const deleteEventService = async (eventId: string) => {
-  if (!eventId) throw new ApiError(400, "Missing EventID");
+// Get all events for a user
 
-  const deletedEvent = await Event.findByIdAndDelete(eventId);
-  const deletedVendor = await Vendor.deleteMany({ event: eventId });
-
-  if (!deletedEvent && !deletedVendor)
-    throw new ApiError(500, "Failed to delete an event");
-
-  return { success: true };
+export const getEvents = async (userId: string): Promise<any[]> => {
+  return await Event.find({ creator: userId })
+    .select("-includedInSplit")
+    .sort({ date: 1 })
+    .lean();
 };
 
-export const adjustEventBudgetService = async (
-  eventId: string,
-  adjustAmount: number
-) => {
-  if (!eventId || adjustAmount === undefined) {
-    throw new ApiError(400, "Event ID and adjust amount are required.");
+// Get event by ID
+
+export const getEventById = async (eventId: string): Promise<EventDocument> => {
+  if (!mongoose.Types.ObjectId.isValid(eventId)) {
+    throw new ApiError(404, "Invalid event ID format");
   }
 
   const event = await Event.findById(eventId);
+  if (!event) {
+    throw new ApiError(404, "Event Not Found");
+  }
 
-  if (!event) throw new ApiError(404, "Event Not Found");
+  return event;
+};
 
-  if (event.budget.allocated > event.budget.spent) {
-    throw new ApiError(
-      400,
-      "Allocated budget is already greater than spent amount."
-    );
+// Update an event
+
+export const updateEvent = async (
+  eventId: string,
+  data: any,
+  file: Express.Multer.File | undefined
+): Promise<EventDocument | null> => {
+  let image = "";
+  if (file) {
+    try {
+      image = await uploadImageToCloudinary(file);
+    } catch (error) {
+      throw new ApiError(500, "Failed to upload image");
+    }
+  }
+
+  const updatedData = buildEventData(data, image || undefined);
+  const updatedEvent = await Event.findByIdAndUpdate(eventId, updatedData, {
+    new: true,
+  });
+
+  if (!updatedEvent) {
+    throw new ApiError(404, "Event not found");
+  }
+
+  return updatedEvent;
+};
+
+// Delete an event
+
+export const deleteEvent = async (
+  eventId: string,
+  userId: string
+): Promise<void> => {
+  const event = await Event.findById(eventId);
+
+  if (!event) {
+    throw new ApiError(404, "Event not found");
+  }
+
+  if (event.creator.toString() !== userId) {
+    throw new ApiError(403, "Not authorized to delete this event");
+  }
+
+  await Event.findByIdAndDelete(eventId);
+  await Vendor.deleteMany({ event: eventId });
+};
+
+// Adjust event budget
+
+export const adjustEventBudget = async (
+  eventId: string,
+  adjustAmount: number
+): Promise<any> => {
+  const event = await Event.findById(eventId);
+
+  if (!event) {
+    throw new ApiError(404, "Event Not Found");
   }
 
   event.budget.allocated = event.budget.allocated + adjustAmount;
+
+  if (typeof resetBudgetExceedanceAlert === "function") {
+    resetBudgetExceedanceAlert(eventId);
+  }
+
   await event.save();
 
   return event.budget;

@@ -1,5 +1,4 @@
 import { useDispatch } from "react-redux";
-import { MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -10,47 +9,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 import { AppDispatch } from "@/store/store";
 import { getVendorsByEvent, removeAddedVendor } from "@/store/vendorSlice";
 import { VendorType } from "@/Interface/interface";
-
-interface VendorActionProps {
-  item: VendorType;
-  onRemove: (id: string) => void;
-}
-
-const VendorActions = ({ item, onRemove }: VendorActionProps) => {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <MoreHorizontal size={15} />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() => item._id && onRemove(item._id)}
-          className="text-red-600"
-        >
-          Remove Vendor
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
+import VendorActions from "./VendorAction"; // Import the updated VendorActions component
 
 const BudgetList = ({ items }: { items: VendorType[] }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -78,8 +41,8 @@ const BudgetList = ({ items }: { items: VendorType[] }) => {
             <TableHead className="w-[250px] text-gray-200">Name</TableHead>
             <TableHead className="text-gray-200">Category</TableHead>
             <TableHead className="text-gray-200">Amount</TableHead>
-            <TableHead className="text-gray-200">Pricing unit</TableHead>
-            <TableHead className="text-gray-200">Contact no</TableHead>
+            <TableHead className="text-gray-200">final Price</TableHead>
+            <TableHead className="text-gray-200">status</TableHead>
             <TableHead className="text-right text-gray-200">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -99,8 +62,8 @@ const BudgetList = ({ items }: { items: VendorType[] }) => {
                   <div className="text-sm">{item.category}</div>
                 </TableCell>
                 <TableCell>₹ {item.price}</TableCell>
-                <TableCell>{item.pricingUnit}</TableCell>
-                <TableCell>{item.phone ? item.phone : "N/A"}</TableCell>
+                <TableCell>{item.finalPrice}</TableCell>
+                <TableCell>{item.status ? item.status : "N/A"}</TableCell>
                 <TableCell className="text-right">
                   <VendorActions item={item} onRemove={handleRemoveVendor} />
                 </TableCell>

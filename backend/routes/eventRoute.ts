@@ -12,12 +12,11 @@ import { authenticate } from "../middleware/authMiddleware";
 
 const router = Router();
 
-router.use(authenticate);
-router.post("/create-new-event", uploadEventImage, createEvent);
-router.get("/", fetchEvents);
-router.post("/adjustBudget", adjustEventBudget);
+router.post("/create-new-event", authenticate, uploadEventImage, createEvent);
+router.get("/", authenticate, fetchEvents);
+router.post("/:id/adjustBudget", authenticate, adjustEventBudget);
 router.get("/:id", fetchById);
-router.put("/updateEvent", uploadEventImage, updateEvent);
-router.delete("/deleteEvent/:id", deleteEvent);
+router.put("/updateEvent/:id", authenticate, uploadEventImage, updateEvent);
+router.delete("/deleteEvent/:id", authenticate, deleteEvent);
 
 export default router;

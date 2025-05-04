@@ -69,6 +69,8 @@ const Testimonials: React.FC = () => {
                 activeTestimonial === index ? "bg-blue-600" : "bg-gray-300"
               }`}
               aria-label={`Go to slide ${index + 1}`}
+              role="button"
+              tabIndex={0}
             />
           ))}
         </div>

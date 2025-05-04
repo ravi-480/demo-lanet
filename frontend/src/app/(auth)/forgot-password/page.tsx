@@ -1,13 +1,5 @@
-"use client";
-
-import ForgotPasswordForm from "@/app/Components/Home/Login/ForgetPasswordForm";
+import ForgotPasswordForm from "@/app/Components/Authentication/Forget-Password/ForgetPasswordForm";
 
 export default function ForgotPasswordPage() {
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-900 p-4">
-      <div className="w-full max-w-md">
-        <ForgotPasswordForm />
-      </div>
-    </div>
-  );
+  return <ForgotPasswordForm />;
 }

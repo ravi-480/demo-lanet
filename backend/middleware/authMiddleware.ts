@@ -15,30 +15,23 @@ export const authenticate = asyncHandler(
       token = req.headers.authorization.split(" ")[1];
     }
 
-    // Check if token exists
     if (!token) {
-      // Check if refresh token exists
       const refreshToken = req.cookies?.refreshToken;
-
       if (!refreshToken) {
-        // No refresh token available, immediately indicate this to the client
-        throw new ApiError(
-          401,
-          "NO_REFRESH_TOKEN:Session expired. Please log in again."
-        );
+        throw new ApiError(401, "Session expired. Please log in again.");
       }
 
-      // We have a refresh token but no access token
-      throw new ApiError(401, "Access token required");
+      throw new ApiError(
+        401,
+        "Access token missing. Please refresh your token."
+      );
     }
 
     try {
-      // Verify the token
       const decoded = verifyToken(token);
       req.user = decoded;
       return next();
     } catch (err: any) {
-      // Token verification failed (expired or invalid)
       if (err.message === "jwt expired") {
         throw new ApiError(401, "Token expired");
       } else {

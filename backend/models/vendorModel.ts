@@ -16,6 +16,12 @@ const vendorSchema = new Schema(
     directionsLink: { type: String },
     phone: { type: String },
     price: { type: Number, required: true },
+    finalPrice: { type: Number, default: 0 },
+    status: {
+      type: String,
+      enum: ["pending", "accepted", "acceptedOriginal", "declined"],
+      default: "pending",
+    },
     placeId: { type: String, required: true },
     pricingUnit: { type: String, required: true },
     category: { type: String, required: true },

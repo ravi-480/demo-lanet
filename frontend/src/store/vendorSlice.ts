@@ -30,6 +30,15 @@ interface ManualVendorExpenseData {
   [key: string]: string | number | undefined;
 }
 
+// Updated mail request interface to handle both mail and negotiation
+interface SendMailRequest {
+  vendorId: string;
+  eventId: string;
+  notes: string;
+  isNegotiating?: boolean;
+  negotiatedPrice?: number;
+}
+
 // Updated initial state with pagination
 const initialState: VendorState = {
   items: [],
@@ -136,6 +145,23 @@ export const addManualVendorExpense = createAsyncThunk<
   }
 });
 
+// Send mail to vendor - Updated to handle both mail and negotiation
+export const sendMailToVendor = createAsyncThunk<
+  void,
+  SendMailRequest,
+  { rejectValue: string }
+>("vendor/sendMail", async (data, { rejectWithValue }) => {
+  try {
+    const response = await api.post("/vendors/send-mail-toVendor", data);
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+    return rejectWithValue("Failed to contact vendor");
+  }
+});
+
 // Remove all vendors
 export const removeAllVendor = createAsyncThunk<
   void,
@@ -216,6 +242,17 @@ const vendorSlice = createSlice({
       .addCase(removeAllVendor.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload || "Failed to remove all vendors";
+      })
+      // Updated cases for sendMailToVendor (now handles both mail and negotiation)
+      .addCase(sendMailToVendor.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(sendMailToVendor.fulfilled, (state) => {
+        state.status = "succeeded";
+      })
+      .addCase(sendMailToVendor.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload || "Failed to contact vendor";
       });
   },
 });
@@ -223,5 +260,3 @@ const vendorSlice = createSlice({
 export const { clearVendors } = vendorSlice.actions;
 export const vendorByUser = (state: RootState) => state.vendors;
 export default vendorSlice.reducer;
-
-

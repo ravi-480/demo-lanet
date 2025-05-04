@@ -21,9 +21,11 @@ const EditEvent = () => {
   }, [dispatch, id, event]);
 
   const handleUpdate = async (formData: FormData) => {
-    dispatch(updateEvent(formData))
+    // We no longer need to append the eventId to formData since we're passing it separately
+    dispatch(updateEvent({ id, formData }))
       .unwrap()
       .then(() => {
+        toast.success("Event updated successfully!");
         router.push("/events");
       })
       .catch((err: unknown) => {

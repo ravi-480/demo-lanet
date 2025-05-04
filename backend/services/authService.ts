@@ -71,11 +71,9 @@ export const signup = async (
 export const login = async (
   loginData: ILoginRequest
 ): Promise<IAuthResponse> => {
-
   const user = await User.findOne({ email: loginData.email }).select(
     "+password"
   );
-
 
   if (!user || !(await user.comparePassword(loginData.password))) {
     throw new ApiError(401, "Invalid email or password");
@@ -114,13 +112,9 @@ export const refreshAccessToken = async (
     // Find user with this refresh token
     const user = await User.findById(decoded.id).select("+refreshToken");
 
-    
-
     if (!user || user.refreshToken !== token) {
       throw new ApiError(401, "Invalid refresh token");
     }
-
-    
 
     // Generate new tokens
     const accessToken = generateAccessToken(
@@ -166,8 +160,9 @@ export const forgotPassword = async (email: string): Promise<void> => {
   user.resetPasswordExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
   await user.save();
 
+  const resetApiUrl = process.env.RESET_API_URL;
   // Create reset URL
-  const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
+  const resetUrl = `${resetApiUrl}/${resetToken}`;
 
   // Send email with reset link
   try {

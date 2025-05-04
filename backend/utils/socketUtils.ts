@@ -66,8 +66,3 @@ export const initializeSocketIP = (httpServer: HttpServer) => {
 };
 
 export const getIO = () => io;
-
-
-
-
-
