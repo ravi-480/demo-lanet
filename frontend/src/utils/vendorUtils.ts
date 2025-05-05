@@ -78,7 +78,7 @@ export const checkMinimumGuestRequirement = (
 };
 
 export const generateMinGuestLimit = (): number => {
-  const possibleLimits = [10, 20, 40];
+  const possibleLimits = [10, 20, 30, 40, 50];
   return possibleLimits[Math.floor(Math.random() * possibleLimits.length)];
 };
 

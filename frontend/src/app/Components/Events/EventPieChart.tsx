@@ -9,37 +9,17 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import { useDispatch } from "react-redux";
-import { IEvent, IGuest } from "../../../Interface/interface";
+import {
+  CustomizedLabelProps,
+  CustomTooltipProps,
+  MyPieChartProps,
+  PayloadItem,
+} from "../../../Interface/interface";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AppDispatch } from "../../../store/store";
-import { fetchGuests } from "@/store/rsvpSlice";
-
-
-
-type MyPieChartProps = {
-  event: IEvent;
-  rsvpData: IGuest[];
-};
-
-interface PayloadItem {
-  payload: {
-    name: string;
-    value: number;
-  };
-}
 
 const MyPieChart = ({ event, rsvpData }: MyPieChartProps) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const eventId = event._id;
-
-  // Keep this function for future use but mark it with a comment to satisfy the linter
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const refreshData = () => {
-    dispatch(fetchGuests(eventId));
-  };
-
   const { budget = { allocated: 0, spent: 0 } } = event;
+
   const remaining = budget.allocated - budget.spent;
 
   const budgetData = [
@@ -66,21 +46,13 @@ const MyPieChart = ({ event, rsvpData }: MyPieChartProps) => {
   }
 
   const BUDGET_COLORS = ["#FF6C6B", "#4ECDC4"];
-  const GUEST_COLORS = ["#59A5D8", "#FFD166", "#EF476F", "#A0AEC0"]; // Last color for "No Responses"
+  const GUEST_COLORS = ["#59A5D8", "#FFD166", "#EF476F", "#A0AEC0"]; // Last color for No Response
 
   const formatCurrency = (value: number) => `₹${value.toLocaleString()}`;
 
-  interface CustomizedLabelProps {
-    cx: number;
-    cy: number;
-    midAngle: number;
-    innerRadius: number;
-    outerRadius: number;
-    percent: number;
-  }
-
   const renderCustomizedLabel = (props: CustomizedLabelProps) => {
     const { cx, cy, midAngle, innerRadius, outerRadius, percent } = props;
+
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos((-midAngle * Math.PI) / 180);
     const y = cy + radius * Math.sin((-midAngle * Math.PI) / 180);
@@ -101,12 +73,9 @@ const MyPieChart = ({ event, rsvpData }: MyPieChartProps) => {
     );
   };
 
-  interface CustomTooltipProps {
-    active?: boolean;
-    payload?: PayloadItem[];
-  }
-
   const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
+    console.log(active, payload);
+
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (

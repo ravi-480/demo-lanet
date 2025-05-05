@@ -49,7 +49,6 @@ const VendorResponsePage = () => {
       try {
         const vendorResponse = await axios.get(`/vendors/${vendorId}`);
         const eventResponse = await axios.get(`/events/${eventId}`);
-        console.log(vendorResponse, eventResponse);
 
         setVendorData(vendorResponse.data.vendor);
         setEventData(eventResponse.data.event);

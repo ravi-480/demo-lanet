@@ -11,7 +11,11 @@ import {
 import { Input } from "@/components/ui/input";
 
 import VendorCard from "./VendorCard";
-import { getRandomPrice, eventVendorMapping } from "@/StaticData/Static";
+import {
+  getRandomPrice,
+  eventVendorMapping,
+  commonTerms,
+} from "@/StaticData/Static";
 import { enrichVendor } from "@/utils/vendorUtils";
 import {
   SearchVendorProps,
@@ -60,45 +64,12 @@ const SearchVendor = ({
       const categories = eventCategories.map((item) => item.category);
 
       // Filter categories that match the search term
-      const matchingCategories = categories.filter((category) =>
-        category.toLowerCase().includes(searchTerm.toLowerCase())
+
+      const matchingTerms = commonTerms.filter((term) =>
+        term.toLowerCase().includes(searchTerm.toLowerCase())
       );
-
-      // Also include common vendor terms
-      const commonTerms = [
-        "photographer",
-        "catering",
-        "decorator",
-        "dj",
-        "music",
-        "band",
-        "flowers",
-        "cake",
-        "dessert",
-        "lighting",
-        "sound",
-        "hotel",
-        "garden",
-        "videographer",
-        "makeup",
-        "mehendi",
-        "bartender",
-        "entertainment",
-      ];
-
-      const matchingTerms = commonTerms.filter(
-        (term) =>
-          term.toLowerCase().includes(searchTerm.toLowerCase()) &&
-          !matchingCategories.some(
-            (cat) => cat.toLowerCase() === term.toLowerCase()
-          )
-      );
-
       // Combine and limit suggestions
-      const allSuggestions = [...matchingCategories, ...matchingTerms].slice(
-        0,
-        5
-      );
+      const allSuggestions = matchingTerms.slice(0, 5);
       setSuggestions(allSuggestions);
       setShowSuggestions(allSuggestions.length > 0);
     };
@@ -191,8 +162,8 @@ const SearchVendor = ({
   // Handle suggestion click
   const handleSuggestionClick = (suggestion: string) => {
     setSearchTerm(suggestion);
-    setShowSuggestions(false);
     fetchVendors(1, suggestion);
+    setShowSuggestions(false);
   };
 
   const getSortedVendors = () => {

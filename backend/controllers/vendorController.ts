@@ -214,7 +214,6 @@ export const getVendorsByEvent = asyncHandler(
 export const getByUser = asyncHandler(async (req: Request, res: Response) => {
   let reqUser = req as AuthenticatedRequest;
   const userId = reqUser.user.id;
-  console.log(userId);
 
   if (!userId) {
     throw new ApiError(401, "unauthorized");
@@ -229,14 +228,12 @@ export const getByUser = asyncHandler(async (req: Request, res: Response) => {
 
   // Get total count for pagination metadata
   const totalCount = await Vendor.countDocuments({ addedBy: userId });
-  console.log(totalCount);
 
   // Get paginated vendors
   const vendors = await Vendor.find({ addedBy: userId })
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
-  console.log(vendors);
 
   if (!vendors) {
     throw new ApiError(404, "no vendors found");

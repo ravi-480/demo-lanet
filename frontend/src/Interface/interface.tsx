@@ -324,7 +324,6 @@ export interface VendorCardProps {
 export interface SearchVendorProps {
   eventType: string;
   noOfDay: number;
-  allowedCategories: string[];
   noOfGuest: number;
   addedBy?: string;
   eventLocation: string;
@@ -359,4 +358,98 @@ export interface ProcessedEvent {
   date: Date;
   name: string;
   location: string;
+}
+
+export interface Event {
+  _id: string;
+  name: string;
+  date: string | Date;
+  location?: string;
+  description?: string;
+}
+
+export interface EventState {
+  events: IEvent[];
+  isLoading: boolean;
+  singleEvent: IEvent | null;
+  error: string | null;
+}
+
+export interface EventCardProps {
+  event: {
+    _id: string;
+    image?: string;
+    name?: string;
+    date: string | Date;
+    location?: string;
+    status?: string;
+    budget?: { allocated: number };
+    description?: string;
+  };
+  variant?: "compact" | "detailed";
+}
+
+export interface ProcessedEvent {
+  date: Date;
+  name: string;
+  location: string;
+}
+export interface MyPieChartProps {
+  event: IEvent;
+  rsvpData: IGuest[];
+}
+
+export interface PayloadItem {
+  payload: {
+    name: string;
+    value: number;
+  };
+}
+
+export interface CustomizedLabelProps {
+  cx: number;
+  cy: number;
+  midAngle: number;
+  innerRadius: number;
+  outerRadius: number;
+  percent: number;
+}
+
+export interface CustomTooltipProps {
+  active?: boolean;
+  payload?: PayloadItem[];
+}
+
+type StatusType = "idle" | "loading" | "succeeded" | "failed";
+
+// Adding pagination interface
+export interface PaginationMeta {
+  totalItems: number;
+  totalPages: number;
+  currentPage: number;
+  itemsPerPage: number;
+}
+
+export interface VendorState {
+  items: VendorType[];
+  pagination: PaginationMeta | null;
+  status: StatusType;
+  error: string | { message: string } | null;
+}
+
+export interface ManualVendorExpenseData {
+  eventId: string;
+  title: string;
+  price: number;
+  description?: string;
+  [key: string]: string | number | undefined;
+}
+
+// Updated mail request interface to handle both mail and negotiation
+export interface SendMailRequest {
+  vendorId: string;
+  eventId: string;
+  notes: string;
+  isNegotiating?: boolean;
+  negotiatedPrice?: number;
 }

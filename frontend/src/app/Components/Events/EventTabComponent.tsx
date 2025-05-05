@@ -4,7 +4,6 @@ import { useState, useMemo, memo, Suspense } from "react";
 import { useSelector, shallowEqual } from "react-redux";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import dynamic from "next/dynamic";
-import { eventVendorMapping } from "@/StaticData/Static";
 import { RootState } from "@/store/store";
 import { SearchVendorProps } from "@/Interface/interface";
 
@@ -35,14 +34,6 @@ const EventTabComponent = memo(() => {
     shallowEqual
   );
 
-  const allowedCategories = useMemo(() => {
-    return (
-      eventVendorMapping[
-        event?.eventType as keyof typeof eventVendorMapping
-      ]?.map((c) => c.category) || []
-    );
-  }, [event?.eventType]);
-
   const tabs = useMemo(
     () => [
       { value: "overview", label: "Overview" },
@@ -62,10 +53,9 @@ const EventTabComponent = memo(() => {
       addedBy: event.creator,
       noOfGuest: event.guestLimit,
       eventType: event.eventType,
-      allowedCategories,
       eventLocation: event.location,
     };
-  }, [event, allowedCategories]);
+  }, [event]);
 
   if (!event) {
     return (
@@ -85,7 +75,7 @@ const EventTabComponent = memo(() => {
               value={value}
               aria-label={`View ${label}`}
               className={`cursor-pointer relative px-2 sm:px-4 py-1 sm:py-2 text-base sm:text-lg transition-all whitespace-nowrap ${
-                activeTab === value ? "text-cyan-400" : "text-gray-400"
+                activeTab === value ? "text-cyan-400 " : "text-gray-400"
               }`}
             >
               {label}

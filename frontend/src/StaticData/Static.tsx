@@ -221,6 +221,28 @@ export const eventVendorMapping = {
   ],
 };
 
+ // Also include common vendor terms
+ export const commonTerms = [
+  "photographer",
+  "catering",
+  "decorator",
+  "dj",
+  "music",
+  "band",
+  "flowers",
+  "cake",
+  "dessert",
+  "lighting",
+  "sound",
+  "hotel",
+  "garden",
+  "videographer",
+  "makeup",
+  "mehendi",
+  "bartender",
+  "entertainment",
+];
+
 export const getRandomPrice = (category: string, isFlatRate = false) => {
   const normalized = category.toLowerCase();
 

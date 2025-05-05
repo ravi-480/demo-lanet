@@ -1,15 +1,10 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "./store";
-import { IEvent } from "@/Interface/interface";
+import { EventState, IEvent } from "@/Interface/interface";
 import { AxiosError } from "axios";
 import api from "@/utils/api";
 
-interface EventState {
-  events: IEvent[];
-  isLoading: boolean;
-  singleEvent: IEvent | null;
-  error: string | null;
-}
+
 
 const initialState: EventState = {
   events: [],

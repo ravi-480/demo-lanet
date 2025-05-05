@@ -75,7 +75,6 @@ const EventHeader = ({ event }: { event: IEvent }) => {
         </div>
       </section>
 
-      {/* Confirm Dialog */}
       <ConfirmDialog
         open={open}
         onOpenChange={setOpen}

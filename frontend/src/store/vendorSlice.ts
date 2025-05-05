@@ -1,43 +1,15 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "./store";
-import { VendorType } from "@/Interface/interface";
+import {
+  ManualVendorExpenseData,
+  PaginationMeta,
+  SendMailRequest,
+  VendorState,
+  VendorType,
+} from "@/Interface/interface";
 import { AxiosError } from "axios";
 import api from "@/utils/api";
 
-type StatusType = "idle" | "loading" | "succeeded" | "failed";
-
-// Adding pagination interface
-interface PaginationMeta {
-  totalItems: number;
-  totalPages: number;
-  currentPage: number;
-  itemsPerPage: number;
-}
-
-// Updated state interface to include pagination
-interface VendorState {
-  items: VendorType[];
-  pagination: PaginationMeta | null;
-  status: StatusType;
-  error: string | { message: string } | null;
-}
-
-interface ManualVendorExpenseData {
-  eventId: string;
-  title: string;
-  price: number;
-  description?: string;
-  [key: string]: string | number | undefined;
-}
-
-// Updated mail request interface to handle both mail and negotiation
-interface SendMailRequest {
-  vendorId: string;
-  eventId: string;
-  notes: string;
-  isNegotiating?: boolean;
-  negotiatedPrice?: number;
-}
 
 // Updated initial state with pagination
 const initialState: VendorState = {

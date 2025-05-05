@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Link from "next/link";
 import { AppDispatch, RootState } from "@/store/store";
 import { fetchEvents } from "@/store/eventSlice";
-import { useEventFilter } from "@/app/Components/Events/EventFilter";
+import { useEventFilter } from "@/hooks/useEventFilter";
 import LoadingState from "@/app/Components/Loading/Loading";
 import EventTabs from "@/app/Components/Events/EventTab";
 import EventCard from "@/app/Components/Events/EventCard";

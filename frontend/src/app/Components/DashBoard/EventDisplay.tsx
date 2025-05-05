@@ -1,10 +1,10 @@
 "use client";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../store/store";
 import { fetchEvents } from "../../../store/eventSlice";
 import Link from "next/link";
-import { useEventFilter } from "../Events/EventFilter";
+import { useEventFilter } from "../../../hooks/useEventFilter";
 import EventTabs from "../Events/EventTab";
 import LoadingState from "../Loading/Loading";
 import EventCard from "../Events/EventCard";
@@ -14,48 +14,39 @@ const EventDisplay = () => {
   const { events, isLoading, error } = useSelector(
     (state: RootState) => state.event
   );
-  const [isInitialized, setIsInitialized] = useState<boolean>(false);
+  const initialFetchDone = useRef(false);
   const { activeTab, setActiveTab, filteredEvents } = useEventFilter({
     events,
   });
-  const initialFetchDone = useRef(false);
+
   useEffect(() => {
-    let retryTimeout: NodeJS.Timeout;
+    if (initialFetchDone.current) return;
 
-    const loadEvents = async () => {
-      if (initialFetchDone.current) return;
-
+    const fetchData = async () => {
       try {
         await dispatch(fetchEvents()).unwrap();
         initialFetchDone.current = true;
       } catch (error: any) {
         const errMsg = error?.message || error;
 
+        // Don't retry on auth errors
         if (
           errMsg === "Unauthorized" ||
           errMsg === "AUTH_ERROR" ||
           error?.response?.status === 401
         ) {
-          // Stop retrying and set initialized so component doesn't re-trigger
           initialFetchDone.current = true;
-          setIsInitialized(true);
           return;
         }
 
-        retryTimeout = setTimeout(() => loadEvents(), 10000); // retry only for other errors
-      } finally {
-        setIsInitialized(true);
+        throw error;
       }
     };
 
-    loadEvents();
-
-    return () => {
-      if (retryTimeout) clearTimeout(retryTimeout);
-    };
+    fetchData();
   }, [dispatch]);
 
-  if (isLoading || !isInitialized) {
+  if (isLoading) {
     return (
       <div className="bg-gray-900 text-white rounded-lg shadow-sm p-6 mb-6 w-full">
         <EventTabs activeTab={activeTab} setActiveTab={setActiveTab} />

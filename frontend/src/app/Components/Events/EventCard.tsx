@@ -6,20 +6,9 @@ import Image from "next/image";
 import RenderEventStatusBadge from "@/app/Components/DashBoard/EventStatus";
 import { formatSimpleDate } from "@/StaticData/Static";
 import { getEventStatus } from "@/utils/helper";
+import { EventCardProps } from "@/Interface/interface";
 
-interface EventCardProps {
-  event: {
-    _id: string;
-    image?: string;
-    name?: string;
-    date: string | Date;
-    location?: string;
-    status?: string;
-    budget?: { allocated: number };
-    description?: string;
-  };
-  variant?: "compact" | "detailed";
-}
+
 
 const EventCard: React.FC<EventCardProps> = ({
   event,
