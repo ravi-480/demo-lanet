@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import {
@@ -17,6 +17,7 @@ const NotificationLoader = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const socket = useSocket();
   const hasFetchedNotificationsRef = useRef(false);
+
   useEffect(() => {
     const silentlyCheckAuth = async () => {
       try {
@@ -36,7 +37,7 @@ const NotificationLoader = () => {
     if (!user?.id) silentlyCheckAuth();
   }, [dispatch, socket?.connected, user?.id]);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     if (!user?.id) return;
 
     dispatch(fetchNotificationStart());
@@ -75,7 +76,7 @@ const NotificationLoader = () => {
 
       dispatch(fetchNotificationsFailure(errorMessage));
     }
-  };
+  }, [user?.id, dispatch]);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -102,7 +103,7 @@ const NotificationLoader = () => {
         socket.off("reconnect", handleReconnect);
       };
     }
-  }, [user?.id, socket, dispatch]);
+  }, [user?.id, socket, dispatch, fetchNotifications]);
 
   return null;
 };

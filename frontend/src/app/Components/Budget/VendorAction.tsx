@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { toast } from "sonner";
 import { AppDispatch } from "@/store/store";
 import { VendorType } from "@/Interface/interface";
 import { sendMailToVendor } from "@/store/vendorSlice";
@@ -72,17 +71,10 @@ const VendorActions = ({ item, onRemove }: VendorActionsProps) => {
         })
       );
 
-      // Show appropriate success message
-      if (values.isNegotiating) {
-        toast.success("Price negotiation request sent to vendor");
-      } else {
-        toast.success("Mail sent to vendor");
-      }
-
       setIsMailDialogOpen(false);
       form.reset();
     } catch (error) {
-      toast.error("Failed to contact vendor");
+      console.log(error);
     }
   };
 
@@ -182,6 +174,7 @@ const VendorActions = ({ item, onRemove }: VendorActionsProps) => {
               <DialogFooter className="sm:justify-end">
                 <Button
                   type="button"
+                  className="text-black"
                   variant="outline"
                   onClick={() => setIsMailDialogOpen(false)}
                 >

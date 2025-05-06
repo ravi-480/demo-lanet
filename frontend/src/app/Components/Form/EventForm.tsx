@@ -1,5 +1,13 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
+import { z } from "zod";
+import { eventFormSchema } from "@/schemas/ValidationSchema";
+import { eventTypeOptions, IEvent } from "@/Interface/interface";
+import { formatDateForInput } from "@/utils/helper";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,35 +19,44 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RootState } from "@/store/store";
-import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
-import { useSelector } from "react-redux";
-import { z } from "zod";
-import { eventTypeOptions, IEvent } from "@/Interface/interface";
-import Image from "next/image";
-import { eventFormSchema } from "@/schemas/ValidationSchema";
-import { formatDateForInput } from "@/utils/helper";
-
-type EventFormValues = z.infer<typeof eventFormSchema>;
+import {
+  Calendar,
+  MapPin,
+  Image as ImageIcon,
+  Clock,
+  Users,
+  DollarSign,
+  Type,
+} from "lucide-react";
 
 interface EventFormProps {
   initialData?: Partial<IEvent>;
   onSubmit: (data: FormData) => void;
   isEditing?: boolean;
+  isLoading?: boolean;
 }
+
+// Create a modified schema for the form that matches your defaults
+type EventFormValues = z.infer<typeof eventFormSchema>;
 
 const EventForm: React.FC<EventFormProps> = ({
   initialData,
   onSubmit,
   isEditing = false,
+  isLoading = false,
 }) => {
-  const { isLoading } = useSelector((state: RootState) => state.event);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(
     initialData?.image ?? null
   );
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    // Trigger animations after component mounts
+    setTimeout(() => {
+      setIsVisible(true);
+    }, 100);
+  }, []);
 
   const {
     register,
@@ -50,11 +67,11 @@ const EventForm: React.FC<EventFormProps> = ({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
       name: initialData?.name || "",
-      date: formatDateForInput(initialData?.date),
+      date: formatDateForInput(initialData?.date) || "",
       location: initialData?.location || "",
       description: initialData?.description || "",
-      budget: initialData?.budget?.allocated || undefined,
-      guestLimit: initialData?.guestLimit || undefined,
+      budget: initialData?.budget?.allocated || 0, // Default to 0 instead of undefined
+      guestLimit: initialData?.guestLimit || 0, // Default to 0 instead of undefined
       eventType: initialData?.eventType || "",
       durationInDays: initialData?.durationInDays || 1,
     },
@@ -65,7 +82,6 @@ const EventForm: React.FC<EventFormProps> = ({
     if (!file) return;
 
     const validImageTypes = ["image/jpeg", "image/png", "image/webp"];
-    console.log(file);
 
     if (!validImageTypes.includes(file.type)) {
       alert("Only JPEG, PNG, or WEBP images are allowed.");
@@ -75,7 +91,6 @@ const EventForm: React.FC<EventFormProps> = ({
 
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
-    console.log(URL.createObjectURL);
   };
 
   const submitHandler = (data: EventFormValues) => {
@@ -99,199 +114,310 @@ const EventForm: React.FC<EventFormProps> = ({
   };
 
   return (
-    <div className="bg-gray-900 border max-w-2xl mx-auto p-6 m-4 rounded-lg">
-      <h1 className="text-center font-bold mb-6 text-white">
-        {isEditing ? "Edit Event" : "Create New Event"}
-      </h1>
+    <div className="flex-1 flex items-center justify-center p-6">
+      <div
+        className={`w-full max-w-3xl ${
+          isVisible ? "animate-fade-in animation-delay-300" : "opacity-0"
+        }`}
+      >
+        <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden shadow-xl">
+          <div className="p-8">
+            <h1 className="text-2xl font-bold text-white text-center mb-6">
+              {isEditing ? "Edit Event" : "Create New Event"}
+            </h1>
 
-      <form onSubmit={handleSubmit(submitHandler)}>
-        <div className="mt-4">
-          <Label className="mb-2" htmlFor="name">
-            Event Name
-          </Label>
-          <Input
-            {...register("name")}
-            id="name"
-            onKeyDown={(e) => {
-              if (/\d/.test(e.key)) {
-                e.preventDefault(); // block number keys
-              }
-            }}
-            onPaste={(e) => {
-              const pasted = e.clipboardData.getData("text");
-              if (/\d/.test(pasted)) {
-                e.preventDefault(); // block pasting numbers
-              }
-            }}
-          />
-          {errors.name && (
-            <p className="text-red-500 text-sm">{errors.name.message}</p>
-          )}
+            <form onSubmit={handleSubmit(submitHandler)} className="space-y-6">
+              {/* Name Field */}
+              <div className="space-y-2">
+                <Label htmlFor="name" className="flex items-center text-white">
+                  <Type size={18} className="mr-2 text-[#6c63ff]" />
+                  Event Name
+                </Label>
+                <Input
+                  {...register("name")}
+                  id="name"
+                  placeholder="Enter event name"
+                  className="bg-gray-900 border-gray-700 focus:border-[#6c63ff] focus:ring-[#6c63ff] text-white"
+                  onKeyDown={(e) => {
+                    if (/\d/.test(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                  onPaste={(e) => {
+                    const pasted = e.clipboardData.getData("text");
+                    if (/\d/.test(pasted)) {
+                      e.preventDefault();
+                    }
+                  }}
+                />
+                {errors.name && (
+                  <p className="text-red-400 text-sm">{errors.name.message}</p>
+                )}
+              </div>
+
+              {/* Two Column Layout */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Date Field */}
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="date"
+                    className="flex items-center text-white"
+                  >
+                    <Calendar size={18} className="mr-2 text-[#6c63ff]" />
+                    Event Date
+                  </Label>
+                  <Input
+                    min={formatDateForInput(new Date())}
+                    className="bg-gray-900 border-gray-700 focus:border-[#6c63ff] focus:ring-[#6c63ff] text-white [&::-webkit-calendar-picker-indicator]:invert"
+                    {...register("date")}
+                    id="date"
+                    type="datetime-local"
+                  />
+                  {errors.date && (
+                    <p className="text-red-400 text-sm">
+                      {errors.date.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Location Field */}
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="location"
+                    className="flex items-center text-white"
+                  >
+                    <MapPin size={18} className="mr-2 text-[#6c63ff]" />
+                    Location
+                  </Label>
+                  <Input
+                    {...register("location")}
+                    id="location"
+                    placeholder="Enter event location"
+                    className="bg-gray-900 border-gray-700 focus:border-[#6c63ff] focus:ring-[#6c63ff] text-white"
+                    onKeyDown={(e) => {
+                      if (/\d/.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
+                    onPaste={(e) => {
+                      const pasted = e.clipboardData.getData("text");
+                      if (/\d/.test(pasted)) {
+                        e.preventDefault();
+                      }
+                    }}
+                  />
+                  {errors.location && (
+                    <p className="text-red-400 text-sm">
+                      {errors.location.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Two Column Layout */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Event Type Field */}
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="eventType"
+                    className="flex items-center text-white"
+                  >
+                    <Type size={18} className="mr-2 text-[#6c63ff]" />
+                    Event Type
+                  </Label>
+                  <Select
+                    onValueChange={(value) => setValue("eventType", value)}
+                    defaultValue={initialData?.eventType || ""}
+                  >
+                    <SelectTrigger className="bg-gray-900 border-gray-700 focus:border-[#6c63ff] focus:ring-[#6c63ff] text-white">
+                      <SelectValue placeholder="Select event type" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                      {eventTypeOptions.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <input type="hidden" {...register("eventType")} />
+                  {errors.eventType && (
+                    <p className="text-red-400 text-sm">
+                      {errors.eventType.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Duration Field */}
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="durationInDays"
+                    className="flex items-center text-white"
+                  >
+                    <Clock size={18} className="mr-2 text-[#6c63ff]" />
+                    Duration (in Days)
+                  </Label>
+                  <Input
+                    {...register("durationInDays")}
+                    id="durationInDays"
+                    type="number"
+                    min="1"
+                    max="30"
+                    placeholder="Enter event duration"
+                    className="bg-gray-900 border-gray-700 focus:border-[#6c63ff] focus:ring-[#6c63ff] text-white"
+                  />
+                  {errors.durationInDays && (
+                    <p className="text-red-400 text-sm">
+                      {errors.durationInDays.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Two Column Layout */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Budget Field */}
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="budget"
+                    className="flex items-center text-white"
+                  >
+                    <DollarSign size={18} className="mr-2 text-[#6c63ff]" />
+                    Budget
+                  </Label>
+                  <Input
+                    {...register("budget", { valueAsNumber: true })}
+                    id="budget"
+                    type="number"
+                    min="1"
+                    max="10000000"
+                    placeholder="Enter event budget"
+                    className="bg-gray-900 border-gray-700 focus:border-[#6c63ff] focus:ring-[#6c63ff] text-white"
+                  />
+                  {errors.budget && (
+                    <p className="text-red-400 text-sm">
+                      {errors.budget.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Guest Limit Field */}
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="guestLimit"
+                    className="flex items-center text-white"
+                  >
+                    <Users size={18} className="mr-2 text-[#6c63ff]" />
+                    Guest Limit
+                  </Label>
+                  <Input
+                    {...register("guestLimit", { valueAsNumber: true })}
+                    id="guestLimit"
+                    type="number"
+                    min="1"
+                    max="10000"
+                    placeholder="Enter guest limit"
+                    className="bg-gray-900 border-gray-700 focus:border-[#6c63ff] focus:ring-[#6c63ff] text-white"
+                  />
+                  {errors.guestLimit && (
+                    <p className="text-red-400 text-sm">
+                      {errors.guestLimit.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Image Field */}
+              <div className="space-y-2">
+                <Label htmlFor="image" className="flex items-center text-white">
+                  <ImageIcon size={18} className="mr-2 text-[#6c63ff]" />
+                  Event Image
+                </Label>
+                <div className="flex items-center space-x-4">
+                  <div className="flex-1">
+                    <Input
+                      type="file"
+                      accept="image/jpeg, image/png, image/webp"
+                      className="bg-gray-900 border-gray-700 focus:border-[#6c63ff] focus:ring-[#6c63ff] text-white file:text-white file:bg-gray-700 file:border-0 file:rounded file:px-4 file:py-2 file:mr-4 file:hover:bg-gray-600 file:cursor-pointer"
+                      onChange={handleImageChange}
+                    />
+                  </div>
+                  {imagePreview && (
+                    <div className="h-20 w-20 rounded-md overflow-hidden border border-gray-700">
+                      <Image
+                        width={80}
+                        height={80}
+                        src={imagePreview}
+                        alt="Preview"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Description Field */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="description"
+                  className="flex items-center text-white"
+                >
+                  <Type size={18} className="mr-2 text-[#6c63ff]" />
+                  Description
+                </Label>
+                <Textarea
+                  {...register("description")}
+                  id="description"
+                  placeholder="Enter event description"
+                  className="bg-gray-900 border-gray-700 focus:border-[#6c63ff] focus:ring-[#6c63ff] text-white min-h-[120px]"
+                />
+                {errors.description && (
+                  <p className="text-red-400 text-sm">
+                    {errors.description.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Submit Button */}
+              <div className="flex justify-end pt-4">
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="bg-[#6c63ff] hover:bg-[#5a52d4] text-white px-8 py-2 rounded-md transition-all transform hover:scale-105"
+                >
+                  {isLoading
+                    ? "Submitting..."
+                    : isEditing
+                    ? "Update Event"
+                    : "Create Event"}
+                </Button>
+              </div>
+            </form>
+          </div>
         </div>
+      </div>
 
-        <div className="mt-4">
-          <Label className="mb-2" htmlFor="date">
-            Event Date
-          </Label>
-          <Input
-            min={formatDateForInput(new Date())}
-            className="text-white [&::-webkit-calendar-picker-indicator]:invert"
-            {...register("date")}
-            defaultValue={formatDateForInput(initialData?.date)}
-            id="date"
-            type="datetime-local"
-          />
-          {errors.date && (
-            <p className="text-red-500 text-sm">{errors.date.message}</p>
-          )}
-        </div>
+      {/* Animation Styles */}
+      <style jsx global>{`
+        .animation-delay-300 {
+          animation-delay: 300ms;
+        }
 
-        <div className="mt-4">
-          <Label className="mb-2" htmlFor="location">
-            Location
-          </Label>
-          <Input
-            {...register("location")}
-            id="location"
-            onKeyDown={(e) => {
-              if (/\d/.test(e.key)) {
-                e.preventDefault(); // block number keys
-              }
-            }}
-            onPaste={(e) => {
-              const pasted = e.clipboardData.getData("text");
-              if (/\d/.test(pasted)) {
-                e.preventDefault(); // block pasting numbers
-              }
-            }}
-          />
-          {errors.location && (
-            <p className="text-red-500 text-sm">{errors.location.message}</p>
-          )}
-        </div>
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
 
-        <div className="mt-4">
-          <Label className="mb-2" htmlFor="image">
-            Upload Image
-          </Label>
-          <Input
-            type="file"
-            accept="image/jpeg, image/png, image/webp"
-            className="file:text-white"
-            onChange={handleImageChange}
-          />
-          {imagePreview && (
-            <div className="mt-2">
-              <Image
-                width={200}
-                height={200}
-                src={imagePreview}
-                alt="Preview"
-                className="max-h-48 border rounded"
-              />
-            </div>
-          )}
-        </div>
-
-        <div className="mt-4">
-          <Label className="mb-2" htmlFor="description">
-            Description
-          </Label>
-          <Textarea {...register("description")} id="description" />
-          {errors.description && (
-            <p className="text-red-500 text-sm">{errors.description.message}</p>
-          )}
-        </div>
-
-        <div className="mt-4">
-          <Label className="mb-2" htmlFor="budget">
-            Budget
-          </Label>
-          <Input
-            {...register("budget")}
-            id="budget"
-            type="number"
-            min="1"
-            max="10000000"
-            placeholder="Enter event budget"
-          />
-          {errors.budget && (
-            <p className="text-red-500 text-sm">{errors.budget.message}</p>
-          )}
-        </div>
-
-        <div className="mt-4">
-          <Label className="mb-2" htmlFor="guestLimit">
-            Guest Limit
-          </Label>
-          <Input
-            {...register("guestLimit")}
-            id="guestLimit"
-            type="number"
-            min="1"
-            max="10000"
-            placeholder="Enter guest limit"
-          />
-          {errors.guestLimit && (
-            <p className="text-red-500 text-sm">{errors.guestLimit.message}</p>
-          )}
-        </div>
-
-        <div className="mt-4">
-          <Label className="mb-2" htmlFor="eventType">
-            Event Type
-          </Label>
-          <Select
-            onValueChange={(value) => setValue("eventType", value)}
-            defaultValue={initialData?.eventType || ""}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select event type" />
-            </SelectTrigger>
-            <SelectContent>
-              {eventTypeOptions.map((type) => (
-                <SelectItem key={type.value} value={type.value}>
-                  {type.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <input type="hidden" {...register("eventType")} />
-          {errors.eventType && (
-            <p className="text-red-500 text-sm">{errors.eventType.message}</p>
-          )}
-        </div>
-
-        <div className="mt-4">
-          <Label className="mb-2" htmlFor="durationInDays">
-            Duration (in Days)
-          </Label>
-          <Input
-            {...register("durationInDays")}
-            id="durationInDays"
-            type="number"
-            min="1"
-            max="30"
-          />
-          {errors.durationInDays && (
-            <p className="text-red-500 text-sm">
-              {errors.durationInDays.message}
-            </p>
-          )}
-        </div>
-
-        <Button
-          type="submit"
-          className="w-full mt-6 bg-amber-100 text-black hover:bg-amber-200"
-          disabled={isLoading}
-        >
-          {isLoading
-            ? "Submitting..."
-            : isEditing
-            ? "Update Event"
-            : "Create Event"}
-        </Button>
-      </form>
+        .animate-fade-in {
+          animation: fadeIn 0.6s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 };

@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useRouter } from "next/navigation";
 import { forgotPassword, clearForgotPasswordState } from "@/store/authSlice";
 import { AppDispatch, RootState } from "@/store/store";
 import { useForm } from "react-hook-form";
@@ -27,7 +26,6 @@ const formSchema = z.object({
 
 export default function ForgotPasswordForm() {
   const dispatch = useDispatch<AppDispatch>();
-  const router = useRouter();
 
   const {
     error: authError,

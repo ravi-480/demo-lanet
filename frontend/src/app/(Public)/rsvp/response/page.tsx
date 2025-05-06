@@ -1,12 +1,12 @@
 "use client";
 
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { Button } from "@/components/ui/button";
 import { Check, TriangleAlert } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-type EventData = {
+interface EventData {
   _id: string;
   name: string;
   date: string;
@@ -15,16 +15,17 @@ type EventData = {
   description: string;
   image?: string;
   eventType: string;
-};
+}
 
-type ApiError = {
-  response?: {
-    data?: {
-      message?: string;
-    };
-  };
+interface ApiResponse {
+  guest: EventData;
   message?: string;
-};
+}
+
+interface ApiErrorData {
+  success: boolean;
+  message: string;
+}
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -50,14 +51,14 @@ export default function RSVPRespond() {
       }
 
       try {
-        const { data } = await axios.get(
+        const { data } = await axios.get<ApiResponse>(
           `${API_BASE_URL}/guest/rsvp/validate`,
           { params: { eventId, guestId } }
         );
 
         setEvent(data.guest);
-      } catch (err: unknown) {
-        const error = err as ApiError;
+      } catch (err) {
+        const error = err as AxiosError<ApiErrorData>;
         setError(error.response?.data?.message || "Invalid RSVP link.");
       } finally {
         setLoading(false);
@@ -74,15 +75,15 @@ export default function RSVPRespond() {
     setSubmitting(true);
 
     try {
-      await axios.post(`${API_BASE_URL}/guest/rsvp/respond`, {
+      await axios.post<ApiResponse>(`${API_BASE_URL}/guest/rsvp/respond`, {
         eventId,
         guestId,
         attending: response === "accept",
       });
 
       setSuccess(true);
-    } catch (err: unknown) {
-      const error = err as ApiError;
+    } catch (err) {
+      const error = err as AxiosError<ApiErrorData>;
       setError(
         error.response?.data?.message || "Failed to submit your response."
       );
@@ -119,7 +120,7 @@ export default function RSVPRespond() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <div className="bg-white rounded-lg flex flex-col items-center shadow-md p-8 max-w-md w-full">
           <div className="text-red-500 text-center mb-4">
-            <TriangleAlert />
+            <TriangleAlert size={24} />
           </div>
           <h2 className="text-xl font-bold text-center text-gray-800 mb-4">
             Error
@@ -135,7 +136,7 @@ export default function RSVPRespond() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <div className="bg-white rounded-lg shadow-md p-8 flex flex-col items-center max-w-md w-full">
           <div className="text-green-500 mb-4">
-            <Check />
+            <Check size={24} />
           </div>
           <h2 className="text-xl font-bold text-gray-800 mb-4">Thank You!</h2>
           <p className="text-gray-600 text-center mb-6">
@@ -158,10 +159,10 @@ export default function RSVPRespond() {
     !showRespondAgain
   ) {
     return (
-      <div className="min-h-screen flex items-center  justify-center bg-gray-100 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
         <div className="bg-white rounded-lg shadow-md p-8 flex flex-col items-center max-w-md w-full">
           <div className="text-blue-500 mb-4">
-            <Check />
+            <Check size={24} />
           </div>
           <h2 className="text-xl font-bold text-gray-800 mb-4">
             You&apos;ve Already Responded
@@ -184,7 +185,7 @@ export default function RSVPRespond() {
 
   return (
     <div className="min-h-screen bg-cyan-100 py-12 px-4">
-      <div className="max-w-md mx-auto mt-10 bg-gray-100  rounded-lg shadow-md overflow-hidden">
+      <div className="max-w-md mx-auto mt-10 bg-gray-100 rounded-lg shadow-md overflow-hidden">
         <div className="p-6">
           <div className="mb-6">
             <p className="text-gray-700 mb-1">

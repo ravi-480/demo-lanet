@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import api from "@/utils/api";
 
@@ -18,15 +18,33 @@ import { Loader2, CheckCircle, XCircle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import axios from "axios";
 
+// Define proper types instead of using 'any'
+interface VendorData {
+  id: string;
+  title: string;
+  category: string;
+  price: number;
+  description?: string;
+}
+
+interface EventData {
+  id: string;
+  name: string;
+  date: string;
+  location?: string;
+  description?: string;
+}
+
+type ResponseStatusType = "success" | "error" | null;
+
 const VendorResponsePage = () => {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
-  const [responseStatus, setResponseStatus] = useState<
-    "success" | "error" | null
-  >(null);
-  const [vendorData, setVendorData] = useState<any>(null);
-  const [eventData, setEventData] = useState<any>(null);
+  const [responseStatus, setResponseStatus] =
+    useState<ResponseStatusType>(null);
+  const [vendorData, setVendorData] = useState<VendorData | null>(null);
+  const [eventData, setEventData] = useState<EventData | null>(null);
 
   // Extract URL parameters
   const vendorId = searchParams.get("vendorId");

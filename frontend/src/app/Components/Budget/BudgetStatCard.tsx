@@ -68,10 +68,12 @@ const StatCard = ({
 };
 
 const BudgetStats = ({ eventBudget }: { eventBudget: IEvent | null }) => {
-  if (!eventBudget?.budget) return null;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [adjustAmount, setAdjustAmount] = useState<number>(0);
   const dispatch = useDispatch<AppDispatch>();
+
+  if (!eventBudget?.budget) return null;
+
   const totalBudget = Number(eventBudget.budget.allocated);
   const spent = Number(eventBudget.budget.spent);
   const remaining = totalBudget - spent;
@@ -128,7 +130,8 @@ const BudgetStats = ({ eventBudget }: { eventBudget: IEvent | null }) => {
               <DialogHeader>
                 <DialogTitle>Adjust Budget</DialogTitle>
                 <DialogDescription>
-                  Make changes to your Budget here. Click save when you're done.
+                  Make changes to your Budget here. Click save when you&apos;re
+                  done.
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">

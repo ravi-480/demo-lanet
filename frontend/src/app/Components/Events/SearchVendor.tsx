@@ -1,5 +1,7 @@
+"use client";
+
 import { useState, useEffect, useRef } from "react";
-import { Loader, Search } from "lucide-react";
+import { Loader2, Search, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -9,13 +11,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 import VendorCard from "./VendorCard";
-import {
-  getRandomPrice,
-  eventVendorMapping,
-  commonTerms,
-} from "@/StaticData/Static";
+import { getRandomPrice, commonTerms } from "@/StaticData/Static";
 import { enrichVendor } from "@/utils/vendorUtils";
 import {
   SearchVendorProps,
@@ -56,15 +55,7 @@ const SearchVendor = ({
         return;
       }
 
-      // Get vendor categories for this event type
-      const eventCategories =
-        eventVendorMapping[
-          eventType?.toLowerCase() as keyof typeof eventVendorMapping
-        ] || [];
-      const categories = eventCategories.map((item) => item.category);
-
       // Filter categories that match the search term
-
       const matchingTerms = commonTerms.filter((term) =>
         term.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -192,14 +183,14 @@ const SearchVendor = ({
                 handleSearchSubmit(e);
               }
             }}
-            className="pr-10 border border-gray-500"
+            className="pr-10 border border-gray-600 bg-gray-800/60 focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 shadow-inner text-gray-100 placeholder:text-gray-400"
           />
           <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
         </div>
         <Button
           type="submit"
           disabled={!searchTerm}
-          className="w-full sm:w-auto"
+          className="w-full sm:w-auto bg-cyan-600 hover:bg-cyan-700 text-white transition-all duration-200"
         >
           Search
         </Button>
@@ -207,13 +198,13 @@ const SearchVendor = ({
 
       {/* Suggestions dropdown */}
       {showSuggestions && (
-        <div className="absolute z-10 mt-1 w-full bg-gray-800 border border-gray-700 rounded-md shadow-lg">
+        <div className="absolute z-10 mt-1 w-full bg-gray-800 border border-gray-700 rounded-md shadow-lg shadow-black/25 divide-y divide-gray-700">
           <ul className="py-1 max-h-56 overflow-auto">
             {suggestions.map((suggestion, index) => (
               <li
                 key={index}
                 onClick={() => handleSuggestionClick(suggestion)}
-                className="px-4 py-2 hover:bg-gray-700 cursor-pointer text-white text-sm"
+                className="px-4 py-2 hover:bg-gray-700/70 cursor-pointer text-white text-sm transition-colors duration-150 ease-in-out"
               >
                 {suggestion}
               </li>
@@ -225,16 +216,19 @@ const SearchVendor = ({
   );
 
   const renderSortOptions = () => (
-    <div className="flex flex-col sm:flex-row items-center gap-4">
-      <span className="text-sm text-muted-foreground">Sort by:</span>
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-800/40 p-3 rounded-lg border border-gray-700/50 mb-4">
+      <div className="flex items-center gap-2">
+        <SlidersHorizontal size={18} className="text-cyan-400" />
+        <span className="text-sm text-gray-300">Filter Options:</span>
+      </div>
       <Select
         onValueChange={(value) => setSortOption(value as SortOption)}
         value={sortOption}
       >
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Select filter" />
+        <SelectTrigger className="w-[180px] bg-gray-800 border-gray-600 focus:ring-cyan-500 focus:border-cyan-500 text-gray-200">
+          <SelectValue placeholder="Sort results" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-gray-800 border-gray-600 text-gray-200">
           <SelectItem value="lowToHigh">Price: Low to High</SelectItem>
           <SelectItem value="highToLow">Price: High to Low</SelectItem>
           <SelectItem value="rating">Best Rated</SelectItem>
@@ -244,19 +238,23 @@ const SearchVendor = ({
   );
 
   const renderPagination = () => (
-    <div className="flex justify-center items-center gap-4 mt-4">
+    <div className="flex justify-center items-center gap-4 mt-6 mb-2">
       <Button
         onClick={() => fetchVendors(page - 1)}
         disabled={page === 1}
-        variant="secondary"
+        variant="outline"
+        className="border-gray-600 text-gray-300 hover:bg-gray-700 transition-colors duration-200"
       >
-        Prev
+        Previous
       </Button>
-      <span className="text-sm text-gray-300">Page {page}</span>
+      <Badge variant="outline" className="text-gray-300 px-3 py-1">
+        Page {page}
+      </Badge>
       <Button
         onClick={() => fetchVendors(page + 1)}
         disabled={!hasMore}
-        variant="secondary"
+        variant="outline"
+        className="border-gray-600 text-gray-300 hover:bg-gray-700 transition-colors duration-200"
       >
         Next
       </Button>
@@ -266,7 +264,7 @@ const SearchVendor = ({
   const renderVendorGrid = () => {
     const sortedVendors = getSortedVendors();
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {sortedVendors.map((vendor, idx) => (
           <VendorCard
             key={idx}
@@ -289,28 +287,65 @@ const SearchVendor = ({
   };
 
   return (
-    <div className="space-y-4">
-      {renderSearchBar()}
+    <div className="space-y-5">
+      <div className="bg-gradient-to-b from-gray-800/80 to-gray-900/80 p-4 rounded-xl border border-gray-700/50 shadow-lg">
+        {renderSearchBar()}
 
-      {locationError && (
-        <div className="text-red-500 text-sm">
-          Invalid location entered. Please enter a valid location.
-        </div>
-      )}
+        {locationError && (
+          <div className="text-red-400 text-sm mt-2 flex items-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              className="w-4 h-4"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Invalid location entered. Please enter a valid location.
+          </div>
+        )}
+      </div>
 
       {vendors.length > 0 && renderSortOptions()}
 
       {loading && (
-        <div className="text-gray-500 text-sm flex items-center gap-2">
-          <Loader className="animate-spin" size={16} />
-          Loading vendors...
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <Loader2 className="animate-spin text-cyan-500 h-8 w-8 mx-auto mb-2" />
+            <p className="text-gray-300">Searching for vendors...</p>
+          </div>
         </div>
       )}
 
       {!loading && vendors.length === 0 && searchTerm && (
-        <div className="text-center py-8 text-gray-500">
-          No vendors found matching &quot;{searchTerm}&quot; in the specified
-          location.
+        <div className="text-center py-12 bg-gray-800/20 rounded-xl border border-gray-700/30">
+          <div className="text-gray-400 mb-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-12 w-12 mx-auto mb-3 opacity-60"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <p className="text-lg font-medium">No Results Found</p>
+            <p className="text-sm mt-1">
+              No vendors matching &quot;{searchTerm}&quot; in {eventLocation}.
+            </p>
+          </div>
+          <p className="text-cyan-400/80 text-sm mt-3">
+            Try a different search term or location
+          </p>
         </div>
       )}
 

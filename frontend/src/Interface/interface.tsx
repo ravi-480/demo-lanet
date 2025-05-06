@@ -453,3 +453,18 @@ export interface SendMailRequest {
   isNegotiating?: boolean;
   negotiatedPrice?: number;
 }
+
+
+export interface FormData {
+  name: string;
+  email: string;
+  status: string;
+}
+
+export interface GuestDialogProps {
+  eventId: string;
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+  editGuest: Guest | null;
+  setEditGuest: React.Dispatch<React.SetStateAction<Guest | null>>;
+}

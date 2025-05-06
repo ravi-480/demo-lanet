@@ -13,8 +13,56 @@ import { CheckCircle, AlertCircle, Loader2, IndianRupee } from "lucide-react";
 
 declare global {
   interface Window {
-    Razorpay: any;
+    Razorpay: RazorpayConstructor;
   }
+}
+
+// Define the Razorpay types
+interface RazorpayConstructor {
+  new (options: RazorpayOptions): RazorpayInstance;
+}
+
+interface RazorpayInstance {
+  on(
+    event: string,
+    handler: (response: RazorpayPaymentFailedResponse) => void
+  ): void;
+  open(): void;
+}
+
+interface RazorpayOptions {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+  handler: (response: RazorpaySuccessResponse) => void;
+  prefill: {
+    name: string;
+  };
+  theme: {
+    color: string;
+  };
+  modal: {
+    ondismiss: () => void;
+  };
+  notes: {
+    eventId: string;
+    userId: string;
+  };
+}
+
+interface RazorpaySuccessResponse {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
+}
+
+interface RazorpayPaymentFailedResponse {
+  error: {
+    description: string;
+  };
 }
 
 type Props = { eventId?: string; userId?: string };
@@ -96,7 +144,7 @@ const ConfirmCard = ({ eventId, userId }: Props) => {
         }
 
         // Make sure we have the correct key
-        const key = "rzp_test_3oIQfh3yN4Uffr";
+        const key = "rzp_test_QRb05uFLF1NB8u";
         if (!key) {
           console.error("Razorpay key not found");
           alert("Payment system configuration error. Please contact support.");
@@ -117,11 +165,7 @@ const ConfirmCard = ({ eventId, userId }: Props) => {
           name: "Split App",
           description: `Payment for ${eventId}`,
           order_id: data.id,
-          handler: function (response: {
-            razorpay_payment_id: any;
-            razorpay_order_id: any;
-            razorpay_signature: any;
-          }) {
+          handler: function (response: RazorpaySuccessResponse) {
             console.log("Payment success, verifying...", response);
             // Handle the success callback
             dispatch(
@@ -136,7 +180,6 @@ const ConfirmCard = ({ eventId, userId }: Props) => {
           },
           prefill: {
             name: user?.name || userDetails?.name || "",
-            email: user?.email || userDetails?.email || "",
           },
           theme: {
             color: "#6366F1",
@@ -159,19 +202,23 @@ const ConfirmCard = ({ eventId, userId }: Props) => {
 
           rzp.on(
             "payment.failed",
-            function (response: { error: { description: string } }) {
+            function (response: RazorpayPaymentFailedResponse) {
               alert("Payment failed: " + response.error.description);
               dispatch({ type: "payment/resetPaymentStatus" });
             }
           );
 
           rzp.open();
-        } catch (error) {
+        } catch (e) {
+          console.log(e);
+
           alert("Failed to open payment window. Please try again.");
           dispatch({ type: "payment/resetPaymentStatus" });
         }
       })
-      .catch((error) => {
+      .catch((e) => {
+        console.log(e);
+
         alert("Failed to initialize payment. Please try again.");
         dispatch({ type: "payment/resetPaymentStatus" });
       });

@@ -5,10 +5,21 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
 import { setUser } from "@/store/authSlice";
 import api from "@/utils/api";
+import { AxiosResponse } from "axios";
 
+interface UserType {
+  id: string;
+  name: string;
+  email: string;
+}
 // Global session cache to prevent duplicate API calls
-const sessionCache = {
-  promise: null as Promise<any> | null,
+const sessionCache: {
+  promise: Promise<AxiosResponse<{ user: UserType }>> | null;
+  resolved: boolean;
+  pending: boolean;
+  initialCheck: boolean;
+} = {
+  promise: null,
   resolved: false,
   pending: false,
   initialCheck: false,
@@ -41,7 +52,7 @@ export const checkAuthSession = async (
     }
     return false;
   } catch (error) {
-    console.log("Auth session check failed silently"); // Can be removed in production
+    console.log(error);
     return false;
   } finally {
     sessionCache.pending = false;

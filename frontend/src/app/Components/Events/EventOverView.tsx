@@ -23,8 +23,8 @@ const EventOverView = ({ event }: { event: IEvent }) => {
   const { rsvpData, status } = useSelector((state: RootState) => state.rsvp);
 
   useEffect(() => {
-    if (event._id && status == "idle") dispatch(fetchGuests(event._id));
-  }, [dispatch, event._id]);
+    if (event._id && status === "idle") dispatch(fetchGuests(event._id));
+  }, [dispatch, event._id, status]);
 
   const { budget = { allocated: 0, spent: 0 } } = event;
   const remaining = useMemo(() => budget.allocated - budget.spent, [budget]);

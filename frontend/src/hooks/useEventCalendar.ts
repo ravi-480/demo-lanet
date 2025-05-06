@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { isSameDay, parseISO, isFuture, format } from "date-fns";
-import { ProcessedEvent } from "@/Interface/interface";
+import { isSameDay, parseISO, isFuture } from "date-fns";
+import { IEvent, ProcessedEvent } from "@/Interface/interface";
 
-export const useEventCalendar = (rawEvents: any[]) => {
+export const useEventCalendar = (rawEvents: IEvent[]) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
@@ -35,7 +35,6 @@ export const useEventCalendar = (rawEvents: any[]) => {
     : [];
 
   const handleDateSelect = (date: Date | undefined) => {
-
     if (!date) return;
     const sameDayClicked = selectedDate && isSameDay(date, selectedDate);
     setSelectedDate(date);

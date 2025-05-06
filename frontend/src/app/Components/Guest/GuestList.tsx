@@ -61,7 +61,6 @@ const GuestListComponent = ({
   const handleRemoveGuest = async (guestId: string) => {
     try {
       const response = await dispatch(removeSingleGuest(guestId)).unwrap();
-      toast.success(response.message || "Guest removed successfully");
       dispatch(fetchGuests(eventId));
 
       if (response.violatingVendors?.length > 0) {

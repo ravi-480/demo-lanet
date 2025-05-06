@@ -7,8 +7,7 @@ import RenderEventStatusBadge from "@/app/Components/DashBoard/EventStatus";
 import { formatSimpleDate } from "@/StaticData/Static";
 import { getEventStatus } from "@/utils/helper";
 import { EventCardProps } from "@/Interface/interface";
-
-
+import { motion } from "framer-motion";
 
 const EventCard: React.FC<EventCardProps> = ({
   event,
@@ -17,23 +16,42 @@ const EventCard: React.FC<EventCardProps> = ({
   const isDetailed = variant === "detailed";
 
   return (
-    <div
+    <motion.div
       className={`rounded-lg overflow-hidden border ${
-        isDetailed ? "border-gray-700 bg-gray-800 hover:bg-gray-750 mt-6" : ""
-      } flex flex-col`}
+        isDetailed
+          ? "border-gray-700 bg-gray-800 hover:bg-gray-750 mt-6"
+          : "border-gray-700 hover:border-violet-500"
+      } flex flex-col h-full`}
+      whileHover={{
+        y: -5,
+        boxShadow: "0 10px 25px -5px rgba(108, 99, 255, 0.1)",
+      }}
+      transition={{
+        duration: 0.3,
+        ease: "easeOut",
+      }}
     >
-      <Image
-        src={event.image || "/api/placeholder/400/200"}
-        alt={event.name || "Event"}
-        className={`w-full ${isDetailed ? "h-35" : "sm:h-32"} object-cover`}
-        width={isDetailed ? 300 : 400}
-        height={isDetailed ? 100 : 160}
-        priority
-      />
+      <motion.div
+        initial={{ opacity: 0.8, scale: 1 }}
+        whileHover={{ opacity: 1, scale: 1.05 }}
+        transition={{ duration: 0.5 }}
+        className="overflow-hidden"
+      >
+        <Image
+          src={event.image || "/api/placeholder/400/200"}
+          alt={event.name || "Event"}
+          className={`w-full ${
+            isDetailed ? "h-35" : "sm:h-32"
+          } object-cover transition-transform duration-700`}
+          width={isDetailed ? 300 : 400}
+          height={isDetailed ? 100 : 160}
+          priority
+        />
+      </motion.div>
       <div
         className={`${
           isDetailed ? "p-4" : "px-3 py-2"
-        } flex-1 flex flex-col justify-between`}
+        } flex-1 flex flex-col justify-between bg-gray-800/80`}
       >
         <div>
           <div className="flex justify-between items-start mb-1">
@@ -58,14 +76,18 @@ const EventCard: React.FC<EventCardProps> = ({
               <div className="flex items-center">
                 <Clock
                   size={isDetailed ? 14 : 12}
-                  className={`mr-2 ${isDetailed ? "text-gray-400" : ""}`}
+                  className={`mr-2 ${
+                    isDetailed ? "text-violet-400" : "text-violet-400"
+                  }`}
                 />
                 <span>{formatSimpleDate(event.date)}</span>
               </div>
               <div className="flex items-center">
                 <MapPin
                   size={isDetailed ? 14 : 12}
-                  className={`mr-2 ${isDetailed ? "text-gray-400" : ""}`}
+                  className={`mr-2 ${
+                    isDetailed ? "text-violet-400" : "text-violet-400"
+                  }`}
                 />
                 <span className="truncate max-w-[100px]">
                   {event.location || "No location"}
@@ -95,12 +117,14 @@ const EventCard: React.FC<EventCardProps> = ({
           href={`/events/${event._id}`}
           className={isDetailed ? "" : "mt-3"}
         >
-          <Button className="w-full">
-            {isDetailed ? "View Details" : "View more"}
-          </Button>
+          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+            <Button className="w-full bg-violet-600 hover:bg-violet-700 transition-colors duration-300">
+              {isDetailed ? "View Details" : "View more"}
+            </Button>
+          </motion.div>
         </Link>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

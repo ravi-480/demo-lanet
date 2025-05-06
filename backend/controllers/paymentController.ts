@@ -53,6 +53,7 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, "Missing required parameters");
   }
 
+
   const event = await Event.findById(eventId);
   if (!event) throw new ApiError(404, "Event not found");
 

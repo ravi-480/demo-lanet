@@ -1,11 +1,29 @@
 "use client";
 
-import { ReactNode } from "react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff } from "lucide-react";
+import type {
+  UseFormRegister,
+  FieldErrors,
+  FieldValues,
+  Path,
+} from "react-hook-form";
+
+interface FormFieldProps<T extends FieldValues> {
+  id: Path<T>;
+  label: string;
+  placeholder: string;
+  type?: string;
+  register: UseFormRegister<T>;
+  errors: FieldErrors<T>;
+  showPassword?: boolean;
+  toggleShowPassword?: () => void;
+  onKeyDown?: (e: React.KeyboardEvent) => void;
+  onPaste?: (e: React.ClipboardEvent) => void;
+}
 
 // Alert components
 export const ErrorAlert = ({ message }: { message: string | null }) => {
@@ -30,20 +48,8 @@ export const SuccessAlert = ({ message }: { message: string | null }) => {
 };
 
 // Form field components
-interface FormFieldProps {
-  id: string;
-  label: string;
-  placeholder: string;
-  type?: string;
-  register: any;
-  errors: any;
-  showPassword?: boolean;
-  toggleShowPassword?: () => void;
-  onKeyDown?: (e: React.KeyboardEvent) => void;
-  onPaste?: (e: React.ClipboardEvent) => void;
-}
 
-export const FormField = ({
+export const FormField = <T extends FieldValues>({
   id,
   label,
   placeholder,
@@ -54,7 +60,7 @@ export const FormField = ({
   toggleShowPassword,
   onKeyDown,
   onPaste,
-}: FormFieldProps) => {
+}: FormFieldProps<T>) => {
   const isPasswordField =
     type === "password" && toggleShowPassword !== undefined;
 
@@ -83,7 +89,7 @@ export const FormField = ({
         )}
       </div>
       {errors[id] && (
-        <p className="text-sm text-red-500">{errors[id].message}</p>
+        <p className="text-sm text-red-500">{String(errors[id]?.message)}</p>
       )}
     </div>
   );

@@ -7,23 +7,36 @@ import { RootState } from "@/store/store";
 import { logout } from "@/store/authSlice";
 import { useEffect, useState } from "react";
 import ConfirmDialog from "../../Shared/ConfirmDialog";
+import { useRouter } from "next/navigation";
+import { AppDispatch } from "@/store/store"; // Import AppDispatch type
 
 export const AuthButtons = () => {
-  const dispatch = useDispatch();
-  const { user } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch<AppDispatch>(); // Type dispatch properly
+  const router = useRouter();
+  const { user, isAuthenticated } = useSelector(
+    (state: RootState) => state.auth
+  );
   const [isClient, setIsClient] = useState(false);
   const [open, setOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  const handleLogout = () => {
-    dispatch(logout());
-    window.location.reload();
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      // Dispatch logout action with proper typing
+      await dispatch(logout());
+      // Navigate to home page instead of reload
+      router.push("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
-
-  const isAuthenticated = !!user;
 
   if (!isClient) {
     return <div className="w-[100px] h-[40px]"></div>;
@@ -33,12 +46,11 @@ export const AuthButtons = () => {
     <div className="flex items-center gap-4">
       <span className="text-white">{user?.name}</span>
       <Button
-        onClick={() => {
-          setOpen(true);
-        }}
+        onClick={() => setOpen(true)}
         className="bg-red-500 cursor-pointer hover:bg-red-600"
+        disabled={isLoggingOut}
       >
-        Logout
+        {isLoggingOut ? "Logging out..." : "Logout"}
       </Button>
 
       <ConfirmDialog
@@ -54,7 +66,7 @@ export const AuthButtons = () => {
     </div>
   ) : (
     <Link href="/login">
-      <Button className="bg-[#d4c99e] hover:bg-yellow-700 text-black">
+      <Button className="bg-indigo-600 hover:bg-indigo-700 text-white duration-400 ease-in">
         Login
       </Button>
     </Link>

@@ -15,6 +15,7 @@ import {
 import { useVisibilityLoader } from "@/hooks/useVisibilityLoader";
 import { usePagination } from "@/hooks/usePagination";
 import Pagination from "./Pagination";
+import { motion } from "framer-motion";
 
 const Budget = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -66,7 +67,12 @@ const Budget = () => {
   // No vendors added yet
   if (vendorDetail.status === "succeeded" && vendorDetail.items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-60 px-4">
+      <motion.div
+        className="flex flex-col items-center justify-center h-60 px-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
         <h2 className="text-lg md:text-xl font-semibold mb-1">
           No Recent Expenses
         </h2>
@@ -74,22 +80,45 @@ const Budget = () => {
           You haven&apos;t added any expenses yet. Start by adding your first
           one.
         </p>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="w-full" ref={elementRef}>
-      <h1 className="pl-2 md:pl-4 mb-2 text-lg md:text-xl font-medium">
+    <motion.div
+      className="w-full"
+      ref={elementRef}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        type: "spring",
+        stiffness: 100,
+        damping: 12,
+      }}
+    >
+      <motion.h1
+        className="pl-2 md:pl-4 mb-2 text-lg md:text-xl font-medium"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+      >
         Recent Expenses
-      </h1>
-      <div className="border border-gray-400 p-2 md:p-4 rounded-lg overflow-x-auto">
+      </motion.h1>
+      <motion.div
+        className="border border-gray-400 p-2 md:p-4 rounded-lg overflow-x-auto"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.3, duration: 0.3 }}
+      >
         {/* Mobile card view for small screens */}
         <div className="md:hidden">
           {vendorDetail.items.map((vendor, index) => (
-            <div
+            <motion.div
               key={vendor._id || `vendor-${index}`}
               className="mb-3 p-2 border-b border-gray-700 last:border-0"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 * index, duration: 0.3 }}
             >
               <div className="flex justify-between items-center mb-1">
                 <span className="text-xs text-gray-400">
@@ -103,7 +132,7 @@ const Budget = () => {
               <div className="text-xs text-gray-300">
                 {vendor.category || "N/A"}
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
@@ -124,9 +153,12 @@ const Budget = () => {
             </TableHeader>
             <TableBody>
               {vendorDetail.items.map((vendor, index) => (
-                <TableRow
+                <motion.tr
                   key={vendor._id || `vendor-${index}`}
                   className="hover:bg-transparent"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 * index, duration: 0.3 }}
                 >
                   <TableCell className="text-sm">
                     {formatDate(vendor.createdAt)}
@@ -140,20 +172,26 @@ const Budget = () => {
                   <TableCell className="w-1/6 text-sm">
                     ₹ {vendor.price || 0}
                   </TableCell>
-                </TableRow>
+                </motion.tr>
               ))}
             </TableBody>
           </Table>
         </div>
 
         {/* Pagination controls */}
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={goToPage}
-        />
-      </div>
-    </div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={goToPage}
+          />
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
 };
 

@@ -4,8 +4,6 @@ import { EventState, IEvent } from "@/Interface/interface";
 import { AxiosError } from "axios";
 import api from "@/utils/api";
 
-
-
 const initialState: EventState = {
   events: [],
   singleEvent: null,
@@ -35,17 +33,21 @@ export const createEvent = createAsyncThunk(
 );
 
 // Fetch all events
+
 export const fetchEvents = createAsyncThunk(
   "events/fetchEvents",
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get("/events");
       return response.data.events;
-    } catch (error: any) {
-      if (error.response?.status === 401) {
+    } catch (error: unknown) {
+      const err = error as AxiosError;
+
+      if (err.response?.status === 401) {
         return rejectWithValue("Unauthorized");
       }
-      return rejectWithValue(error.message || "Failed to fetch events");
+
+      return rejectWithValue(err.message || "Failed to fetch events");
     }
   }
 );
@@ -254,7 +256,7 @@ const eventSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(adjustEventBudget.fulfilled, (state, action) => {
+      .addCase(adjustEventBudget.fulfilled, (state) => {
         state.isLoading = false;
       })
       .addCase(adjustEventBudget.rejected, (state, action) => {

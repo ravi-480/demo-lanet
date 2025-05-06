@@ -1,5 +1,4 @@
 import { useDispatch } from "react-redux";
-import { toast } from "sonner";
 
 import {
   Table,
@@ -28,7 +27,7 @@ const BudgetList = ({ items }: { items: VendorType[] }) => {
           );
         }
       } catch (error) {
-        toast.error("Failed to remove vendor");
+        console.log(error);
       }
     }
   };

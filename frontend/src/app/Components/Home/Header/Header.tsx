@@ -15,16 +15,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePathname } from "next/navigation";
-import {
-
-  markAllAsRead,
-} from "@/store/notificationSlice";
+import { markAllAsRead } from "@/store/notificationSlice";
 import api from "@/utils/api";
-import { useEffect } from "react";
 
 const Header = () => {
   const dispatch = useDispatch();
-  const { user } = useSelector((state: RootState) => state.auth);
   const { items, loading, error } = useSelector(
     (state: RootState) => state.notification
   );
@@ -55,20 +50,22 @@ const Header = () => {
           <div className="container mx-auto px-4 md:px-6 lg:px-8 h-full flex items-center justify-between">
             <Link href="/" className="flex items-center">
               <Calendar className="h-6 w-6 text-primary-500 mr-2" />
-              <span className="text-xl font-bold">EventWise</span>
+              <span className="text-xl font-bold bg-gradient-to-r from-indigo-300 via-cyan-200 to-indigo-100 bg-clip-text text-transparent">
+                EventWise
+              </span>
             </Link>
 
             <nav className="hidden md:flex md:space-x-8">
               <Link
                 href="/events"
-                className="hover:text-primary-600 hover:text-amber-200 px-1 py-5 text-sm font-medium"
+                className="text-indigo-300 hover:text-[20px] hover:shadow  duration-700 ease-in-out px-1 py-5 text-lg font-medium"
               >
                 Events
               </Link>
             </nav>
 
             <div className="flex items-center">
-              { <NotificationLoader />}
+              {<NotificationLoader />}
 
               <div className="flex items-center space-x-4">
                 <Popover>

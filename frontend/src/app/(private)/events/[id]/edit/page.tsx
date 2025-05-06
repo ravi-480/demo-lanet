@@ -1,17 +1,20 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
-import { useEffect } from "react";
 import { fetchById, updateEvent } from "@/store/eventSlice";
-import EventForm from "@/app/Components/Form/EventForm";
 import { toast } from "sonner";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import EventForm from "@/app/Components/Form/EventForm";
 
-const EditEvent = () => {
+const EditEventPage = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const { singleEvent: event } = useSelector((state: RootState) => state.event);
 
   useEffect(() => {
@@ -20,29 +23,60 @@ const EditEvent = () => {
     }
   }, [dispatch, id, event]);
 
-  const handleUpdate = async (formData: FormData) => {
-    // We no longer need to append the eventId to formData since we're passing it separately
+  const handleSubmit = (formData: FormData) => {
+    setIsLoading(true);
+
     dispatch(updateEvent({ id, formData }))
       .unwrap()
       .then(() => {
-        toast.success("Event updated successfully!");
         router.push("/events");
       })
-      .catch((err: unknown) => {
+      .catch((error: unknown) => {
         const errorMessage =
-          err instanceof Error
-            ? err.message
-            : typeof err === "object" && err !== null && "message" in err
-            ? String((err as { message: unknown }).message)
+          error instanceof Error
+            ? error.message
+            : typeof error === "object" && error !== null && "message" in error
+            ? String((error as { message: unknown }).message)
             : "Failed to update event";
 
-        toast.error(errorMessage);
+        toast.error(`Error updating event: ${errorMessage}`);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   };
 
-  if (!event) return <p className="text-white">Loading...</p>;
+  if (!event) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center">
+        <div className="text-white text-xl">Loading event data...</div>
+      </div>
+    );
+  }
 
-  return <EventForm initialData={event} onSubmit={handleUpdate} isEditing />;
+  return (
+    <div className="min-h-screen bg-gray-900 flex flex-col">
+      <div className="flex items-center justify-between p-6 border-b border-gray-800">
+        <Link href="/events">
+          <Button
+            variant="ghost"
+            className="text-gray-400 hover:text-white hover:bg-gray-800"
+          >
+            ← Back to Events
+          </Button>
+        </Link>
+        <h1 className="text-2xl font-bold text-white">Edit Event</h1>
+        <div className="w-24"></div> {/* Spacer for center alignment */}
+      </div>
+
+      <EventForm
+        initialData={event}
+        onSubmit={handleSubmit}
+        isEditing={true}
+        isLoading={isLoading}
+      />
+    </div>
+  );
 };
 
-export default EditEvent;
+export default EditEventPage;

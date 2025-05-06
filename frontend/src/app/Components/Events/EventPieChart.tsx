@@ -13,7 +13,6 @@ import {
   CustomizedLabelProps,
   CustomTooltipProps,
   MyPieChartProps,
-  PayloadItem,
 } from "../../../Interface/interface";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 

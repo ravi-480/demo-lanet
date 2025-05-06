@@ -34,7 +34,7 @@ const AllEventsPage = () => {
   const router = useRouter();
 
   useEffect(() => {
-    let retryTimeout: ReturnType<typeof setTimeout>;;
+    let retryTimeout: ReturnType<typeof setTimeout>;
 
     const loadEvents = async () => {
       try {

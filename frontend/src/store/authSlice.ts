@@ -52,7 +52,7 @@ const makeAuthRequest = async (
   data: unknown
 ): Promise<ApiResponse> => {
   console.log(data);
-  
+
   try {
     const response = await axios.post(`/auth/${url}`, data, {
       withCredentials: true,
@@ -172,6 +172,21 @@ export const resetPassword = createAsyncThunk<
   return rejectWithValue(result.message || "Password reset failed");
 });
 
+export const logout = createAsyncThunk(
+  "auth/logout",
+  async (_, { rejectWithValue }) => {
+    try {
+      await axios.post("/auth/logout", {}, { withCredentials: true });
+      return { success: true };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      toast.error(`Error during logout: ${errorMessage}`);
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -195,25 +210,25 @@ const authSlice = createSlice({
       state.status = "succeeded";
       state.error = null;
     },
-    logout: (state) => {
-      state.user = null;
-      state.isAuthenticated = false;
-      state.token = null;
-      state.status = "idle";
-      state.error = null;
-      state.forgotPasswordSuccess = false;
-      state.forgotPasswordMessage = null;
-      state.resetPasswordSuccess = false;
-      state.resetPasswordMessage = null;
+    // logout: (state) => {
+    //   state.user = null;
+    //   state.isAuthenticated = false;
+    //   state.token = null;
+    //   state.status = "idle";
+    //   state.error = null;
+    //   state.forgotPasswordSuccess = false;
+    //   state.forgotPasswordMessage = null;
+    //   state.resetPasswordSuccess = false;
+    //   state.resetPasswordMessage = null;
 
-      axios
-        .post("/auth/logout", {}, { withCredentials: true })
-        .catch((error: unknown) => {
-          const errorMessage =
-            error instanceof Error ? error.message : String(error);
-          toast.error(`Error during logout: ${errorMessage}`);
-        });
-    },
+    //   axios
+    //     .post("/auth/logout", {}, { withCredentials: true })
+    //     .catch((error: unknown) => {
+    //       const errorMessage =
+    //         error instanceof Error ? error.message : String(error);
+    //       toast.error(`Error during logout: ${errorMessage}`);
+    //     });
+    // },
   },
   extraReducers: (builder) => {
     // Generic pending handler
@@ -282,13 +297,30 @@ const authSlice = createSlice({
       })
       .addCase(getCurrentUser.fulfilled, (state, action) => {
         state.user = action.payload;
+      })
+      .addCase(logout.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(logout.fulfilled, (state) => {
+        state.user = null;
+        state.isAuthenticated = false;
+        state.token = null;
+        state.status = "idle";
+        state.error = null;
+        state.forgotPasswordSuccess = false;
+        state.forgotPasswordMessage = null;
+        state.resetPasswordSuccess = false;
+        state.resetPasswordMessage = null;
+      })
+      .addCase(logout.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload as string;
       });
   },
 });
 
 export const {
   resetAuthStatus,
-  logout,
   clearForgotPasswordState,
   clearResetPasswordState,
   setUser,

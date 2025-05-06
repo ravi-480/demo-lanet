@@ -26,14 +26,18 @@ const EventDisplay = () => {
       try {
         await dispatch(fetchEvents()).unwrap();
         initialFetchDone.current = true;
-      } catch (error: any) {
-        const errMsg = error?.message || error;
+      } catch (error: unknown) {
+        const err = error as {
+          message?: string;
+          response?: { status?: number };
+        };
+        const errMsg = err?.message || err;
 
         // Don't retry on auth errors
         if (
           errMsg === "Unauthorized" ||
           errMsg === "AUTH_ERROR" ||
-          error?.response?.status === 401
+          err?.response?.status === 401
         ) {
           initialFetchDone.current = true;
           return;
