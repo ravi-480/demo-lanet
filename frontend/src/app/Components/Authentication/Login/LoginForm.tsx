@@ -1,17 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
+
 import { loginUser } from "@/store/authSlice";
 import { AppDispatch, RootState } from "@/store/store";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginformSchema } from "@/schemas/ValidationSchema";
 import { toast } from "sonner";
 
-// Import shared components
 import AuthLayout from "../AuthLayout/AuthLayout";
 import {
   ErrorAlert,
@@ -41,20 +41,11 @@ export default function LoginForm() {
     },
   });
 
-  useEffect(() => {
-    const token = Cookies.get("token");
-    if (token) {
-      router.replace("/events");
-    }
-  }, [router]);
-
   const onSubmit = async (values: { email: string; password: string }) => {
     const response = await dispatch(loginUser(values));
     if (response.type === "auth/login/fulfilled") {
       toast.success("Login successful");
       router.replace("/events");
-    } else {
-      toast.error(response.payload as string);
     }
   };
 

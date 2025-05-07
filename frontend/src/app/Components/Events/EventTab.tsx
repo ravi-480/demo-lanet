@@ -32,8 +32,8 @@ const EventTabs: React.FC<EventTabsProps> = ({ activeTab, setActiveTab }) => {
               onClick={() => setActiveTab(tab.id)}
               className={`px-3 py-2 cursor-pointer rounded-md transition-all duration-300 ${
                 activeTab === tab.id
-                  ? "bg-violet-700 hover:bg-violet-600 text-white font-semibold"
-                  : "text-gray-200 hover:bg-gray-800 hover:text-white"
+                  ? "bg-indigo-800 hover:bg-indigo-600 text-white font-semibold"
+                  : "text-gray-200 hover:bg-indigo-800 hover:text-white"
               }`}
             >
               {tab.label}

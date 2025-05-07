@@ -41,7 +41,7 @@ const Header = () => {
   };
   const pathname = usePathname();
 
-  const hideNavbarRoutes = ["/split/confirm", "/rsvp/respond"];
+  const hideNavbarRoutes = ["/split/confirm", "/rsvp/response","/vendor/response"];
 
   return (
     <>

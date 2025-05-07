@@ -26,6 +26,7 @@ import {
 import { AppDispatch } from "@/store/store";
 import { fetchGuests } from "@/store/rsvpSlice";
 import { addManualVendorExpense } from "@/store/vendorSlice";
+import { allowOnlyLetters, filterPastedLetters } from "@/utils/helper";
 
 interface BudgetDialogProps {
   eventId: string;
@@ -81,8 +82,6 @@ const BudgetDialog = ({ eventId, isOpen, setIsOpen }: BudgetDialogProps) => {
       handleClose();
     } catch (err) {
       console.log(err);
-
-      toast.error("Failed to add vendor");
     }
   };
 
@@ -121,18 +120,11 @@ const BudgetDialog = ({ eventId, isOpen, setIsOpen }: BudgetDialogProps) => {
                 <Input
                   className="h-9 sm:h-10"
                   placeholder="Enter Expense name"
-                  onKeyDown={(e) => {
-                    if (/\d/.test(e.key)) {
-                      e.preventDefault(); // block number keys
-                    }
-                  }}
-                  onPaste={(e) => {
-                    const pasted = e.clipboardData.getData("text");
-                    if (/\d/.test(pasted)) {
-                      e.preventDefault(); // block pasting numbers
-                    }
-                  }}
-                  {...register("title", { required: "Name is required" })}
+                  onKeyDown={allowOnlyLetters}
+                  onPaste={filterPastedLetters}
+                  {...register("title", {
+                    required: "Name is required",
+                  })}
                 />
                 {errors.title && (
                   <p className="text-sm text-red-500 mt-1">

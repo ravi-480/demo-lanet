@@ -31,7 +31,7 @@ export const CreateSplitButton = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
-          className="bg-cyan-600 hover:bg-cyan-700 w-full py-6 gap-2 shadow-md"
+          className=" w-full py-6 gap-2 shadow-md"
           disabled={isLoading}
         >
           <DollarSign size={18} />

@@ -68,11 +68,15 @@ export const initializePayment = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const res = await api.post("/payment/create-order", {
-        eventId,
-        userId,
-        amount,
-      });
+      const res = await api.post(
+        "/payment/create-order",
+        {
+          eventId,
+          userId,
+          amount,
+        },
+        { headers: { "x-skip-success-toast": "true" } }
+      );
       return res.data;
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {

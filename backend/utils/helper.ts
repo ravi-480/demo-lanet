@@ -1,5 +1,6 @@
 import { getIO } from "./socketUtils";
 import { createNotificationService } from "../services/notificationService";
+import mongoose from "mongoose";
 
 export const createNotification = async (
   userId: string,
@@ -76,7 +77,7 @@ export const formatEmailTemplate = (
       }</p>
       
       <div style="text-align: center; margin: 30px 0;">
-        <a href="http://localhost:3000/rsvp/respond?eventId=${eventId}&guestId=${
+        <a href="http://localhost:3000/rsvp/response?eventId=${eventId}&guestId=${
     guest._id
   }"
           style="background-color: ${
@@ -93,4 +94,10 @@ export const formatEmailTemplate = (
       }</p>
     </div>
   `;
+};
+
+
+// validate id format
+export const validateIdFormat = (id: string): boolean => {
+  return mongoose.Types.ObjectId.isValid(id);
 };

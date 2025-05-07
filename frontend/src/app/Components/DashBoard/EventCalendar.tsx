@@ -61,7 +61,7 @@ const EventCalendar = () => {
               >
                 {selectedDate && (
                   <>
-                    <h3 className="font-semibold mb-2 text-violet-300">
+                    <h3 className="font-semibold mb-2 text-indigo-300">
                       {format(selectedDate, "MMMM d, yyyy")}
                     </h3>
                     {selectedEvents.length > 0 ? (
@@ -105,10 +105,10 @@ const EventCalendar = () => {
             }}
             modifiersClassNames={{
               hasEvent:
-                "bg-violet-600 text-white rounded-xl hover:bg-violet-500",
+                "bg-indigo-600 text-white rounded-xl hover:bg-indigo-500",
               selected: "",
             }}
-            className="rounded-lg border md:h-91 border-gray-400 w-full [&_.day-selected]:bg-violet-800 [&_.day-selected]:text-white [&_.day:hover]:bg-gray-800 [&_.day:hover]:text-white"
+            className="rounded-lg border md:h-91 border-gray-400 w-full [&_.day-selected]:bg-indigo-800 [&_.day-selected]:text-white [&_.day:hover]:bg-gray-800 [&_.day:hover]:text-white"
             selected={undefined}
             mode="single"
             onDayClick={handleDateSelect}

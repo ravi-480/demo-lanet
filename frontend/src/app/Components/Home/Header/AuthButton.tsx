@@ -32,7 +32,7 @@ export const AuthButtons = () => {
       // Navigate to home page instead of reload
       router.push("/");
     } catch (error) {
-      console.error("Logout failed:", error);
+      console.log("Logout failed:", error);
     } finally {
       setIsLoggingOut(false);
     }

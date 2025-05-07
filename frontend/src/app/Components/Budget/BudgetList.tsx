@@ -12,7 +12,8 @@ import {
 import { AppDispatch } from "@/store/store";
 import { getVendorsByEvent, removeAddedVendor } from "@/store/vendorSlice";
 import { VendorType } from "@/Interface/interface";
-import VendorActions from "./VendorAction"; // Import the updated VendorActions component
+import VendorActions from "./VendorAction";
+import { StandardResponse } from "../../../Interface/interface";
 
 const BudgetList = ({ items }: { items: VendorType[] }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -62,7 +63,23 @@ const BudgetList = ({ items }: { items: VendorType[] }) => {
                 </TableCell>
                 <TableCell>₹ {item.price}</TableCell>
                 <TableCell>{item.finalPrice}</TableCell>
-                <TableCell>{item.status ? item.status : "N/A"}</TableCell>
+                <TableCell>
+                  <span
+                    className={`
+      px-3 py-1 rounded-4xl text-sm capitalize font-semibold
+      ${
+        item.status === "accepted"
+          ? "bg-green-100 text-green-800"
+          : item.status === "declined"
+          ? "bg-red-100 text-red-800"
+          : "bg-yellow-100 text-yellow-800"
+      }
+    `}
+                  >
+                    {item.status}
+                  </span>
+                </TableCell>
+
                 <TableCell className="text-right">
                   <VendorActions item={item} onRemove={handleRemoveVendor} />
                 </TableCell>

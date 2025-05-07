@@ -52,7 +52,7 @@ export const markAllRead = asyncHandler(
 
     return res.status(200).json({
       status: "success",
-      msg: "All notification marked as Read successfully",
+      message: "All notification marked as Read successfully",
     });
   }
 );

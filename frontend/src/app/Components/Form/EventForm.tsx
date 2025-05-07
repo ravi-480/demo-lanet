@@ -7,7 +7,11 @@ import Image from "next/image";
 import { z } from "zod";
 import { eventFormSchema } from "@/schemas/ValidationSchema";
 import { eventTypeOptions, IEvent } from "@/Interface/interface";
-import { formatDateForInput } from "@/utils/helper";
+import {
+  allowOnlyLetters,
+  filterPastedLetters,
+  formatDateForInput,
+} from "@/utils/helper";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,7 +56,6 @@ const EventForm: React.FC<EventFormProps> = ({
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Trigger animations after component mounts
     setTimeout(() => {
       setIsVisible(true);
     }, 100);
@@ -70,8 +73,8 @@ const EventForm: React.FC<EventFormProps> = ({
       date: formatDateForInput(initialData?.date) || "",
       location: initialData?.location || "",
       description: initialData?.description || "",
-      budget: initialData?.budget?.allocated || 0, // Default to 0 instead of undefined
-      guestLimit: initialData?.guestLimit || 0, // Default to 0 instead of undefined
+      budget: initialData?.budget?.allocated || 0, // Default to 0
+      guestLimit: initialData?.guestLimit || 0, // Default to 0
       eventType: initialData?.eventType || "",
       durationInDays: initialData?.durationInDays || 1,
     },
@@ -138,24 +141,14 @@ const EventForm: React.FC<EventFormProps> = ({
                   id="name"
                   placeholder="Enter event name"
                   className="bg-gray-900 border-gray-700 focus:border-[#6c63ff] focus:ring-[#6c63ff] text-white"
-                  onKeyDown={(e) => {
-                    if (/\d/.test(e.key)) {
-                      e.preventDefault();
-                    }
-                  }}
-                  onPaste={(e) => {
-                    const pasted = e.clipboardData.getData("text");
-                    if (/\d/.test(pasted)) {
-                      e.preventDefault();
-                    }
-                  }}
+                  onKeyDown={allowOnlyLetters}
+                  onPaste={filterPastedLetters}
                 />
                 {errors.name && (
                   <p className="text-red-400 text-sm">{errors.name.message}</p>
                 )}
               </div>
 
-              {/* Two Column Layout */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Date Field */}
                 <div className="space-y-2">
@@ -194,17 +187,8 @@ const EventForm: React.FC<EventFormProps> = ({
                     id="location"
                     placeholder="Enter event location"
                     className="bg-gray-900 border-gray-700 focus:border-[#6c63ff] focus:ring-[#6c63ff] text-white"
-                    onKeyDown={(e) => {
-                      if (/\d/.test(e.key)) {
-                        e.preventDefault();
-                      }
-                    }}
-                    onPaste={(e) => {
-                      const pasted = e.clipboardData.getData("text");
-                      if (/\d/.test(pasted)) {
-                        e.preventDefault();
-                      }
-                    }}
+                    onKeyDown={allowOnlyLetters}
+                    onPaste={filterPastedLetters}
                   />
                   {errors.location && (
                     <p className="text-red-400 text-sm">

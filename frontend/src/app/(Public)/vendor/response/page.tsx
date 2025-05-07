@@ -72,7 +72,7 @@ const VendorResponsePage = () => {
         setEventData(eventResponse.data.event);
         setLoading(false);
       } catch (error) {
-        console.error("Error loading data:", error);
+        console.log("Error loading data:", error);
         setLoading(false);
         setResponseStatus("error");
       }
@@ -106,9 +106,9 @@ const VendorResponsePage = () => {
           : "You have accepted this request"
       );
     } catch (error) {
-      console.error("Error processing response:", error);
+      console.log("Error processing response:", error);
       setResponseStatus("error");
-      toast.error("Failed to process your response");
+      // toast.error("Failed to process your response");
     } finally {
       setProcessing(false);
     }

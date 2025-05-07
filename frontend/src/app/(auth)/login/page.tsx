@@ -1,4 +1,3 @@
-"use client";
 
 import LoginForm from "@/app/Components/Authentication/Login/LoginForm";
 

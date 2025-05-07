@@ -5,10 +5,12 @@ import Notification from "../models/notificationModel";
 
 let io: SocketIOServer;
 
+const apiUrl = process.env.BASE_URL;
+
 export const initializeSocketIP = (httpServer: HttpServer) => {
   io = new SocketIOServer(httpServer, {
     cors: {
-      origin: "http://localhost:3000",
+      origin: apiUrl,
       methods: ["GET", "POST"],
       credentials: true,
     },
@@ -53,7 +55,7 @@ export const initializeSocketIP = (httpServer: HttpServer) => {
 
         console.log("Notification sent to organizer:", organizerId);
       } catch (error) {
-        console.error("Error sending notification:", error);
+        console.log("Error sending notification:", error);
         socket.emit("notification-sent", {
           success: false,
           error: "Failed to send notification",

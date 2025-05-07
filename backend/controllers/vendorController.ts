@@ -2,17 +2,20 @@ import Vendor from "../models/vendorModel";
 import Event from "../models/eventModel";
 import { asyncHandler } from "../utils/asyncHandler";
 import { Request, Response } from "express";
-import { sendEmail } from "../utils/emailService";
+import { sendEmail } from "../services/emailService";
 import { v4 as uuidv4 } from "uuid";
 import Notification from "../models/notificationModel";
 import ApiError from "../utils/ApiError";
 import {
+  getRefundSplitEmailTemplate,
+  getSplitRequestEmailTemplate,
   sendBudgetExceededEmail,
   sendBudgetWarningEmail,
 } from "../utils/emailTemplate";
 import User from "../models/UserModel";
 import mongoose from "mongoose";
 import { getIO } from "../utils/socketUtils";
+import { validateIdFormat } from "../utils/helper";
 const axios = require("axios");
 
 interface AuthenticatedRequest extends Request {
@@ -34,19 +37,40 @@ export const getVendor = asyncHandler(async (req: Request, res: Response) => {
     throw new Error("Missing SerpAPI key in environment variables");
   }
 
-  const serpRes = await axios.get("https://serpapi.com/search.json", {
-    params: {
-      engine: "google_local",
-      q: query,
-      location,
-      api_key: process.env.SERPAPI_KEY,
-    },
-  });
+  const searchQuery = String(query);
+  const searchLocation = String(location);
+
+  let serpRes;
+  try {
+    serpRes = await axios.get("https://serpapi.com/search.json", {
+      params: {
+        engine: "google_local",
+        q: searchQuery,
+        location: searchLocation,
+        api_key: process.env.SERPAPI_KEY,
+      },
+    });
+  } catch (error: any) {
+    const serpError = error?.response?.data?.error;
+    if (serpError?.includes("Unsupported") && serpError?.includes("location")) {
+      throw new ApiError(400, `Invalid location: "${searchLocation}"`);
+    }
+
+    console.log("SerpAPI error:", error?.response?.data || error);
+    throw new ApiError(502, "Error fetching vendor data from external API");
+  }
 
   const allVendors = serpRes.data.local_results || [];
+
+  if (!Array.isArray(allVendors) || allVendors.length === 0) {
+    throw new ApiError(
+      404,
+      `No vendors found for "${searchQuery}" in "${searchLocation}"`
+    );
+  }
+
   const perPage = 6;
   const pageNum = parseInt(page as string) || 1;
-
   const startIdx = (pageNum - 1) * perPage;
   const paginated = allVendors.slice(startIdx, startIdx + perPage);
 
@@ -141,7 +165,6 @@ export const addVendors = asyncHandler(async (req: Request, res: Response) => {
     vendor,
   });
 
-  // Process budget alerts asynchronously after sending the response
   try {
     // Check if budget is at 90% or more but less than 100%
     if (budgetPercentage >= 90 && budgetPercentage < 100) {
@@ -161,7 +184,7 @@ export const addVendors = asyncHandler(async (req: Request, res: Response) => {
             markAlertAsSent(event._id.toString(), alertType);
           })
           .catch((err) => {
-            console.error("Failed to send budget warning email:", err);
+            console.log("Failed to send budget warning email:", err);
           });
       }
     }
@@ -184,13 +207,13 @@ export const addVendors = asyncHandler(async (req: Request, res: Response) => {
             markAlertAsSent(event._id.toString(), alertType);
           })
           .catch((err) => {
-            console.error("Failed to send budget exceeded email:", err);
+            console.log("Failed to send budget exceeded email:", err);
           });
       }
     }
   } catch (error) {
     // Log any errors but don't affect the response
-    console.error("Error processing budget alerts:", error);
+    console.log("Error processing budget alerts:", error);
   }
 });
 
@@ -284,10 +307,36 @@ export const addUserInSplit = asyncHandler(
 // send mail to users
 
 export const sendMailToUser = asyncHandler(async (req, res) => {
-  const { recipients, amounts, eventId, userId, names } = req.body;
-  console.log(recipients, amounts, eventId, userId, names);
+  const { recipients, amounts, eventId, userId } = req.body;
 
   try {
+    // Track users who previously paid for notification purposes
+    const usersWithPreviousPayments = [];
+
+    // First, check for users who have already paid
+    for (let i = 0; i < recipients.length; i++) {
+      const event = await Event.findOne({
+        _id: eventId[i],
+        "includedInSplit.email": recipients[i],
+      });
+
+      if (event) {
+        const userSplit = event.includedInSplit.find(
+          (user) => user.email === recipients[i]
+        );
+        if (userSplit && userSplit.status === "Paid") {
+          usersWithPreviousPayments.push({
+            email: recipients[i],
+            previousAmount: userSplit.amount,
+            newAmount: amounts[i],
+            eventId: eventId[i],
+            userId: userId[i],
+          });
+        }
+      }
+    }
+
+    // Update all users in the split with new amounts and set status to pending
     for (let i = 0; i < recipients.length; i++) {
       await Event.findOneAndUpdate(
         { _id: eventId[i], "includedInSplit.email": recipients[i] },
@@ -295,6 +344,9 @@ export const sendMailToUser = asyncHandler(async (req, res) => {
           $set: {
             "includedInSplit.$.amount": amounts[i],
             "includedInSplit.$.joinedAt": new Date(),
+            "includedInSplit.$.status": "pending", // Reset to pending
+            "includedInSplit.$.paymentId": null, // Clear payment ID
+            "includedInSplit.$.paymentTimestamp": null, // Clear payment timestamp
           },
         },
         { new: true }
@@ -303,20 +355,27 @@ export const sendMailToUser = asyncHandler(async (req, res) => {
 
     // Send emails
     for (let i = 0; i < recipients.length; i++) {
+      console.log(amounts[i], eventId[i], userId[i]);
+
+      // Check if this user had a previous payment
+      const previousPayment = usersWithPreviousPayments.find(
+        (user) => user.email === recipients[i]
+      );
+
+      const { subject, text, html } = previousPayment
+        ? getRefundSplitEmailTemplate(
+            previousPayment.previousAmount,
+            previousPayment.newAmount,
+            eventId[i],
+            userId[i]
+          )
+        : getSplitRequestEmailTemplate(amounts[i], eventId[i], userId[i]);
+
       await sendEmail({
         to: recipients[i],
-        subject: "Split Expense Request",
-        text: "",
-        html: `
-          <h3>Hello from Split App</h3>
-          <p>You’ve been asked to confirm a split expense of <strong>₹${amounts[i]}</strong>.</p>
-          <p>
-            <a href="http://localhost:3000/split/confirm?eventId=${eventId[i]}&userId=${userId[i]}"
-               style="background-color:#0ea5e9;padding:10px 20px;color:white;text-decoration:none;border-radius:5px;">
-              Confirm Your Share
-            </a>
-          </p>
-        `,
+        subject,
+        text,
+        html,
       });
     }
 
@@ -324,7 +383,7 @@ export const sendMailToUser = asyncHandler(async (req, res) => {
       .status(200)
       .json({ message: "Amounts updated and emails sent successfully!" });
   } catch (error) {
-    console.error(error);
+    console.log(error);
     throw new ApiError(500, "Failed to send emails or update split data.");
   }
 });
@@ -480,13 +539,9 @@ export const contactVendor = asyncHandler(
       }
 
       // Validate IDs
-      if (!mongoose.Types.ObjectId.isValid(vendorId)) {
-        return res.status(400).json({ message: "Invalid vendor ID" });
-      }
+      validateIdFormat(vendorId);
 
-      if (!mongoose.Types.ObjectId.isValid(eventId)) {
-        return res.status(400).json({ message: "Invalid event ID" });
-      }
+      validateIdFormat(eventId);
 
       // Find the vendor, user, and event
       const vendor = await Vendor.findById(vendorId);
@@ -505,7 +560,7 @@ export const contactVendor = asyncHandler(
       }
 
       // Create simple response URLs with query parameters instead of tokens
-      const baseUrl = process.env.FRONTEND_URL;
+      const baseUrl = process.env.BASE_URL;
 
       // Simple parameters for response handling
       const params = new URLSearchParams({
@@ -523,9 +578,9 @@ export const contactVendor = asyncHandler(
       const acceptOriginalUrl = `${baseUrl}/vendor/response?${params.toString()}&response=acceptOriginal`;
       const acceptNegotiatedUrl =
         isNegotiating && negotiatedPrice
-          ? `${baseUrl}/vendor/respond?${params.toString()}&response=acceptNegotiated`
+          ? `${baseUrl}/vendor/response?${params.toString()}&response=acceptNegotiated`
           : "";
-      const declineUrl = `${baseUrl}/vendor/respond?${params.toString()}&response=decline`;
+      const declineUrl = `${baseUrl}/vendor/response?${params.toString()}&response=decline`;
 
       // Build email content based on whether it's a negotiation or regular inquiry
       let emailSubject = isNegotiating
@@ -615,7 +670,7 @@ export const contactVendor = asyncHandler(
           : "Mail sent to vendor",
       });
     } catch (error: any) {
-      console.error("Error in contactVendor:", error);
+      console.log("Error in contactVendor:", error);
       return res.status(500).json({
         message: "Failed to contact vendor",
         error: error.message,
@@ -676,7 +731,7 @@ export const getVendorResponse = asyncHandler(
     // Update vendor status based on response type
     switch (response) {
       case "acceptOriginal":
-        vendor.status = "acceptedOriginal";
+        vendor.status = "accepted";
         vendor.finalPrice = vendor.price; // Use the original price
         break;
 

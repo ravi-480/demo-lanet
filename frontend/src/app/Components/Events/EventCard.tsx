@@ -20,7 +20,7 @@ const EventCard: React.FC<EventCardProps> = ({
       className={`rounded-lg overflow-hidden border ${
         isDetailed
           ? "border-gray-700 bg-gray-800 hover:bg-gray-750 mt-6"
-          : "border-gray-700 hover:border-violet-500"
+          : "border-gray-700 hover:border-indigo-500"
       } flex flex-col h-full`}
       whileHover={{
         y: -5,
@@ -77,7 +77,7 @@ const EventCard: React.FC<EventCardProps> = ({
                 <Clock
                   size={isDetailed ? 14 : 12}
                   className={`mr-2 ${
-                    isDetailed ? "text-violet-400" : "text-violet-400"
+                    isDetailed ? "text-indigo-400" : "text-indigo-500"
                   }`}
                 />
                 <span>{formatSimpleDate(event.date)}</span>
@@ -86,7 +86,7 @@ const EventCard: React.FC<EventCardProps> = ({
                 <MapPin
                   size={isDetailed ? 14 : 12}
                   className={`mr-2 ${
-                    isDetailed ? "text-violet-400" : "text-violet-400"
+                    isDetailed ? "text-indigo-400" : "text-indigo-700"
                   }`}
                 />
                 <span className="truncate max-w-[100px]">
@@ -118,7 +118,7 @@ const EventCard: React.FC<EventCardProps> = ({
           className={isDetailed ? "" : "mt-3"}
         >
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-            <Button className="w-full bg-violet-600 hover:bg-violet-700 transition-colors duration-300">
+            <Button className="w-full bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300">
               {isDetailed ? "View Details" : "View more"}
             </Button>
           </motion.div>

@@ -43,7 +43,7 @@ function Calendar({
         ),
         day: cn(
           "h-8 w-8 sm:h-10 sm:w-10 p-0 font-normal text-white rounded-md transition-colors",
-          "hover:bg-cyan-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
+          "hover:bg-indigo-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
         ),
         day_range_start:
           "day-range-start aria-selected:bg-primary aria-selected:text-primary-foreground",

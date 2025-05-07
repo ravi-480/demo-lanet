@@ -86,16 +86,20 @@ const BudgetStats = ({ eventBudget }: { eventBudget: IEvent | null }) => {
   };
 
   const handleBudgetAdjust = async () => {
+    if (!adjustAmount || adjustAmount <= 0) {
+      toast.error("Please enter a valid adjustment amount greater than 0");
+      return;
+    }
+
     try {
       await dispatch(
         adjustEventBudget({ eventId: eventBudget._id, adjustAmount })
       ).unwrap();
 
       setIsDialogOpen(false);
-
-      toast.success("Budget updated successfully!");
+      setAdjustAmount(0);
     } catch (error: unknown) {
-      toast.error(` ${error} `);
+      // toast.error(` ${error} `);
     }
   };
 

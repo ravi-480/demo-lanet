@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import crypto from "crypto";
-import { sendEmail } from "../utils/emailService";
+import { sendEmail } from "./emailService";
 
 import User from "../models/UserModel";
 import ApiError from "../utils/ApiError";
@@ -13,6 +13,7 @@ import {
   IAuthResponse,
   ISignupResponse,
 } from "../interfaces/user.interface";
+import { sendForgotPasswordEmail } from "../utils/emailTemplate";
 
 // Environment variables with fallbacks
 const JWT_ACCESS_SECRET = process.env.JWT_SECRET as string;
@@ -47,7 +48,7 @@ export const signup = async (
 
   const existingUser = await User.findOne({ email: userData.email });
   if (existingUser) {
-    throw new ApiError(409, "Email already in use");
+    throw new ApiError(409, "Email already Exist");
   }
 
   // Create new user
@@ -160,18 +161,12 @@ export const forgotPassword = async (email: string): Promise<void> => {
   user.resetPasswordExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
   await user.save();
 
-  const resetApiUrl = process.env.RESET_API_URL;
   // Create reset URL
-  const resetUrl = `${resetApiUrl}/${resetToken}`;
+  const resetUrl = `/reset-password/${resetToken}`;
 
   // Send email with reset link
   try {
-    await sendEmail({
-      to: user.email,
-      subject: "Password Reset Request",
-      text: `You requested a password reset. Please go to this link to reset your password: ${resetUrl}`,
-      html: `<p>You requested a password reset.</p><p>Please click <a href="${resetUrl}">here</a> to reset your password.</p><p>If you didn't request this, please ignore this email.</p><p>This link will expire in 10 minutes.</p>`,
-    });
+    await sendForgotPasswordEmail(user.email, resetUrl);
   } catch (error) {
     // If email sending fails, clear the reset token
     user.resetPasswordToken = undefined;

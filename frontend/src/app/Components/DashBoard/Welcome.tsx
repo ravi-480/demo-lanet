@@ -46,7 +46,7 @@ const Welcome = () => {
           </motion.h1>
 
           <motion.p
-            className="text-violet-500 mt-1"
+            className="text-indigo-500 mt-1"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
@@ -65,7 +65,7 @@ const Welcome = () => {
           }}
         >
           <Link href="/create-events">
-            <Button className="mt-4 md:mt-0 flex py-5 bg-violet-600 hover:bg-violet-700 transition-colors duration-300">
+            <Button className="mt-4 md:mt-0 flex py-5 bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300">
               <Plus size={18} className="mr-2" />
               Create New Event
             </Button>

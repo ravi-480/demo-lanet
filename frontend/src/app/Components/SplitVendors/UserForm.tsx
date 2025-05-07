@@ -5,6 +5,7 @@ import { DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SplitUser } from "@/Interface/interface";
+import { allowOnlyLetters, filterPastedLetters } from "@/utils/helper";
 import { UseFormRegister, FieldErrors } from "react-hook-form";
 
 interface UserFormProps {
@@ -32,17 +33,8 @@ export const UserForm = ({
       <Input
         id="name"
         placeholder="Enter full name"
-        onKeyDown={(e) => {
-          if (/\d/.test(e.key)) {
-            e.preventDefault(); // block number keys
-          }
-        }}
-        onPaste={(e) => {
-          const pasted = e.clipboardData.getData("text");
-          if (/\d/.test(pasted)) {
-            e.preventDefault(); // block pasting numbers
-          }
-        }}
+        onKeyDown={allowOnlyLetters}
+        onPaste={filterPastedLetters}
         className="border-gray-300 focus:border-cyan-500 focus:ring-cyan-500"
         {...register("name", { required: "Name is required" })}
       />
@@ -85,7 +77,7 @@ export const UserForm = ({
       </Button>
       <Button
         type="submit"
-        className="bg-cyan-600 hover:bg-cyan-700 ml-2"
+        className="bg-indigo-600 hover:bg-indigo-700 ml-2"
         disabled={isLoading}
       >
         {isLoading ? "Processing..." : submitLabel}

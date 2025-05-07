@@ -37,7 +37,6 @@ export const getEventStatus = (date?: string | Date): string => {
   }
 };
 
-
 // Get the number of upcoming events
 export const getNoOfUpcomingEvent = (events: IEvent[]) => {
   const now = Date.now();
@@ -52,7 +51,6 @@ export const getNoOfUpcomingEvent = (events: IEvent[]) => {
   return count;
 };
 
-
 // Helper function to properly format dates for input fields
 export const formatDateForInput = (dateString?: string | Date): string => {
   if (!dateString) return "";
@@ -66,5 +64,46 @@ export const formatDateForInput = (dateString?: string | Date): string => {
   } catch (e) {
     console.log(e);
     return "";
+  }
+};
+
+// helper function to check so that only allowed string character
+export const allowOnlyLetters = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const allowedKeys = [
+    "Backspace",
+    "Tab",
+    "ArrowLeft",
+    "ArrowRight",
+    "Delete",
+    "-",
+    "'",
+  ];
+
+  const isLetter = /^[a-zA-Z]$/.test(e.key);
+  const input = e.currentTarget;
+
+  // Block space at beginning or if input is empty
+  if (e.key === " " && input.selectionStart === 0) {
+    e.preventDefault();
+    return;
+  }
+
+  if (!isLetter && !allowedKeys.includes(e.key) && e.key !== " ") {
+    e.preventDefault();
+  }
+};
+
+export const filterPastedLetters = (
+  e: React.ClipboardEvent<HTMLInputElement>
+) => {
+  const pasted = e.clipboardData.getData("text");
+
+  // Block if non-letters, or if pasted text starts with space
+  if (
+    /[^a-zA-Z\s\-']/.test(pasted) ||
+    pasted.trim().length === 0 ||
+    pasted.startsWith(" ")
+  ) {
+    e.preventDefault();
   }
 };

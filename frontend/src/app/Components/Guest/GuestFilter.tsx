@@ -47,7 +47,7 @@ const GuestFilters = ({
       toast.success("Invitations sent to all pending guests");
     } catch (error) {
       toast.error("Failed to send invitations");
-      console.error("Failed to send invitations:", error);
+      console.log("Failed to send invitations:", error);
     }
   };
 
@@ -67,7 +67,6 @@ const GuestFilters = ({
       <div className="flex gap-2">
         <Button
           size="sm"
-          className="bg-cyan-600 hover:bg-cyan-700 text-white"
           onClick={() => setOpen(true)}
           disabled={pendingGuests.length === 0}
         >
@@ -81,7 +80,7 @@ const GuestFilters = ({
           cancelText="Cancel"
           onConfirm={handleInvite}
           open={open}
-          confirmClassName="bg-cyan-500 hover:bg-cyan-600"
+          confirmClassName="bg-indigo-600 hover:bg-indigo-700"
           description="Are you sure you want to send invitations to all guests? This action will send the invite to everyone listed for this event. Please confirm before proceeding."
           title="Invite All Guest"
         />

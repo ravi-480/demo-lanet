@@ -68,7 +68,7 @@ api.interceptors.response.use(
       // Check if the error message indicates there's no refresh token
       const errorMessage = error.response?.data?.message || "";
       if (errorMessage.startsWith("NO_REFRESH_TOKEN:")) {
-        toast.error("NO_REFRESH_TOKEN:Session expired. Please log in again.");
+        toast.error("Session expired. Please log in again.");
         // No refresh token available, trigger auth error immediately
         if (api.onAuthError) {
           api.onAuthError();
@@ -105,7 +105,9 @@ api.interceptors.response.use(
       }
     }
 
-    if (status !== 401 && status !== 404 && status >= 500) {
+    if (status !== 401 && status!==404) {
+
+      
       const message =
         error.response?.data?.message ||
         error.message ||

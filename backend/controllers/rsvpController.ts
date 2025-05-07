@@ -1,12 +1,9 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import * as GuestService from "../services/rsvpService";
-
-// Reusable error response function
-const sendErrorResponse = (res: Response, status: number, message: string) => {
-  return res.status(status).json({ success: false, message });
-};
-
+import ApiError from "../utils/ApiError";
+import Guest from "../models/rsvpSchema";
+import { validateIdFormat } from "../utils/helper";
 export const addGuestFromFile = asyncHandler(
   async (req: Request, res: Response) => {
     try {
@@ -14,11 +11,11 @@ export const addGuestFromFile = asyncHandler(
       const file = req.file;
 
       if (!file) {
-        return sendErrorResponse(res, 400, "File not uploaded");
+        throw new ApiError(400, "File not uploaded");
       }
 
-      if (!GuestService.validateIdFormat(eventId)) {
-        return sendErrorResponse(res, 400, "Invalid Event ID");
+      if (!validateIdFormat(eventId)) {
+        throw new ApiError(400, "Invalid Event ID");
       }
 
       try {
@@ -35,14 +32,14 @@ export const addGuestFromFile = asyncHandler(
       } catch (error: any) {
         // Check if this is our guest limit exceeded error
         if (error.message && error.message.includes("Guest limit exceeded")) {
-          return sendErrorResponse(res, 400, error.message);
+          throw new ApiError(400, error.message);
         }
         // Re-throw for the outer catch block to handle
         throw error;
       }
     } catch (error) {
-      console.error("Error in addGuestFromFile:", error);
-      return sendErrorResponse(res, 500, "Server error");
+      console.log("Error in addGuestFromFile:", error);
+      throw new ApiError(500, "Server error");
     }
   }
 );
@@ -50,28 +47,23 @@ export const addGuestFromFile = asyncHandler(
 // Get Guests by Event ID
 export const getUserByEventId = asyncHandler(
   async (req: Request, res: Response) => {
-    try {
-      const { eventId } = req.params;
+    const { eventId } = req.params;
 
-      if (!GuestService.validateIdFormat(eventId)) {
-        return sendErrorResponse(res, 400, "Invalid Event ID");
-      }
-
-      const rsvpList = await GuestService.getGuestsByEventId(eventId);
-
-      if (!rsvpList || rsvpList.length === 0) {
-        return sendErrorResponse(res, 404, "No guests found");
-      }
-
-      return res.status(200).json({
-        success: true,
-        message: "Guests fetched successfully",
-        rsvpList,
-      });
-    } catch (error) {
-      console.error("Error in getUserByEventId:", error);
-      return sendErrorResponse(res, 500, "Server error");
+    if (!validateIdFormat(eventId)) {
+      throw new ApiError(400, "Invalid Event ID");
     }
+
+    const rsvpList = await GuestService.getGuestsByEventId(eventId);
+
+    if (!rsvpList || rsvpList.length === 0) {
+      throw new ApiError(404, "No guests found");
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Guests fetched successfully",
+      rsvpList,
+    });
   }
 );
 
@@ -81,8 +73,8 @@ export const addSingleGuest = asyncHandler(
     try {
       const { eventId } = req.body;
 
-      if (!GuestService.validateIdFormat(eventId)) {
-        return sendErrorResponse(res, 400, "Invalid Event ID");
+      if (!validateIdFormat(eventId)) {
+        throw new ApiError(400, "Invalid Event ID");
       }
 
       const result = await GuestService.addSingleGuestToEvent(req.body);
@@ -97,11 +89,11 @@ export const addSingleGuest = asyncHandler(
         additionalCost: result.additionalCost,
       });
     } catch (error) {
-      console.error("Error adding guest:", error);
+      console.log("Error adding guest:", error);
       if (error instanceof Error) {
-        return sendErrorResponse(res, 400, error.message);
+        throw new ApiError(400, error.message);
       }
-      return sendErrorResponse(res, 500, "Server error");
+      throw new ApiError(500, "Server error");
     }
   }
 );
@@ -111,8 +103,8 @@ export const removeSingleGuest = asyncHandler(
     try {
       const { guestId } = req.query;
 
-      if (!GuestService.validateIdFormat(guestId as string)) {
-        return sendErrorResponse(res, 400, "Invalid Guest ID");
+      if (!validateIdFormat(guestId as string)) {
+        throw new ApiError(400, "Invalid Guest ID");
       }
 
       const result = await GuestService.removeGuestById(guestId as string);
@@ -135,11 +127,11 @@ export const removeSingleGuest = asyncHandler(
         budgetReduction: result.budgetReduction,
       });
     } catch (error) {
-      console.error("Error removing guest:", error);
+      console.log("Error removing guest:", error);
       if (error instanceof Error) {
-        return sendErrorResponse(res, 404, error.message);
+        throw new ApiError(404, error.message);
       }
-      return sendErrorResponse(res, 500, "Server error");
+      throw new ApiError(500, "Server error");
     }
   }
 );
@@ -149,7 +141,7 @@ export const removeAllGuestOrVendor = asyncHandler(
     const { id, query } = req.body;
 
     if (!id || !query) {
-      return sendErrorResponse(res, 400, "Missing required fields");
+      throw new ApiError(400, "Missing required fields");
     }
     console.log(query);
 
@@ -178,11 +170,11 @@ export const removeAllGuestOrVendor = asyncHandler(
         budgetReduction: result.budgetReduction,
       });
     } catch (error) {
-      console.error(`Error removing all ${query}s:`, error);
+      console.log(`Error removing all ${query}s:`, error);
       if (error instanceof Error) {
-        return sendErrorResponse(res, 400, error.message);
+        throw new ApiError(400, error.message);
       }
-      return sendErrorResponse(res, 500, "Server error");
+      throw new ApiError(500, "Server error");
     }
   }
 );
@@ -193,14 +185,24 @@ export const updateGuest = asyncHandler(async (req: Request, res: Response) => {
     const { name, email, status } = req.body;
 
     if (!name || !email || !status) {
-      return sendErrorResponse(res, 400, "All fields are required");
+      throw new ApiError(400, "All fields are required");
     }
 
-    if (
-      !GuestService.validateIdFormat(eventId) ||
-      !GuestService.validateIdFormat(guestId)
-    ) {
-      return sendErrorResponse(res, 400, "Invalid ID format");
+    if (!validateIdFormat(eventId) || !validateIdFormat(guestId)) {
+      throw new ApiError(400, "Invalid ID format");
+    }
+
+    const existingGuest = await Guest.findOne({
+      eventId,
+      email: email.toLowerCase(),
+      _id: { $ne: guestId },
+    });
+
+    if (existingGuest) {
+      throw new ApiError(
+        400,
+        "Email already exists for another guest in this event"
+      );
     }
 
     const updatedGuest = await GuestService.updateGuestInfo(eventId, guestId, {
@@ -215,11 +217,11 @@ export const updateGuest = asyncHandler(async (req: Request, res: Response) => {
       guest: updatedGuest,
     });
   } catch (error) {
-    console.error("Error updating guest:", error);
+    console.log("Error updating guest:", error);
     if (error instanceof Error) {
-      return sendErrorResponse(res, 404, error.message);
+      throw new ApiError(404, error.message);
     }
-    return sendErrorResponse(res, 500, "Server error");
+    throw new ApiError(500, "Server error");
   }
 });
 
@@ -229,18 +231,18 @@ export const inviteAllGuest = asyncHandler(
     try {
       const guestData = req.body;
       if (!guestData || !Array.isArray(guestData) || guestData.length === 0) {
-        return sendErrorResponse(res, 400, "No guest data provided");
+        throw new ApiError(400, "No guest data provided");
       }
 
       const eventId = guestData[0].eventId;
 
-      if (!GuestService.validateIdFormat(eventId)) {
-        return sendErrorResponse(res, 400, "Invalid Event ID");
+      if (!validateIdFormat(eventId)) {
+        throw new ApiError(400, "Invalid Event ID");
       }
 
       const event = await GuestService.getEventById(eventId);
       if (!event) {
-        return sendErrorResponse(res, 404, "Event not found");
+        throw new ApiError(404, "Event not found");
       }
 
       await GuestService.sendEmailToGuests(guestData, event);
@@ -250,8 +252,8 @@ export const inviteAllGuest = asyncHandler(
         message: `Invitations sent successfully to ${guestData.length} guests!`,
       });
     } catch (error) {
-      console.error("Error sending invitations:", error);
-      return sendErrorResponse(res, 500, "Failed to send invitations");
+      console.log("Error sending invitations:", error);
+      throw new ApiError(500, "Failed to send invitations");
     }
   }
 );
@@ -261,14 +263,14 @@ export const validateUrl = asyncHandler(async (req: Request, res: Response) => {
     const { eventId, guestId } = req.query;
 
     if (!eventId || !guestId) {
-      return sendErrorResponse(res, 400, "Missing eventId or guestId");
+      throw new ApiError(400, "Missing eventId or guestId");
     }
 
     if (
-      !GuestService.validateIdFormat(eventId as string) ||
-      !GuestService.validateIdFormat(guestId as string)
+      !validateIdFormat(eventId as string) ||
+      !validateIdFormat(guestId as string)
     ) {
-      return sendErrorResponse(res, 400, "Invalid eventId or guestId format");
+      throw new ApiError(400, "Invalid eventId or guestId format");
     }
 
     const result = await GuestService.validateGuestURL(
@@ -281,11 +283,11 @@ export const validateUrl = asyncHandler(async (req: Request, res: Response) => {
       guest: result.guest,
     });
   } catch (error) {
-    console.error("Error validating URL:", error);
+    console.log("Error validating URL:", error);
     if (error instanceof Error) {
-      return sendErrorResponse(res, 404, error.message);
+      throw new ApiError(404, error.message);
     }
-    return sendErrorResponse(res, 500, "Server error");
+    throw new ApiError(500, "Server error");
   }
 });
 
@@ -296,7 +298,7 @@ export const responseInvite = asyncHandler(
       const { guestId, eventId, attending } = req.body;
 
       if (!guestId || !eventId) {
-        return sendErrorResponse(res, 400, "Missing guestId or eventId");
+        throw new ApiError(400, "Missing guestId or eventId");
       }
 
       const result = await GuestService.submitGuestResponse(
@@ -310,11 +312,11 @@ export const responseInvite = asyncHandler(
         message: `RSVP ${result.status}`,
       });
     } catch (error) {
-      console.error("Error processing RSVP response:", error);
+      console.log("Error processing RSVP response:", error);
       if (error instanceof Error) {
-        return sendErrorResponse(res, 404, error.message);
+        throw new ApiError(404, error.message);
       }
-      return sendErrorResponse(res, 500, "Server error");
+      throw new ApiError(500, "Server error");
     }
   }
 );
@@ -325,16 +327,13 @@ export const sendReminder = asyncHandler(
     try {
       const { eventId, name, email, _id: guestId } = req.body;
 
-      if (
-        !GuestService.validateIdFormat(eventId) ||
-        !GuestService.validateIdFormat(guestId)
-      ) {
-        return sendErrorResponse(res, 400, "Invalid ID format");
+      if (!validateIdFormat(eventId) || !validateIdFormat(guestId)) {
+        throw new ApiError(400, "Invalid ID format");
       }
 
       const event = await GuestService.getEventById(eventId);
       if (!event) {
-        return sendErrorResponse(res, 404, "Event not found");
+        throw new ApiError(404, "Event not found");
       }
 
       await GuestService.sendEmailToGuests(
@@ -348,8 +347,8 @@ export const sendReminder = asyncHandler(
         message: "Reminder email sent successfully",
       });
     } catch (error) {
-      console.error("Error sending reminder:", error);
-      return sendErrorResponse(res, 500, "Failed to send reminder");
+      console.log("Error sending reminder:", error);
+      throw new ApiError(500, "Failed to send reminder");
     }
   }
 );

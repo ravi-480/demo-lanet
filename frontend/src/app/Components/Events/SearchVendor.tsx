@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Loader2, Search, SlidersHorizontal } from "lucide-react";
+import { Loader2, Search, SearchIcon, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -43,7 +43,6 @@ const SearchVendor = ({
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [sortOption, setSortOption] = useState<SortOption>("");
-  const [locationError, setLocationError] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
   // Get suggested vendor categories based on event type
@@ -83,18 +82,7 @@ const SearchVendor = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const validateLocation = (location: string) => {
-    const locationRegex = /^[a-zA-Z\s,]+$/;
-    return locationRegex.test(location);
-  };
-
   const fetchVendors = async (pageNum = 1, term = searchTerm) => {
-    if (!validateLocation(eventLocation)) {
-      setLocationError(true);
-      return;
-    }
-
-    setLocationError(false);
     setLoading(true);
     setPage(pageNum);
 
@@ -119,12 +107,6 @@ const SearchVendor = ({
       setHasMore(data.pagination?.hasMore ?? false);
     } catch (error) {
       console.log(error);
-
-      toast.error(
-        `Vendor fetch error: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
     } finally {
       setLoading(false);
     }
@@ -190,7 +172,7 @@ const SearchVendor = ({
         <Button
           type="submit"
           disabled={!searchTerm}
-          className="w-full sm:w-auto bg-cyan-600 hover:bg-cyan-700 text-white transition-all duration-200"
+          className="w-full sm:w-auto  text-white transition-all duration-200"
         >
           Search
         </Button>
@@ -243,7 +225,7 @@ const SearchVendor = ({
         onClick={() => fetchVendors(page - 1)}
         disabled={page === 1}
         variant="outline"
-        className="border-gray-600 text-gray-300 hover:bg-gray-700 transition-colors duration-200"
+        className=" text-white border-none bg-indigo-600 hover:text-white hover:bg-indigo-700 transition-colors duration-200"
       >
         Previous
       </Button>
@@ -254,7 +236,7 @@ const SearchVendor = ({
         onClick={() => fetchVendors(page + 1)}
         disabled={!hasMore}
         variant="outline"
-        className="border-gray-600 text-gray-300 hover:bg-gray-700 transition-colors duration-200"
+        className=" border-none text-white hover:bg-indigo-700 bg-indigo-600 hover:text-white transition-colors duration-200"
       >
         Next
       </Button>
@@ -290,24 +272,6 @@ const SearchVendor = ({
     <div className="space-y-5">
       <div className="bg-gradient-to-b from-gray-800/80 to-gray-900/80 p-4 rounded-xl border border-gray-700/50 shadow-lg">
         {renderSearchBar()}
-
-        {locationError && (
-          <div className="text-red-400 text-sm mt-2 flex items-center gap-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              className="w-4 h-4"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
-                clipRule="evenodd"
-              />
-            </svg>
-            Invalid location entered. Please enter a valid location.
-          </div>
-        )}
       </div>
 
       {vendors.length > 0 && renderSortOptions()}
@@ -323,21 +287,8 @@ const SearchVendor = ({
 
       {!loading && vendors.length === 0 && searchTerm && (
         <div className="text-center py-12 bg-gray-800/20 rounded-xl border border-gray-700/30">
-          <div className="text-gray-400 mb-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-12 w-12 mx-auto mb-3 opacity-60"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
+          <div className="text-gray-400 mb-2 flex flex-col justify-center items-center">
+            <SearchIcon className="text-center" size={25} />
             <p className="text-lg font-medium">No Results Found</p>
             <p className="text-sm mt-1">
               No vendors matching &quot;{searchTerm}&quot; in {eventLocation}.

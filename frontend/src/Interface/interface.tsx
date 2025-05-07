@@ -368,6 +368,14 @@ export interface Event {
   description?: string;
 }
 
+interface PaginationState {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+
 export interface EventState {
   events: IEvent[];
   isLoading: boolean;

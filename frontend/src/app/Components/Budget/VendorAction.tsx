@@ -4,7 +4,6 @@ import { AppDispatch } from "@/store/store";
 import { VendorType } from "@/Interface/interface";
 import { sendMailToVendor } from "@/store/vendorSlice";
 
-// UI Components
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,7 +29,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
-import { MoreVertical } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
+import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 
 interface VendorActionsProps {
   item: VendorType;
@@ -57,8 +57,6 @@ const VendorActions = ({ item, onRemove }: VendorActionsProps) => {
 
   const handleSendMail = async (values: MailFormValues) => {
     try {
-      // Single dispatch that includes all the necessary information
-      // Backend will determine if it's a negotiation or regular mail based on isNegotiating flag
       await dispatch(
         sendMailToVendor({
           vendorId: item._id as string,
@@ -83,15 +81,24 @@ const VendorActions = ({ item, onRemove }: VendorActionsProps) => {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Open menu</span>
-            <MoreVertical className="h-4 w-4" />
+            <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => setIsMailDialogOpen(true)}>
+          <DropdownMenuItem
+            onClick={() => {
+              setTimeout(() => {
+                setIsMailDialogOpen(true), 0;
+              });
+            }}
+          >
             Send Mail
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onRemove(item._id as string)}>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            className="text-red-600"
+            onClick={() => onRemove(item._id as string)}
+          >
             Remove
           </DropdownMenuItem>
         </DropdownMenuContent>

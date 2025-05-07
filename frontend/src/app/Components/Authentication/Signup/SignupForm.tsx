@@ -11,7 +11,6 @@ import { signupformSchema } from "@/schemas/ValidationSchema";
 import { SignupPayload } from "@/Interface/interface";
 import { toast } from "sonner";
 
-// Import shared components
 import AuthLayout from "../AuthLayout/AuthLayout";
 import {
   ErrorAlert,
@@ -49,17 +48,8 @@ const SignupForm = () => {
     if (signupUser.fulfilled.match(resultAction)) {
       toast.success("Account created successfully!");
       router.push("/login");
-    } else {
-      toast.error(resultAction.payload as string);
     }
   };
-
-  // Function to check if email error exists from backend
-  const isEmailInUseError =
-    authError &&
-    (authError.includes("Email already in use") ||
-      authError.includes("already exists") ||
-      authError.includes("already in use"));
 
   return (
     <AuthLayout
@@ -96,11 +86,6 @@ const SignupForm = () => {
           register={register}
           errors={errors}
         />
-        {isEmailInUseError && (
-          <p className="text-red-500 text-sm mt-1">
-            This email is already in use. Please try another or log in.
-          </p>
-        )}
 
         <FormField
           id="password"

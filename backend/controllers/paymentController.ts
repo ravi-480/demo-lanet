@@ -53,7 +53,6 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, "Missing required parameters");
   }
 
-
   const event = await Event.findById(eventId);
   if (!event) throw new ApiError(404, "Event not found");
 
@@ -97,7 +96,7 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
       currency: order.currency,
     });
   } catch (error) {
-    console.error("Razorpay order creation error:", error);
+    console.log("Razorpay order creation error:", error);
     throw new ApiError(500, "Failed to create payment order");
   }
 });
@@ -149,7 +148,7 @@ export const verifyPayment = asyncHandler(
 
     return res.status(200).json({
       success: true,
-      message: "Payment verified successfully",
+      message: "Payment done successfully",
       paymentId,
       timestamp: new Date().toISOString(),
     });

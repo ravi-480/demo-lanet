@@ -9,7 +9,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
 
-// Import shared components
 import AuthLayout from "../AuthLayout/AuthLayout";
 import {
   ErrorAlert,
@@ -56,8 +55,6 @@ export default function ForgotPasswordForm() {
     const response = await dispatch(forgotPassword({ email: values.email }));
     if (response.type.endsWith("fulfilled")) {
       toast.success("Reset link sent to your email");
-    } else {
-      toast.error("Failed to send reset link");
     }
   };
 

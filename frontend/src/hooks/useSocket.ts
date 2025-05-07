@@ -17,7 +17,7 @@ export const useSocket = () => {
   useEffect(() => {
     // Don't initialize if there's no SOCKET_URL
     if (!SOCKET_URL) {
-      console.error("Missing SOCKET_URL environment variable");
+      console.log("Missing SOCKET_URL environment variable");
       return;
     }
 

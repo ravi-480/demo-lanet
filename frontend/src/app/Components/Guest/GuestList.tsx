@@ -84,7 +84,7 @@ const GuestListComponent = ({
       );
     } catch (error) {
       toast.error("Failed to send reminder");
-      console.error(error);
+      console.log(error);
     }
   };
 

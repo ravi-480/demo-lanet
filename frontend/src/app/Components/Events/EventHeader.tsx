@@ -34,7 +34,7 @@ const EventHeader = ({ event }: { event: IEvent }) => {
       .then(() => {
         router.push("/events");
       })
-      .catch(() => toast.error("Error deleting event"));
+      // .catch(() => toast.error("Error deleting event"));
   }, [dispatch, event._id, router]);
 
   const getStatusColor = (status: string) => {
@@ -138,7 +138,7 @@ const EventHeader = ({ event }: { event: IEvent }) => {
               className="flex-grow sm:flex-grow-0"
             >
               <Button
-                className="w-full sm:w-auto bg-cyan-700 hover:bg-cyan-800 transition-colors duration-300"
+                className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-800 transition-colors duration-300"
                 aria-label="Edit Event"
               >
                 <Edit3 className="mr-2" size={16} />

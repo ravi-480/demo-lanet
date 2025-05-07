@@ -138,7 +138,7 @@ const ConfirmCard = ({ eventId, userId }: Props) => {
       .unwrap()
       .then((data) => {
         if (!isRazorpayReady) {
-          console.error("Razorpay is not loaded");
+          console.log("Razorpay is not loaded");
           alert("Razorpay is still loading. Please try again in a moment.");
           return;
         }
@@ -146,7 +146,7 @@ const ConfirmCard = ({ eventId, userId }: Props) => {
         // Make sure we have the correct key
         const key = "rzp_test_QRb05uFLF1NB8u";
         if (!key) {
-          console.error("Razorpay key not found");
+          console.log("Razorpay key not found");
           alert("Payment system configuration error. Please contact support.");
           return;
         }

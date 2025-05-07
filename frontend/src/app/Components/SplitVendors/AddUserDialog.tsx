@@ -32,7 +32,7 @@ export const AddUserDialog = ({
   <Dialog open={isOpen} onOpenChange={setIsOpen}>
     <DialogTrigger asChild>
       <Button
-        className="bg-cyan-600 hover:bg-cyan-700 gap-2 transition-all duration-300 shadow-md"
+        className=" gap-2 transition-all duration-300 shadow-md"
         disabled={isLoading}
       >
         <Plus size={16} /> Add User

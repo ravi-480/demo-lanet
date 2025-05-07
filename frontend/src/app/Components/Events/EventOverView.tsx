@@ -86,7 +86,12 @@ const EventOverView = ({ event }: { event: IEvent }) => {
 
         <CardFooter>
           <Link href={`/events/${event._id}/guest`}>
-            <Button aria-label="Manage guest list">Manage Guest</Button>
+            <Button
+              aria-label="Manage guest"
+              className="bg-indigo-600 hover:bg-indigo-700"
+            >
+              Manage Guest
+            </Button>
           </Link>
         </CardFooter>
       </Card>
@@ -130,7 +135,12 @@ const EventOverView = ({ event }: { event: IEvent }) => {
 
         <CardFooter>
           <Link href={`/events/${event._id}/budget`}>
-            <Button aria-label="Manage budget">Manage Budget</Button>
+            <Button
+              aria-label="Manage budget"
+              className="bg-indigo-60 hover:bg-indigo-700 bg-indigo-600"
+            >
+              Manage Budget
+            </Button>
           </Link>
         </CardFooter>
       </Card>

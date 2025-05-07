@@ -17,7 +17,7 @@ export const EmptyState = ({ onAddUser, isLoading }: EmptyStateProps) => (
     </p>
     <Button
       onClick={onAddUser}
-      className="bg-cyan-600 hover:bg-cyan-700 gap-2"
+      className="bg-indigo-600 hover:bg-indigo-700 gap-2"
       disabled={isLoading}
     >
       <Plus size={16} /> Add First User

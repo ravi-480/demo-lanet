@@ -32,14 +32,7 @@ const EditEventPage = () => {
         router.push("/events");
       })
       .catch((error: unknown) => {
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : typeof error === "object" && error !== null && "message" in error
-            ? String((error as { message: unknown }).message)
-            : "Failed to update event";
-
-        toast.error(`Error updating event: ${errorMessage}`);
+        console.log(error);
       })
       .finally(() => {
         setIsLoading(false);

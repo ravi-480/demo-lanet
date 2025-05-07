@@ -1,8 +1,8 @@
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-import ApiError from "./ApiError";
+import ApiError from "../utils/ApiError";
 
-dotenv.config(); 
+dotenv.config();
 
 interface EmailOptions {
   to: string;

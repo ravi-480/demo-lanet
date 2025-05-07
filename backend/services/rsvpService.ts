@@ -3,13 +3,8 @@ import XLSX from "xlsx";
 import Guest from "../models/rsvpSchema";
 import Event from "../models/eventModel";
 import Vendor from "../models/vendorModel";
-import { sendEmail } from "../utils/emailService";
+import { sendEmail } from "./emailService";
 import { createNotification, formatEmailTemplate } from "../utils/helper";
-
-// Reusable validation function
-export const validateIdFormat = (id: string): boolean => {
-  return mongoose.Types.ObjectId.isValid(id);
-};
 
 // Reusable function to get event by ID
 export const getEventById = async (eventId: string) => {

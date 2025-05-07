@@ -10,7 +10,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
 
-// Import shared components
 import AuthLayout from "../AuthLayout/AuthLayout";
 import {
   ErrorAlert,
