@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Search, Filter, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/store/store";
-import { sendInviteAll } from "@/store/rsvpSlice";
+import { fetchGuests, sendInviteAll } from "@/store/rsvpSlice";
 import { toast } from "sonner";
 import ConfirmDialog from "../Shared/ConfirmDialog";
 import { GuestStatus } from "@/Interface/interface";
@@ -32,10 +32,71 @@ const GuestFilters = ({
   setSearchFilter,
   statusFilter,
   setStatusFilter,
+  eventId,
   pendingGuests,
 }: GuestFiltersProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState(searchFilter);
+
+  // Debounce function for search
+  const debounce = (func: Function, delay: number) => {
+    let timeoutId: NodeJS.Timeout;
+    return function (...args: any[]) {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        func.apply(null, args);
+      }, delay);
+    };
+  };
+
+  // Create debounced search handler
+  const debouncedSearch = useCallback(
+    debounce((value: string) => {
+      setSearchFilter(value);
+      // Fetch guests with search param
+      dispatch(
+        fetchGuests({
+          id: eventId,
+          search: value,
+          status: statusFilter !== "all" ? statusFilter : undefined,
+        })
+      );
+    }, 500),
+    [setSearchFilter, dispatch, eventId, statusFilter]
+  );
+
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    debouncedSearch(value);
+  };
+
+  // Handle status filter change
+  const handleStatusChange = (value: string) => {
+    setStatusFilter(value);
+    // Fetch guests with status filter
+    dispatch(
+      fetchGuests({
+        id: eventId,
+        search: searchTerm,
+        status: value !== "all" ? value : undefined,
+      })
+    );
+  };
+
+  // Refetch when component mounts to ensure backend filtering
+  useEffect(() => {
+    dispatch(
+      fetchGuests({
+        id: eventId,
+        search: searchTerm,
+        status: statusFilter !== "all" ? statusFilter : undefined,
+      })
+    );
+  }, [dispatch, eventId]);
+
   const handleInvite = async () => {
     try {
       if (pendingGuests.length === 0) {
@@ -56,8 +117,8 @@ const GuestFilters = ({
       <div className="relative flex-grow max-w-full sm:max-w-xs">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
         <Input
-          value={searchFilter}
-          onChange={(e) => setSearchFilter(e.target.value)}
+          value={searchTerm}
+          onChange={handleSearchChange}
           type="search"
           placeholder="Search guests..."
           className="pl-8 h-9 border-gray-400 text-gray-200 w-full"
@@ -85,15 +146,13 @@ const GuestFilters = ({
           title="Invite All Guest"
         />
 
-        <Select
-          value={statusFilter}
-          onValueChange={(value) => setStatusFilter(value)}
-        >
+        <Select value={statusFilter} onValueChange={handleStatusChange}>
           <SelectTrigger className="w-[115px] border-gray-500 text-gray-300 h-9">
             <Filter className="h-4 w-4 mr-1" />
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="all">All</SelectItem>
             <SelectItem value="Confirmed">Confirmed</SelectItem>
             <SelectItem value="Pending">Pending</SelectItem>
             <SelectItem value="Declined">Declined</SelectItem>

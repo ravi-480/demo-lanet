@@ -31,6 +31,7 @@ import {
   checkMinimumGuestRequirement,
 } from "@/utils/vendorUtils";
 import { VendorCardProps } from "@/Interface/interface";
+import { fetchById } from "@/store/eventSlice";
 
 const VendorCard = ({
   vendor,
@@ -176,6 +177,7 @@ const VendorCard = ({
 
     try {
       await dispatch(createVendor(vendorData)).unwrap();
+      await dispatch(fetchById(eventId));
       setShowDialog(false);
     } catch (error) {
       console.log(error);

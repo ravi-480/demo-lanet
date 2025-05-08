@@ -13,7 +13,7 @@ import { AppDispatch } from "@/store/store";
 import { getVendorsByEvent, removeAddedVendor } from "@/store/vendorSlice";
 import { VendorType } from "@/Interface/interface";
 import VendorActions from "./VendorAction";
-import { StandardResponse } from "../../../Interface/interface";
+import { fetchById } from "@/store/eventSlice";
 
 const BudgetList = ({ items }: { items: VendorType[] }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -23,10 +23,9 @@ const BudgetList = ({ items }: { items: VendorType[] }) => {
       try {
         await dispatch(removeAddedVendor(vendorId));
         if (items.length > 0) {
-          dispatch(
-            getVendorsByEvent({ eventId: items[0].event, includeSplit: false })
-          );
+          dispatch(getVendorsByEvent({ eventId: items[0].event }));
         }
+        await dispatch(fetchById(items[0].event));
       } catch (error) {
         console.log(error);
       }

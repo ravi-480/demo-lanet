@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "./store";
-import { EventState, IEvent } from "@/Interface/interface";
+import { EventState, IEvent, PaginatedResponse } from "@/Interface/interface";
 import { AxiosError } from "axios";
 import api from "@/utils/api";
 
@@ -9,6 +9,12 @@ const initialState: EventState = {
   singleEvent: null,
   isLoading: false,
   error: null,
+  pagination: {
+    currentPage: 1,
+    totalPages: 1,
+    totalEvents: 0,
+    limit: 8
+  }
 };
 
 // creating new events
@@ -32,14 +38,34 @@ export const createEvent = createAsyncThunk(
   }
 );
 
-// Fetch all events
-
+// Fetch all events with pagination
+// Fetch all events with pagination
 export const fetchEvents = createAsyncThunk(
   "events/fetchEvents",
-  async (_, { rejectWithValue }) => {
+  async (params: { 
+    page?: number; 
+    limit?: number;
+    tab?: string;  // Changed from 'status' to 'tab'
+    search?: string;
+    date?: string;
+    location?: string;
+  } = {}, { rejectWithValue }) => {
     try {
-      const response = await api.get("/events");
-      return response.data.events;
+      // Build query parameters
+      const queryParams = new URLSearchParams();
+      
+      if (params.page) queryParams.append('page', params.page.toString());
+      if (params.limit) queryParams.append('limit', params.limit.toString());
+      if (params.tab && params.tab !== 'all') queryParams.append('tab', params.tab);  // Changed from 'status' to 'tab'
+      if (params.search) queryParams.append('search', params.search);
+      if (params.date) queryParams.append('date', params.date);
+      if (params.location) queryParams.append('location', params.location);
+      
+      const queryString = queryParams.toString();
+      const url = `/events${queryString ? `?${queryString}` : ''}`;
+      
+      const response = await api.get(url);
+      return response.data;
     } catch (error: unknown) {
       const err = error as AxiosError;
 
@@ -53,7 +79,6 @@ export const fetchEvents = createAsyncThunk(
 );
 
 // fetch Event by Id
-
 export const fetchById = createAsyncThunk(
   "events/fetchById",
   async (id: string, { rejectWithValue }) => {
@@ -73,7 +98,6 @@ export const fetchById = createAsyncThunk(
 );
 
 // update Event
-
 export const updateEvent = createAsyncThunk(
   "event/updateEvent",
   async (
@@ -81,8 +105,6 @@ export const updateEvent = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      console.log(id);
-
       const response = await api.put(`/events/updateEvent/${id}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data", // without this file won't go in backend
@@ -102,7 +124,6 @@ export const updateEvent = createAsyncThunk(
 );
 
 // Delete Event
-
 export const deleteEvent = createAsyncThunk(
   "event/deleteEvent",
   async (id: string, { rejectWithValue }) => {
@@ -122,15 +143,12 @@ export const deleteEvent = createAsyncThunk(
 );
 
 // update event budget
-
 export const adjustEventBudget = createAsyncThunk(
   "event/adjustEventBudget",
   async (
     data: { eventId: string; adjustAmount: number },
     { rejectWithValue }
   ) => {
-    console.log(data);
-
     try {
       // Updated to match backend route structure
       const response = await api.post(`/events/${data.eventId}/adjustBudget`, {
@@ -161,6 +179,9 @@ const eventSlice = createSlice({
       state.error = null;
       state.singleEvent = null;
     },
+    setPage: (state, action: PayloadAction<number>) => {
+      state.pagination.currentPage = action.payload;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -171,9 +192,16 @@ const eventSlice = createSlice({
       })
       .addCase(
         fetchEvents.fulfilled,
-        (state, action: PayloadAction<IEvent[]>) => {
+        (state, action: PayloadAction<PaginatedResponse>) => {
           state.isLoading = false;
-          state.events = action.payload || [];
+          state.events = action.payload.events || [];
+          // Update pagination info
+          state.pagination = {
+            currentPage: action.payload.currentPage,
+            totalPages: action.payload.totalPages,
+            totalEvents: action.payload.totalEvents,
+            limit: action.payload.limit
+          };
         }
       )
       .addCase(fetchEvents.rejected, (state, action) => {
@@ -194,6 +222,8 @@ const eventSlice = createSlice({
         (state, action: PayloadAction<IEvent>) => {
           state.isLoading = false;
           state.events.unshift(action.payload);
+          // Increment total count when event is created
+          state.pagination.totalEvents += 1;
         }
       )
       .addCase(createEvent.rejected, (state, action) => {
@@ -244,6 +274,8 @@ const eventSlice = createSlice({
       })
       .addCase(deleteEvent.fulfilled, (state) => {
         state.isLoading = false;
+        // Decrement total count when event is deleted
+        state.pagination.totalEvents = Math.max(0, state.pagination.totalEvents - 1);
       })
       .addCase(deleteEvent.rejected, (state, action) => {
         state.isLoading = false;
@@ -269,12 +301,13 @@ const eventSlice = createSlice({
   },
 });
 
-export const { clearEventErrors, resetEventState } = eventSlice.actions;
+export const { clearEventErrors, resetEventState, setPage } = eventSlice.actions;
 
 // Selectors
 export const selectEvents = (state: RootState) => state.event.events || [];
 export const selectEventLoading = (state: RootState) => state.event.isLoading;
 export const selectEventError = (state: RootState) => state.event.error;
+export const selectPagination = (state: RootState) => state.event.pagination;
 
 // single event
 export const singleEvent = (state: RootState) => state.event.singleEvent;

@@ -113,7 +113,7 @@ const GuestListComponent = ({
                     </div>
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
-                    <div className="text-sm truncate max-w-[200px]">
+                    <div className="text-sm ">
                       {guest.email}
                     </div>
                   </TableCell>

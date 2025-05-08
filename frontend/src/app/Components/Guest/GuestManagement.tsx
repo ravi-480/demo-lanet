@@ -61,15 +61,12 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
   const guestsPerPage = 10;
 
   const dispatch = useDispatch<AppDispatch>();
-  const { rsvpData } = useSelector(
-    (state: RootState) => state.rsvp,
-    (prev, next) => prev.rsvpData === next.rsvpData
-  );
+  const { rsvpData, loading } = useSelector((state: RootState) => state.rsvp);
 
+  // Initial fetch of guest data
   useEffect(() => {
     if (eventId) {
-      dispatch(fetchGuests(eventId)).then(() => {
-        // Add a small delay to ensure smooth transitions
+      dispatch(fetchGuests({ id: eventId })).then(() => {
         setTimeout(() => setIsLoaded(true), 100);
       });
     }
@@ -77,29 +74,25 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
 
   const refreshData = async () => {
     setIsRefreshing(true);
-    await dispatch(fetchGuests(eventId));
+    // Refresh with current filters
+    await dispatch(fetchGuests({
+      id: eventId,
+      search: searchFilter,
+      status: statusFilter !== "all" ? statusFilter : undefined
+    }));
     setIsRefreshing(false);
   };
 
-  // Filter and paginate the guest data
-  const filteredGuests = React.useMemo(() => {
-    return rsvpData.filter((guest) => {
-      const matchesStatus =
-        statusFilter === "all" || guest.status === statusFilter;
-      const matchesSearch =
-        (guest.name?.toLowerCase().includes(searchFilter.toLowerCase()) ??
-          false) ||
-        (guest.email?.toLowerCase().includes(searchFilter.toLowerCase()) ??
-          false);
-      return matchesStatus && matchesSearch;
-    });
-  }, [rsvpData, statusFilter, searchFilter]);
+  const pendingGuests = React.useMemo(() => {
+    return rsvpData.filter((guest) => guest.status === "Pending");
+  }, [rsvpData]);
 
-  const indexOfLast = currentPage * guestsPerPage;
-  const indexOfFirst = indexOfLast - guestsPerPage;
+  // No need to filter guests manually as it's done on the backend
   const currentGuests = React.useMemo(() => {
-    return filteredGuests.slice(indexOfFirst, indexOfLast);
-  }, [filteredGuests, indexOfFirst, indexOfLast]);
+    const indexOfLast = currentPage * guestsPerPage;
+    const indexOfFirst = indexOfLast - guestsPerPage;
+    return rsvpData.slice(indexOfFirst, indexOfLast);
+  }, [rsvpData, currentPage, guestsPerPage]);
 
   const RemoveAllGuest = React.useCallback(async () => {
     try {
@@ -119,7 +112,7 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
 
   return (
     <motion.div
-      className="w-full max-w-6xl mx-auto p-2  md:p-6"
+      className="w-full max-w-6xl mx-auto p-2 md:p-6"
       initial="hidden"
       animate={isLoaded ? "visible" : "hidden"}
       variants={containerVariants}
@@ -211,27 +204,31 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
                   statusFilter={statusFilter}
                   setStatusFilter={setStatusFilter}
                   eventId={eventId}
-                  pendingGuests={rsvpData.filter(
-                    (guest) => guest.status === "Pending"
-                  )}
+                  pendingGuests={pendingGuests}
                 />
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <GuestList
-              guests={currentGuests}
-              totalGuests={rsvpData.length}
-              filteredCount={filteredGuests.length}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              guestsPerPage={guestsPerPage}
-              eventId={eventId}
-              onEdit={(guest) => {
-                setEditGuest(guest);
-                setTimeout(() => setIsAddGuestOpen(true), 0);
-              }}
-            />
+            {loading ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+              </div>
+            ) : (
+              <GuestList
+                guests={currentGuests}
+                totalGuests={rsvpData.length}
+                filteredCount={rsvpData.length}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                guestsPerPage={guestsPerPage}
+                eventId={eventId}
+                onEdit={(guest) => {
+                  setEditGuest(guest);
+                  setTimeout(() => setIsAddGuestOpen(true), 0);
+                }}
+              />
+            )}
           </CardContent>
         </Card>
       </motion.div>

@@ -212,8 +212,29 @@ export const processGuestsFromFile = async (
 };
 
 // Get all guests by event ID
-export const getGuestsByEventId = async (eventId: string) => {
-  const rsvpList = await Guest.find({ eventId });
+export const getGuestsByEventId = async (
+  eventId: string, 
+  search?: string,
+  status?: string
+) => {
+  // Build the filter object
+  const filter: any = { eventId };
+  
+  // Add status filter if provided
+  if (status && status !== 'all') {
+    filter.status = status;
+  }
+  
+  // Add search filter if provided
+  if (search) {
+    const searchRegex = new RegExp(search, 'i');
+    filter.$or = [
+      { name: searchRegex },
+      { email: searchRegex }
+    ];
+  }
+
+  const rsvpList = await Guest.find(filter);
   return rsvpList;
 };
 
@@ -315,7 +336,6 @@ export const removeAllByType = async (id: string, type: string) => {
       throw new Error("Event not found");
     }
 
-    const originalGuestCount = event.noOfGuestAdded || 0;
 
     // Get all catering vendors
     const allCateringVendors = await Vendor.find({

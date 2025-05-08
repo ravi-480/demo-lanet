@@ -34,7 +34,7 @@ const BudgetManagement = ({ eventId }: { eventId: string }) => {
   useEffect(() => {
     if (eventId) {
       dispatch(fetchById(eventId));
-      dispatch(getVendorsByEvent({ eventId, includeSplit: false }));
+      dispatch(getVendorsByEvent({ eventId }));
     }
   }, [dispatch, eventId]);
 
@@ -59,7 +59,7 @@ const BudgetManagement = ({ eventId }: { eventId: string }) => {
   const refreshData = async () => {
     setIsRefreshing(true);
 
-    await dispatch(getVendorsByEvent({ eventId, includeSplit: false }));
+    await dispatch(getVendorsByEvent({ eventId }));
     await dispatch(fetchById(eventId));
     setIsRefreshing(false);
   };

@@ -368,19 +368,31 @@ export interface Event {
   location?: string;
   description?: string;
 }
-
-interface PaginationState {
-  total: number;
-  page: number;
-  limit: number;
+export interface PaginationState {
+  currentPage: number;
   totalPages: number;
+  totalEvents: number;
+  limit: number;
 }
+
+
+
+export interface PaginatedResponse {
+  events: IEvent[];
+  currentPage: number;
+  totalPages: number;
+  totalEvents: number;
+  limit: number;
+  success?: boolean;
+}
+
 
 export interface EventState {
   events: IEvent[];
   isLoading: boolean;
   singleEvent: IEvent | null;
   error: string | null;
+  pagination: PaginationState;
 }
 
 export interface EventCardProps {

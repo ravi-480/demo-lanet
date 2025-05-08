@@ -1,6 +1,6 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { Search, Filter } from "lucide-react";
+import React, { useEffect } from "react";
+import { Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDispatch, useSelector } from "react-redux";
@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 const AllEventsPage = () => {
   const { events, isLoading } = useSelector((state: RootState) => state.event);
   const dispatch = useDispatch<AppDispatch>();
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = React.useState(false);
 
   const {
     activeTab,
@@ -27,21 +27,27 @@ const AllEventsPage = () => {
     setDateFilter,
     locationFilter,
     setLocationFilter,
-    filteredEvents,
     clearFilters,
-  } = useEventFilter({ events });
+    pagination,
+    handlePageChange,
+  } = useEventFilter({});
 
   const router = useRouter();
 
   useEffect(() => {
+    // Initial load of events - now handled by useEventFilter
     let retryTimeout: ReturnType<typeof setTimeout>;
 
     const loadEvents = async () => {
       try {
-        await dispatch(fetchEvents()).unwrap();
+        await dispatch(
+          fetchEvents({
+            page: pagination.currentPage,
+            limit: pagination.limit,
+          })
+        ).unwrap();
       } catch (err) {
         console.log(err);
-
         retryTimeout = setTimeout(() => loadEvents(), 10000);
       }
     };
@@ -51,11 +57,56 @@ const AllEventsPage = () => {
     return () => {
       if (retryTimeout) clearTimeout(retryTimeout);
     };
-  }, [dispatch]);
+  }, []);
 
   if (isLoading) {
     return <LoadingState />;
   }
+
+  // Generate page numbers for pagination
+  const renderPaginationNumbers = () => {
+    const pageNumbers = [];
+    const maxDisplayedPages = 5;
+
+    if (pagination.totalPages <= maxDisplayedPages) {
+      // Show all pages if there are fewer than maxDisplayedPages
+      for (let i = 1; i <= pagination.totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      // Calculate which pages to show
+      const halfMax = Math.floor(maxDisplayedPages / 2);
+      let startPage = Math.max(1, pagination.currentPage - halfMax);
+      let endPage = Math.min(
+        pagination.totalPages,
+        startPage + maxDisplayedPages - 1
+      );
+
+      // Adjust if we're near the end
+      if (endPage - startPage < maxDisplayedPages - 1) {
+        startPage = Math.max(1, endPage - maxDisplayedPages + 1);
+      }
+
+      // Add first page
+      if (startPage > 1) {
+        pageNumbers.push(1);
+        if (startPage > 2) pageNumbers.push("ellipsis");
+      }
+
+      // Add page numbers around current page
+      for (let i = startPage; i <= endPage; i++) {
+        pageNumbers.push(i);
+      }
+
+      // Add last page
+      if (endPage < pagination.totalPages) {
+        if (endPage < pagination.totalPages - 1) pageNumbers.push("ellipsis");
+        pageNumbers.push(pagination.totalPages);
+      }
+    }
+
+    return pageNumbers;
+  };
 
   return (
     <div className="p-4">
@@ -134,7 +185,7 @@ const AllEventsPage = () => {
           className="border-b border-gray-700 flex flex-wrap gap-2 pb-4 mb-6"
         />
 
-        {filteredEvents.length === 0 ? (
+        {events.length === 0 ? (
           <div className="text-center py-12">
             <h3 className="text-lg font-medium text-gray-300">
               No events found
@@ -150,16 +201,79 @@ const AllEventsPage = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredEvents.map((event) => (
+            {events.map((event) => (
               <EventCard key={event._id} event={event} variant="detailed" />
             ))}
           </div>
         )}
 
-        {filteredEvents.length > 0 && (
+        {events.length > 0 && pagination.totalPages > 1 && (
+          <div className="mt-8 flex flex-col items-center">
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() =>
+                  handlePageChange(Math.max(1, pagination.currentPage - 1))
+                }
+                disabled={pagination.currentPage === 1}
+                className="bg-gray-800 border-gray-700 text-white"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+
+              {renderPaginationNumbers().map((page, index) =>
+                page === "ellipsis" ? (
+                  <span
+                    key={`ellipsis-${index}`}
+                    className="px-2 text-gray-400"
+                  >
+                    ...
+                  </span>
+                ) : (
+                  <Button
+                    key={`page-${page}`}
+                    variant={
+                      pagination.currentPage === page ? "default" : "outline"
+                    }
+                    className={`${
+                      pagination.currentPage === page
+                        ? "bg-indigo-600 text-white"
+                        : "bg-gray-800 border-gray-700 text-white"
+                    }`}
+                    onClick={() => handlePageChange(page as number)}
+                  >
+                    {page}
+                  </Button>
+                )
+              )}
+
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() =>
+                  handlePageChange(
+                    Math.min(pagination.totalPages, pagination.currentPage + 1)
+                  )
+                }
+                disabled={pagination.currentPage === pagination.totalPages}
+                className="bg-gray-800 border-gray-700 text-white"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <p className="text-gray-400 mt-4">
+              Showing page {pagination.currentPage} of {pagination.totalPages}(
+              {pagination.totalEvents} total events)
+            </p>
+          </div>
+        )}
+
+        {events.length > 0 && pagination.totalPages === 1 && (
           <div className="mt-8 flex justify-center">
             <p className="text-gray-400">
-              Showing {filteredEvents.length} events
+              Showing {events.length} of {pagination.totalEvents} events
             </p>
           </div>
         )}

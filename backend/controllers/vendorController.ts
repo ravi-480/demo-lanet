@@ -504,6 +504,7 @@ export const addManualExpense = asyncHandler(
     const manualVendor = await Vendor.create({
       title,
       price: priceAsNumber,
+      finalPrice:priceAsNumber,
       category: status,
       pricingUnit,
       event: eventId,

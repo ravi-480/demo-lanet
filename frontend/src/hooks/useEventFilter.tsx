@@ -1,63 +1,83 @@
-import { IEvent } from "@/Interface/interface";
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchEvents, setPage, selectPagination } from "@/store/eventSlice";
+import { AppDispatch } from "@/store/store";
 
 interface UseEventFilterProps {
-  events: IEvent[] | null | undefined;
   initialTab?: string;
 }
 
 export const useEventFilter = ({
-  events,
   initialTab = "all",
 }: UseEventFilterProps) => {
+  const dispatch = useDispatch<AppDispatch>();
   const [activeTab, setActiveTab] = useState<string>(initialTab);
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFilter, setDateFilter] = useState<string>("");
   const [locationFilter, setLocationFilter] = useState<string>("");
+  const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
+  
+  const pagination = useSelector(selectPagination);
 
-  const now = new Date().getTime();
+  // Effects to handle filtering
+  useEffect(() => {
+    // Clear any existing debounce timeout
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout);
+    }
 
-  const filteredEvents = useMemo(() => {
-    return (
-      events?.filter((event) => {
-        if (activeTab !== "all") {
-          const eventDate = new Date(event.date).getTime();
-          if (activeTab === "upcoming" && eventDate <= now) return false;
-          if (activeTab === "past" && eventDate > now) return false;
-          if (activeTab !== "upcoming" && activeTab !== "past") return false;
-        }
+    // Set a new timeout to debounce the filter changes
+    const timeout = setTimeout(() => {
+      // Reset to page 1 when filters change
+      dispatch(setPage(1));
+      
+      dispatch(fetchEvents({
+        page: 1,
+        limit: pagination.limit,
+        tab: activeTab,
+        search: searchTerm,
+        date: dateFilter,
+        location: locationFilter
+      }));
+    }, 500); // 500ms debounce delay
 
-        // Apply search filter
-        if (
-          searchTerm &&
-          !event.name.toLowerCase().includes(searchTerm.toLowerCase())
-        ) {
-          return false;
-        }
+    setDebounceTimeout(timeout);
 
-        // Apply date filter
-        if (dateFilter) {
-          const eventDateStr = new Date(event.date).toISOString().split("T")[0];
-          if (eventDateStr !== dateFilter) return false;
-        }
+    // Clean up on unmount
+    return () => {
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+      }
+    };
+  }, [activeTab, searchTerm, dateFilter, locationFilter, dispatch]);
 
-        // Apply location filter
-        if (
-          locationFilter &&
-          !event.location.toLowerCase().includes(locationFilter.toLowerCase())
-        ) {
-          return false;
-        }
-
-        return true;
-      }) || []
-    );
-  }, [events, activeTab, searchTerm, dateFilter, locationFilter, now]);
+  // Effect for page changes
+  const handlePageChange = (newPage: number) => {
+    dispatch(setPage(newPage));
+    
+    dispatch(fetchEvents({
+      page: newPage,
+      limit: pagination.limit,
+      tab: activeTab,
+      search: searchTerm,
+      date: dateFilter,
+      location: locationFilter
+    }));
+  };
 
   const clearFilters = () => {
     setDateFilter("");
     setLocationFilter("");
     setSearchTerm("");
+    
+    // Reset to page 1 when filters are cleared
+    dispatch(setPage(1));
+    
+    dispatch(fetchEvents({
+      page: 1,
+      limit: pagination.limit,
+      tab: activeTab
+    }));
   };
 
   return {
@@ -69,7 +89,8 @@ export const useEventFilter = ({
     setDateFilter,
     locationFilter,
     setLocationFilter,
-    filteredEvents,
     clearFilters,
+    pagination,
+    handlePageChange
   };
 };

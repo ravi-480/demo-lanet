@@ -30,11 +30,40 @@ export const fetchEvents = asyncHandler(
       throw new ApiError(401, "Unauthorized access");
     }
 
-    const events = await eventService.getEvents(req.user.id);
+    // Extract query parameters for filtering and pagination
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 8;
+    const tab = req.query.tab as string;  // Changed from 'status' to 'tab'
+    const search = req.query.search as string;
+    const date = req.query.date as string;
+    const location = req.query.location as string;
+
+  
+    // Get events with filters and pagination
+    const { 
+      events, 
+      currentPage, 
+      totalPages, 
+      totalEvents 
+    } = await eventService.getEvents(
+      req.user.id, 
+      { 
+        page, 
+        limit, 
+        tab,  // Changed from 'status' to 'tab'
+        search, 
+        date, 
+        location 
+      }
+    );
 
     return res.status(200).json({
       success: true,
       events,
+      currentPage,
+      totalPages,
+      totalEvents,
+      limit
     });
   }
 );

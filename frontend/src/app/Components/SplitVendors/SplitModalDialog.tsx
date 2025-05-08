@@ -45,7 +45,7 @@ const SplitTabsDialog = ({ users, eventId, onClose }: ExtendedProps) => {
   // Load data on component mount
   useEffect(() => {
     if (eventId) {
-      dispatch(getVendorsByEvent({ eventId, includeSplit: false }));
+      dispatch(getVendorsByEvent({ eventId}));
       dispatch(getCurrentUser());
     }
   }, [dispatch, eventId]);

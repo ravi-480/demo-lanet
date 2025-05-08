@@ -40,18 +40,45 @@ export const uploadFile = createAsyncThunk(
 
 // Fetch added guests
 export const fetchGuests = createAsyncThunk(
-  "rsvp/fetchGuest",
-  async (eventId: string, { rejectWithValue }) => {
+  "rsvp/fetchGuests",
+  async (
+    params: { id: string; search?: string; status?: string } | string,
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await api.get(`/guest/${eventId}`);
-      return response.data.rsvpList;
-    } catch (error: unknown) {
-      if (error instanceof AxiosError) {
-        return rejectWithValue(
-          error.response?.data?.message || "Failed to fetch guest list"
-        );
+      // Handle both object and string formats to maintain backward compatibility
+      let eventId: string;
+      let search: string | undefined;
+      let status: string | undefined;
+
+      if (typeof params === "string") {
+        eventId = params;
+      } else {
+        eventId = params.id;
+        search = params.search;
+        status = params.status;
       }
-      return rejectWithValue("Failed to fetch guest list");
+
+      // Build query string for backend filtering
+      let url = `/guest/${eventId}`;
+      const queryParams = [];
+
+      if (search) {
+        queryParams.push(`search=${encodeURIComponent(search)}`);
+      }
+
+      if (status && status !== "all") {
+        queryParams.push(`status=${encodeURIComponent(status)}`);
+      }
+
+      if (queryParams.length > 0) {
+        url += `?${queryParams.join("&")}`;
+      }
+
+      const response = await api.get(url);
+      return response.data.rsvpList;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
@@ -316,7 +343,6 @@ const rsvpSlice = createSlice({
         state.rsvpData = []; // clear guest list on success
       })
       .addCase(removeAllGuest.rejected, (state) => {
-        // Removed unused 'action' parameter
         state.loading = false;
         state.error = "Failed to remove all guests";
       });

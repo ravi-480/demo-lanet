@@ -7,7 +7,6 @@ const withAnalyzer = withBundleAnalyzer({
 
 /** @type {NextConfig} */
 const nextConfig: NextConfig = {
-  swcMinify: true, // Use SWC for minification
   compress: true, // Enable gzip compression
   reactStrictMode: false, // React strict mode
 

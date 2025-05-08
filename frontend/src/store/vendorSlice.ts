@@ -10,7 +10,6 @@ import {
 import { AxiosError } from "axios";
 import api from "@/utils/api";
 
-
 // Updated initial state with pagination
 const initialState: VendorState = {
   items: [],
@@ -41,17 +40,15 @@ export const createVendor = createAsyncThunk<
 // Get vendors by event
 export const getVendorsByEvent = createAsyncThunk<
   VendorType[],
-  { eventId: string; includeSplit: boolean },
+  { eventId: string },
   { rejectValue: string }
 >(
   "vendors/getVendorsByEvent",
-  async ({ eventId, includeSplit }, { rejectWithValue }) => {
+  async ({eventId}, { rejectWithValue }) => {
+    console.log(eventId);
+    
     try {
-      const response = await api.get(`/vendors/event/${eventId}`, {
-        params: {
-          includeSplit: includeSplit ? "true" : undefined,
-        },
-      });
+      const response = await api.get(`/vendors/event/${eventId}`, {});
       return response.data as VendorType[];
     } catch (error: unknown) {
       if (error instanceof AxiosError) {

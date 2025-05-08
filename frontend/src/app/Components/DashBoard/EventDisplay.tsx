@@ -1,54 +1,37 @@
 "use client";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../store/store";
-import { fetchEvents } from "../../../store/eventSlice";
+import {
+  fetchEvents,
+  selectEvents,
+  selectEventLoading,
+  selectEventError,
+  selectPagination,
+} from "../../../store/eventSlice";
 import Link from "next/link";
 import { useEventFilter } from "../../../hooks/useEventFilter";
 import EventTabs from "../Events/EventTab";
 import LoadingState from "../Loading/Loading";
 import EventCard from "../Events/EventCard";
 
+
 const EventDisplay = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { events, isLoading, error } = useSelector(
-    (state: RootState) => state.event
-  );
-  const initialFetchDone = useRef(false);
-  const { activeTab, setActiveTab, filteredEvents } = useEventFilter({
-    events,
-  });
+  const events = useSelector(selectEvents);
+  const isLoading = useSelector(selectEventLoading);
+  const error = useSelector(selectEventError);
+  const pagination = useSelector(selectPagination);
 
-  useEffect(() => {
-    if (initialFetchDone.current) return;
+  const {
+    activeTab,
+    setActiveTab,
+    searchTerm,
+    dateFilter,
+    locationFilter,
+  } = useEventFilter({ initialTab: "all" });
 
-    const fetchData = async () => {
-      try {
-        await dispatch(fetchEvents()).unwrap();
-        initialFetchDone.current = true;
-      } catch (error: unknown) {
-        const err = error as {
-          message?: string;
-          response?: { status?: number };
-        };
-        const errMsg = err?.message || err;
-
-        // Don't retry on auth errors
-        if (
-          errMsg === "Unauthorized" ||
-          errMsg === "AUTH_ERROR" ||
-          err?.response?.status === 401
-        ) {
-          initialFetchDone.current = true;
-          return;
-        }
-
-        throw error;
-      }
-    };
-
-    fetchData();
-  }, [dispatch]);
+  // Initial fetch is handled by the hook now
 
   if (isLoading) {
     return (
@@ -67,37 +50,57 @@ const EventDisplay = () => {
     );
   }
 
-  const displayEvents = filteredEvents.slice(0, 3);
+  const displayEvents = events.slice(0, 3);
 
   return (
     <div className="bg-gray-900 border text-gray-200 rounded-lg shadow-sm p-4 sm:p-6 mb-6 w-full">
-      <div className="border-b border-gray-500 flex justify-between pb-4 mb-4">
-        <EventTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-        {filteredEvents.length > 3 && (
+      <div className="border-b border-gray-500 pb-4 mb-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+          <EventTabs activeTab={activeTab} setActiveTab={setActiveTab} />
           <Link
             href="/events/all"
-            className="mt-2 cursor-pointer hover:text-indigo-700"
+            className="mt-2 cursor-pointer hover:text-indigo-500 transition"
           >
             View All
           </Link>
-        )}
+        </div>
       </div>
 
-      {filteredEvents.length === 0 ? (
+      {events.length === 0 ? (
         <div className="text-center py-12">
           <h3 className="text-lg font-medium text-gray-300">
             No events available
           </h3>
           <p className="text-gray-300 mt-2 mb-4">
-            Click &apos;Create New Event&apos;
+            {searchTerm || dateFilter || locationFilter
+              ? "Try adjusting your filters"
+              : "Click 'Create New Event'"}
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
-          {displayEvents.map((event,index:number) => (
-            <EventCard key={index} event={event} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
+            {displayEvents.map((event, index) => (
+              <EventCard key={index} event={event} />
+            ))}
+          </div>
+
+          {/* Show pagination indicator on the dashboard view */}
+          {pagination.totalPages > 1 && (
+            <div className="flex justify-center mt-6">
+              <p className="text-sm text-gray-400">
+                Showing {displayEvents.length} of {pagination.totalEvents}{" "}
+                events.
+                <Link
+                  href="/events/all"
+                  className="ml-2 text-indigo-400 hover:text-indigo-300"
+                >
+                  View all with pagination
+                </Link>
+              </p>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

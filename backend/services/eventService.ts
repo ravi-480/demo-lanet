@@ -3,7 +3,7 @@ import Vendor from "../models/vendorModel";
 import ApiError from "../utils/ApiError";
 import { uploadImageToCloudinary, buildEventData } from "../utils/eventBuild";
 import { resetBudgetExceedanceAlert } from "../controllers/vendorController";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 
 // Create a new event
 
@@ -45,13 +45,92 @@ export const createEvent = async (
 };
 
 // Get all events for a user
+interface EventFilterOptions {
+  page?: number;
+  limit?: number;
+  tab?: string;
+  search?: string;
+  date?: string;
+  location?: string;
+}
 
-export const getEvents = async (userId: string): Promise<any[]> => {
-  return await Event.find({ creator: userId })
-    .select("-includedInSplit")
-    .sort({ date: 1 })
-    .lean();
+export const getEvents = async (userId: string, options: EventFilterOptions = {}) => {
+  const {
+    page = 1,
+    limit = 8,
+    tab,
+    search,
+    date,
+    location
+  } = options;
+
+  // Build the filter conditions
+  const filter: any = { creator: new Types.ObjectId(userId) };
+  
+  // Status/tab filter - determine past or upcoming events
+  if (tab) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (tab === 'past') {
+      filter.date = { $lt: today };
+    } else if (tab === 'upcoming') {
+      filter.date = { $gte: today };
+    }
+    // If tab is 'all', don't add any date filters
+  }
+  
+  // Text search filter on name and description
+  if (search) {
+    filter.$or = [
+      { name: { $regex: search, $options: 'i' } },
+      { description: { $regex: search, $options: 'i' } }
+    ];
+  }
+  
+  // Date filter - match events on the specified date
+  if (date) {
+    const selectedDate = new Date(date);
+    const nextDay = new Date(selectedDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+    
+    // Override any previous date filter from tab
+    filter.date = {
+      $gte: selectedDate,
+      $lt: nextDay
+    };
+  }
+  
+  // Location filter
+  if (location) {
+    filter.location = { $regex: location, $options: 'i' };
+  }
+
+  // For debugging - log the filter object
+  console.log("Filter applied:", JSON.stringify(filter, null, 2));
+
+  // Calculate pagination parameters
+  const skip = (page - 1) * limit;
+  
+  // Execute query with pagination
+  const events = await Event.find(filter)
+    .sort({ createdAt: -1 }) // Newest first
+    .skip(skip)
+    .limit(limit);
+  
+  // Get total count for pagination
+  const totalEvents = await Event.countDocuments(filter);
+  const totalPages = Math.ceil(totalEvents / limit);
+
+  return {
+    events,
+    currentPage: page,
+    totalPages,
+    totalEvents,
+    limit
+  };
 };
+
 
 // Get event by ID
 

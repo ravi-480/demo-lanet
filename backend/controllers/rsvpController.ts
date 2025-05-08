@@ -4,6 +4,9 @@ import * as GuestService from "../services/rsvpService";
 import ApiError from "../utils/ApiError";
 import Guest from "../models/rsvpSchema";
 import { validateIdFormat } from "../utils/helper";
+
+
+
 export const addGuestFromFile = asyncHandler(
   async (req: Request, res: Response) => {
     try {
@@ -45,27 +48,56 @@ export const addGuestFromFile = asyncHandler(
 );
 
 // Get Guests by Event ID
-export const getUserByEventId = asyncHandler(
-  async (req: Request, res: Response) => {
-    const { eventId } = req.params;
-
-    if (!validateIdFormat(eventId)) {
-      throw new ApiError(400, "Invalid Event ID");
+export const getUserByEventId = asyncHandler(async (req: Request, res: Response) => {
+  // Log the entire request query object to debug
+  
+  const { eventId } = req.params;
+  // Extract search and status parameters correctly from query
+  const search = req.query.search as string | undefined;
+  const status = req.query.status as string | undefined;
+  
+  console.log("Parameters:", { eventId, search, status });
+  
+  if (!validateIdFormat(eventId)) {
+    throw new ApiError(400, "Invalid Event ID");
+  }
+  
+  try {
+    // Build the filter object
+    const filter: any = { eventId };
+    
+    // Add status filter if provided and not 'all'
+    if (status && status !== 'all') {
+      filter.status = status;
     }
-
-    const rsvpList = await GuestService.getGuestsByEventId(eventId);
-
-    if (!rsvpList || rsvpList.length === 0) {
-      throw new ApiError(404, "No guests found");
+    
+    // Add search filter if provided
+    if (search && typeof search === 'string') {
+      const searchRegex = new RegExp(search, 'i');
+      filter.$or = [
+        { name: searchRegex },
+        { email: searchRegex }
+      ];
     }
+    
+    console.log("MongoDB filter:", filter);
 
+    console.log(filter);
+    
+    
+    const rsvpList = await Guest.find(filter);
+    
     return res.status(200).json({
       success: true,
       message: "Guests fetched successfully",
       rsvpList,
     });
+  } catch (error) {
+    console.error("Error fetching guests:", error);
+    throw new ApiError(500, "Error fetching guests");
   }
-);
+});
+
 
 // Add single guest manually
 export const addSingleGuest = asyncHandler(
