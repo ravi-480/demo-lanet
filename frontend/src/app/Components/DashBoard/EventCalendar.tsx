@@ -12,10 +12,12 @@ import { useRef } from "react";
 import { isSameDay, format } from "date-fns";
 import { useEventCalendar } from "@/hooks/useEventCalendar";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 const EventCalendar = () => {
   const events = useSelector(selectEvents) || [];
   const anchorRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const {
     selectedDate,
@@ -25,6 +27,11 @@ const EventCalendar = () => {
     setIsPopoverOpen,
     handleDateSelect,
   } = useEventCalendar(events);
+
+  const handleEventClick = (eventId: string) => {
+    router.push(`/events/${eventId}`);
+    setIsPopoverOpen(false);
+  };
 
   return (
     <motion.div
@@ -66,12 +73,14 @@ const EventCalendar = () => {
                     </h3>
                     {selectedEvents.length > 0 ? (
                       <ul className="space-y-2">
-                        {selectedEvents.map((event, index: number) => (
+                        {selectedEvents.map((event, index) => (
                           <motion.li
                             key={index}
                             initial={{ opacity: 0, x: -5 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.1 * index }}
+                            onClick={() => handleEventClick(event.id)}
+                            className="p-2 rounded hover:bg-gray-700 cursor-pointer transition-colors"
                           >
                             <div className="font-medium">{event.name}</div>
                             <div className="text-xs text-gray-300">
@@ -99,18 +108,14 @@ const EventCalendar = () => {
           <Calendar
             modifiers={{
               hasEvent: (day) =>
-                eventDates.some((eventDate: string | number | Date) =>
-                  isSameDay(day, eventDate)
-                ),
+                eventDates.some((eventDate) => isSameDay(day, eventDate)),
             }}
             modifiersClassNames={{
               hasEvent:
                 "bg-indigo-600 text-white rounded-xl hover:bg-indigo-500",
               selected: "",
             }}
-            className="rounded-lg border md:h-91 border-gray-400 w-full [&_.day-selected]:bg-indigo-800 [&_.day-selected]:text-white [&_.day:hover]:bg-gray-800 [&_.day:hover]:text-white"
-            selected={undefined}
-            mode="single"
+            className="rounded-lg border md:h-91 border-gray-400 w-full"
             onDayClick={handleDateSelect}
           />
         </motion.div>

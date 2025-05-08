@@ -67,12 +67,12 @@ const GuestUpload = ({ eventId }: GuestUploadProps) => {
   return (
     <div className="flex flex-wrap gap-2 max-w-xs sm:max-w-md">
       <div className="relative flex-grow">
-        <Input
+        <Input 
           id="guest-file-upload"
           type="file"
           onChange={handleFileChange}
           accept=".xlsx, .xls, .csv"
-          className="text-sm"
+          className="text-sm  w-70"
         />
       </div>
       <Button

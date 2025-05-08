@@ -144,7 +144,7 @@ const ConfirmCard = ({ eventId, userId }: Props) => {
         }
 
         // Make sure we have the correct key
-        const key = "rzp_test_QRb05uFLF1NB8u";
+        const key = process.env.NEXT_PUBLIC_RAZORPAY_KEY;
         if (!key) {
           console.log("Razorpay key not found");
           alert("Payment system configuration error. Please contact support.");

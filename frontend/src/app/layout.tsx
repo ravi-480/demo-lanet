@@ -5,7 +5,7 @@ import Header from "./Components/Home/Header/Header";
 import Footer from "./Components/Home/Footer/Footer";
 import ReduxProvider from "@/store/storeProvider";
 import { Toaster } from "sonner";
-import NotificationLoader from "@/store/NotificationLoader";
+import NotificationLoader from "@/utils/NotificationLoader";
 
 const inter = Inter({ subsets: ["latin"] });
 

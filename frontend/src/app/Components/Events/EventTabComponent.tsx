@@ -53,7 +53,7 @@ const EventTabComponent = memo(() => {
   const [activeTab, setActiveTab] = useState("overview");
   const [isVisible, setIsVisible] = useState(false);
 
-  // Use shallowEqual for performance optimization
+  // shallowEqual for performance optimization
   const event = useSelector(
     (state: RootState) => state.event.singleEvent,
     shallowEqual

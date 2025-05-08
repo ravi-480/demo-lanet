@@ -355,6 +355,7 @@ export interface AuthResponseData {
 }
 
 export interface ProcessedEvent {
+  id: string;
   date: Date;
   name: string;
   location: string;
@@ -374,7 +375,6 @@ interface PaginationState {
   limit: number;
   totalPages: number;
 }
-
 
 export interface EventState {
   events: IEvent[];
@@ -462,7 +462,6 @@ export interface SendMailRequest {
   negotiatedPrice?: number;
 }
 
-
 export interface FormData {
   name: string;
   email: string;
@@ -475,4 +474,22 @@ export interface GuestDialogProps {
   setIsOpen: (open: boolean) => void;
   editGuest: Guest | null;
   setEditGuest: React.Dispatch<React.SetStateAction<Guest | null>>;
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+  token: string | null;
+  status: "idle" | "loading" | "succeeded" | "failed";
+  error: string | null;
+  forgotPasswordSuccess: boolean;
+  forgotPasswordMessage: string | null;
+  resetPasswordSuccess: boolean;
+  resetPasswordMessage: string | null;
 }

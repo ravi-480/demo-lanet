@@ -89,7 +89,6 @@ export const addSingleGuest = asyncHandler(
         additionalCost: result.additionalCost,
       });
     } catch (error) {
-      console.log("Error adding guest:", error);
       if (error instanceof Error) {
         throw new ApiError(400, error.message);
       }

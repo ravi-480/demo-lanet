@@ -65,11 +65,9 @@ api.interceptors.response.use(
     ) {
       originalRequest._retry = true;
 
-      // Check if the error message indicates there's no refresh token
       const errorMessage = error.response?.data?.message || "";
       if (errorMessage.startsWith("NO_REFRESH_TOKEN:")) {
         toast.error("Session expired. Please log in again.");
-        // No refresh token available, trigger auth error immediately
         if (api.onAuthError) {
           api.onAuthError();
         }
@@ -77,19 +75,19 @@ api.interceptors.response.use(
       }
 
       try {
-        // Try to refresh the token
         const refreshResponse = await api.post(
           "/auth/refresh-token",
           {},
           { headers: { "x-skip-success-toast": "true" } }
         );
-        const newToken = refreshResponse.data?.accessToken;
+        const newToken = refreshResponse.data?.data?.accessToken;
 
         if (newToken) {
-          // Successfully refreshed token, retry the original request
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+
+          // Retry the original request
           return api(originalRequest);
         } else {
-          // No new token was returned
           if (api.onAuthError) {
             api.onAuthError();
           }
@@ -97,7 +95,6 @@ api.interceptors.response.use(
         }
       } catch (refreshError) {
         console.log("Token refresh failed:", refreshError);
-
         if (api.onAuthError) {
           api.onAuthError();
         }
@@ -105,9 +102,7 @@ api.interceptors.response.use(
       }
     }
 
-    if (status !== 401 && status!==404) {
-
-      
+    if (status !== 401 && status !== 404) {
       const message =
         error.response?.data?.message ||
         error.message ||

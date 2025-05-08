@@ -4,7 +4,7 @@ import { Bell, Calendar } from "lucide-react";
 import { AuthButtons } from "./AuthButton";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
-import NotificationLoader from "@/store/NotificationLoader";
+import NotificationLoader from "@/utils/NotificationLoader";
 
 import {
   Popover,
@@ -41,7 +41,11 @@ const Header = () => {
   };
   const pathname = usePathname();
 
-  const hideNavbarRoutes = ["/split/confirm", "/rsvp/response","/vendor/response"];
+  const hideNavbarRoutes = [
+    "/split/confirm",
+    "/rsvp/response",
+    "/vendor/response",
+  ];
 
   return (
     <>

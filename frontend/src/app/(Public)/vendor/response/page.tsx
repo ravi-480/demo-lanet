@@ -108,7 +108,6 @@ const VendorResponsePage = () => {
     } catch (error) {
       console.log("Error processing response:", error);
       setResponseStatus("error");
-      // toast.error("Failed to process your response");
     } finally {
       setProcessing(false);
     }

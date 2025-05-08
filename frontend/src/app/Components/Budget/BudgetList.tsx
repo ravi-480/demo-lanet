@@ -55,7 +55,9 @@ const BudgetList = ({ items }: { items: VendorType[] }) => {
               >
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <div className="font-medium">{item.title}</div>
+                    <div className="font-medium break-words max-w-100 overflow-hidden">
+                      {item.title}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>

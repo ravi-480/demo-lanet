@@ -3,29 +3,14 @@ import axios from "../utils/axiosConfig";
 import type { RootState } from "./store";
 import {
   AuthResponseData,
+  AuthState,
   LoginResponse,
   SignupPayload,
   StandardResponse,
+  User,
 } from "@/Interface/interface";
 import { toast } from "sonner";
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-}
-
-interface AuthState {
-  user: User | null;
-  isAuthenticated: boolean;
-  token: string | null;
-  status: "idle" | "loading" | "succeeded" | "failed";
-  error: string | null;
-  forgotPasswordSuccess: boolean;
-  forgotPasswordMessage: string | null;
-  resetPasswordSuccess: boolean;
-  resetPasswordMessage: string | null;
-}
 
 const initialState: AuthState = {
   user: null,
@@ -210,25 +195,6 @@ const authSlice = createSlice({
       state.status = "succeeded";
       state.error = null;
     },
-    // logout: (state) => {
-    //   state.user = null;
-    //   state.isAuthenticated = false;
-    //   state.token = null;
-    //   state.status = "idle";
-    //   state.error = null;
-    //   state.forgotPasswordSuccess = false;
-    //   state.forgotPasswordMessage = null;
-    //   state.resetPasswordSuccess = false;
-    //   state.resetPasswordMessage = null;
-
-    //   axios
-    //     .post("/auth/logout", {}, { withCredentials: true })
-    //     .catch((error: unknown) => {
-    //       const errorMessage =
-    //         error instanceof Error ? error.message : String(error);
-    //       toast.error(`Error during logout: ${errorMessage}`);
-    //     });
-    // },
   },
   extraReducers: (builder) => {
     // Generic pending handler

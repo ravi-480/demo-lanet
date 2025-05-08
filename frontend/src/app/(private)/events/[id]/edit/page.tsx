@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import EventForm from "@/app/Components/Form/EventForm";
+import LoadSpinner from "@/app/Components/Shared/LoadSpinner";
 
 const EditEventPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -40,11 +41,7 @@ const EditEventPage = () => {
   };
 
   if (!event) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center">
-        <div className="text-white text-xl">Loading event data...</div>
-      </div>
-    );
+    return <LoadSpinner />;
   }
 
   return (

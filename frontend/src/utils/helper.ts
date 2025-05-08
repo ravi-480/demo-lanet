@@ -107,3 +107,15 @@ export const filterPastedLetters = (
     e.preventDefault();
   }
 };
+
+
+// event color based on status
+
+export const getStatusColor = (status: string) => {
+  switch (status) {
+    case "upcoming":
+      return "bg-cyan-700/50 text-white-200";
+    default:
+      return "bg-gray-700/50 text-gray-200";
+  }
+};

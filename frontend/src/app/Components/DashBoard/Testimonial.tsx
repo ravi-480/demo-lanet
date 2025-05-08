@@ -118,7 +118,7 @@ const Testimonials: React.FC = () => {
               key={index}
               onClick={() => setActiveTestimonial(index)}
               className={`w-2 h-2 rounded-full transition-colors ${
-                activeTestimonial === index ? "bg-blue-600" : "bg-gray-300"
+                activeTestimonial === index ? "bg-indigo-600" : "bg-gray-300"
               }`}
               aria-label={`Go to slide ${index + 1}`}
               role="button"

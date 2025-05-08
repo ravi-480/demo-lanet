@@ -76,7 +76,7 @@ const EventDisplay = () => {
         {filteredEvents.length > 3 && (
           <Link
             href="/events/all"
-            className="mt-2 cursor-pointer hover:text-cyan-700"
+            className="mt-2 cursor-pointer hover:text-indigo-700"
           >
             View All
           </Link>
@@ -94,8 +94,8 @@ const EventDisplay = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
-          {displayEvents.map((event) => (
-            <EventCard key={event._id} event={event} />
+          {displayEvents.map((event,index:number) => (
+            <EventCard key={index} event={event} />
           ))}
         </div>
       )}

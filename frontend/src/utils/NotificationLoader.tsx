@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useRef, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
@@ -6,11 +7,12 @@ import {
   fetchNotificationsFailure,
   fetchNotificationsSuccess,
   fetchNotificationStart,
+  addNotification,
 } from "@/store/notificationSlice";
 import { AxiosError } from "axios";
 import { useSocket } from "@/hooks/useSocket";
 import api from "@/utils/api";
-import { setUser } from "./authSlice";
+import { setUser } from "../store/authSlice";
 
 const NotificationLoader = () => {
   const dispatch = useDispatch();
@@ -38,8 +40,9 @@ const NotificationLoader = () => {
   }, [dispatch, socket?.connected, user?.id]);
 
   const fetchNotifications = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user?.id || hasFetchedNotificationsRef.current) return;
 
+    hasFetchedNotificationsRef.current = true; // ✅ Prevents duplicate fetches
     dispatch(fetchNotificationStart());
 
     try {
@@ -59,9 +62,8 @@ const NotificationLoader = () => {
       } else {
         dispatch(fetchNotificationsSuccess([]));
       }
-
-      hasFetchedNotificationsRef.current = true;
     } catch (error) {
+      hasFetchedNotificationsRef.current = false; // allow retry
       let errorMessage = "Unable to load notifications";
 
       if (error instanceof AxiosError) {
@@ -90,17 +92,23 @@ const NotificationLoader = () => {
       };
 
       const handleReconnect = () => {
-        fetchNotifications();
+        if (!hasFetchedNotificationsRef.current) fetchNotifications();
+      };
+
+      const handleNewNotification = (notification: any) => {
+        dispatch(addNotification(notification)); // ✅ Add to list without refetching
       };
 
       socket.on("connect", handleConnect);
       socket.on("reconnect", handleReconnect);
+      socket.on("new-notification", handleNewNotification);
 
       if (socket.connected) handleConnect();
 
       return () => {
         socket.off("connect", handleConnect);
         socket.off("reconnect", handleReconnect);
+        socket.off("new-notification", handleNewNotification);
       };
     }
   }, [user?.id, socket, dispatch, fetchNotifications]);
@@ -109,22 +117,3 @@ const NotificationLoader = () => {
 };
 
 export default NotificationLoader;
-
-export const fetchNotificationsApi = async (userId: string) => {
-  try {
-    const response = await api.get(`/notifications`, {
-      params: { userId },
-      timeout: 5000,
-    });
-
-    return response.data;
-  } catch (error) {
-    if (error instanceof AxiosError && error.response?.status === 404) {
-      const altResponse = await api.get(`/user/${userId}/notifications`, {
-        timeout: 5000,
-      });
-      return altResponse.data;
-    }
-    throw error;
-  }
-};

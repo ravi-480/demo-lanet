@@ -40,7 +40,6 @@ interface EventFormProps {
   isLoading?: boolean;
 }
 
-// Create a modified schema for the form that matches your defaults
 type EventFormValues = z.infer<typeof eventFormSchema>;
 
 const EventForm: React.FC<EventFormProps> = ({
@@ -198,7 +197,6 @@ const EventForm: React.FC<EventFormProps> = ({
                 </div>
               </div>
 
-              {/* Two Column Layout */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Event Type Field */}
                 <div className="space-y-2">
@@ -258,7 +256,6 @@ const EventForm: React.FC<EventFormProps> = ({
                 </div>
               </div>
 
-              {/* Two Column Layout */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Budget Field */}
                 <div className="space-y-2">

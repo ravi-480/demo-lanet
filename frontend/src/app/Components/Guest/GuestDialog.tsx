@@ -149,12 +149,6 @@ const GuestDialog = ({
         if (addSingleGuest.fulfilled.match(result)) {
           await dispatch(fetchGuests(eventId));
           handleClose();
-        } else {
-          toast.error(
-            typeof result.payload === "string"
-              ? result.payload
-              : "Failed to add guest"
-          );
         }
       }
     } catch (error: unknown) {

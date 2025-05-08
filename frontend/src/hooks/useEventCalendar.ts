@@ -11,9 +11,10 @@ export const useEventCalendar = (rawEvents: IEvent[]) => {
     .filter((event) => event?.date && event?.name)
     .map((event) => {
       try {
-        const eventDate = parseISO(event.date.toString()); // isFuture(), isSameDay() work only on Date objects.
+        const eventDate = parseISO(event.date.toString());
         if (isFuture(eventDate) || isSameDay(eventDate, new Date())) {
           return {
+            id: event._id, // Include the event ID for navigation
             date: eventDate,
             name: event.name,
             location: event.location || "No location provided",
