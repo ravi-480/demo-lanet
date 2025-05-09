@@ -39,13 +39,12 @@ export const createEvent = createAsyncThunk(
 );
 
 // Fetch all events with pagination
-// Fetch all events with pagination
 export const fetchEvents = createAsyncThunk(
   "events/fetchEvents",
   async (params: { 
     page?: number; 
     limit?: number;
-    tab?: string;  // Changed from 'status' to 'tab'
+    tab?: string;  
     search?: string;
     date?: string;
     location?: string;
@@ -56,7 +55,7 @@ export const fetchEvents = createAsyncThunk(
       
       if (params.page) queryParams.append('page', params.page.toString());
       if (params.limit) queryParams.append('limit', params.limit.toString());
-      if (params.tab && params.tab !== 'all') queryParams.append('tab', params.tab);  // Changed from 'status' to 'tab'
+      if (params.tab && params.tab !== 'all') queryParams.append('tab', params.tab); 
       if (params.search) queryParams.append('search', params.search);
       if (params.date) queryParams.append('date', params.date);
       if (params.location) queryParams.append('location', params.location);

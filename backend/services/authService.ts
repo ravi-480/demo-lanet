@@ -2,8 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import crypto from "crypto";
-import { sendEmail } from "./emailService";
-
+  
 import User from "../models/UserModel";
 import ApiError from "../utils/ApiError";
 import jwt from "jsonwebtoken";

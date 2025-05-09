@@ -5,7 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
 import { fetchById, updateEvent } from "@/store/eventSlice";
-import { toast } from "sonner";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import EventForm from "@/app/Components/Form/EventForm";

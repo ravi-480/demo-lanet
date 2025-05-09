@@ -5,8 +5,6 @@ import ApiError from "../utils/ApiError";
 import Guest from "../models/rsvpSchema";
 import { validateIdFormat } from "../utils/helper";
 
-
-
 export const addGuestFromFile = asyncHandler(
   async (req: Request, res: Response) => {
     try {
@@ -48,56 +46,74 @@ export const addGuestFromFile = asyncHandler(
 );
 
 // Get Guests by Event ID
-export const getUserByEventId = asyncHandler(async (req: Request, res: Response) => {
-  // Log the entire request query object to debug
-  
-  const { eventId } = req.params;
-  // Extract search and status parameters correctly from query
-  const search = req.query.search as string | undefined;
-  const status = req.query.status as string | undefined;
-  
-  console.log("Parameters:", { eventId, search, status });
-  
-  if (!validateIdFormat(eventId)) {
-    throw new ApiError(400, "Invalid Event ID");
-  }
-  
-  try {
-    // Build the filter object
-    const filter: any = { eventId };
-    
-    // Add status filter if provided and not 'all'
-    if (status && status !== 'all') {
-      filter.status = status;
-    }
-    
-    // Add search filter if provided
-    if (search && typeof search === 'string') {
-      const searchRegex = new RegExp(search, 'i');
-      filter.$or = [
-        { name: searchRegex },
-        { email: searchRegex }
-      ];
-    }
-    
-    console.log("MongoDB filter:", filter);
+export const getUserByEventId = asyncHandler(
+  async (req: Request, res: Response) => {
+    // Extract parameters from request
+    const { onlyStats } = req.query;
+    const { eventId } = req.params;
 
-    console.log(filter);
-    
-    
-    const rsvpList = await Guest.find(filter);
-    
-    return res.status(200).json({
-      success: true,
-      message: "Guests fetched successfully",
-      rsvpList,
-    });
-  } catch (error) {
-    console.error("Error fetching guests:", error);
-    throw new ApiError(500, "Error fetching guests");
-  }
-});
+    const [total, confirmed, pending, declined] = await Promise.all([
+      Guest.countDocuments({ eventId }),
+      Guest.countDocuments({ eventId, status: "Confirmed" }),
+      Guest.countDocuments({ eventId, status: "Pending" }),
+      Guest.countDocuments({ eventId, status: "Declined" }),
+    ]);
+    if (onlyStats === "true") {
+      return res.status(200).json({ total, confirmed, pending, declined });
+    }
+    const search = req.query.search as string | undefined;
+    const status = req.query.status as string | undefined;
 
+    // Extract pagination parameters with defaults
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    if (!validateIdFormat(eventId)) {
+      throw new ApiError(400, "Invalid Event ID");
+    }
+
+    try {
+      // Build the filter object
+      const filter: any = { eventId };
+
+      // Add status filter if provided and not 'all'
+      if (status && status !== "all") {
+        filter.status = status;
+      }
+
+      // Add search filter if provided
+      if (search && typeof search === "string") {
+        const searchRegex = new RegExp(search, "i");
+        filter.$or = [{ name: searchRegex }, { email: searchRegex }];
+      }
+
+      // Get paginated list of guests
+      const rsvpList = await Guest.find(filter)
+        .sort({ createdAt: -1 }) // Sort by creation date, newest first
+        .skip(skip)
+        .limit(limit);
+
+      return res.status(200).json({
+        success: true,
+        message: "Guests fetched successfully",
+        rsvpList,
+        totalCount: total,
+        confirmed,
+        pending,
+        declined,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(total / limit),
+          limit,
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching guests:", error);
+      throw new ApiError(500, "Error fetching guests");
+    }
+  }
+);
 
 // Add single guest manually
 export const addSingleGuest = asyncHandler(

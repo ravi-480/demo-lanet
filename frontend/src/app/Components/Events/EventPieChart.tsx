@@ -16,7 +16,7 @@ import {
 } from "../../../Interface/interface";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const MyPieChart = ({ event, rsvpData }: MyPieChartProps) => {
+const MyPieChart = ({ event, guestStats }: MyPieChartProps) => {
   const { budget = { allocated: 0, spent: 0 } } = event;
 
   const remaining = budget.allocated - budget.spent;
@@ -26,13 +26,12 @@ const MyPieChart = ({ event, rsvpData }: MyPieChartProps) => {
     { name: "Remaining", value: remaining > 0 ? remaining : 0 },
   ];
 
-  const totalGuests = rsvpData?.length || 0;
-  const confirmedGuests =
-    rsvpData?.filter((guest) => guest.status === "Confirmed").length || 0;
-  const pendingGuests =
-    rsvpData?.filter((guest) => guest.status === "Pending").length || 0;
-  const declinedGuests =
-    rsvpData?.filter((guest) => guest.status === "Declined").length || 0;
+  // Use the stats from API instead of calculating from rsvpData
+  const totalGuests = guestStats?.total || 0;
+  const confirmedGuests = guestStats?.confirmed || 0;
+  const pendingGuests = guestStats?.pending || 0;
+  // If your API also provides declined count, use it. Otherwise, calculate it or set to 0
+  const declinedGuests = guestStats?.declined || 0;
 
   let guestData = [
     { name: "Confirmed", value: confirmedGuests },
@@ -73,8 +72,6 @@ const MyPieChart = ({ event, rsvpData }: MyPieChartProps) => {
   };
 
   const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
-    console.log(active, payload);
-
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (

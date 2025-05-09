@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
-import { fetchGuests } from "@/store/rsvpSlice";
+import { fetchGuestStats } from "@/store/rsvpSlice";
 import { IEvent } from "../../../Interface/interface";
 import { Users, Wallet } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
@@ -20,20 +20,24 @@ import Link from "next/link";
 
 const EventOverView = ({ event }: { event: IEvent }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { rsvpData, status } = useSelector((state: RootState) => state.rsvp);
+  const { guestStats, status } = useSelector((state: RootState) => state.rsvp);
 
   useEffect(() => {
-    if (event._id && status === "idle") dispatch(fetchGuests(event._id));
+    if (event._id && status === "idle") {
+      async function fetch() {
+        await dispatch(fetchGuestStats(event._id));
+      }
+      fetch();
+    }
   }, [dispatch, event._id, status]);
 
   const { budget = { allocated: 0, spent: 0 } } = event;
   const remaining = useMemo(() => budget.allocated - budget.spent, [budget]);
 
-  const totalGuests = rsvpData.length;
-  const confirmedGuests = rsvpData.filter(
-    (g) => g.status === "Confirmed"
-  ).length;
-  const pendingGuests = rsvpData.filter((g) => g.status === "Pending").length;
+  // Use the stats from API instead of calculating from rsvpData
+  const totalGuests = guestStats?.total || 0;
+  const confirmedGuests = guestStats?.confirmed || 0;
+  const pendingGuests = guestStats?.pending || 0;
 
   const attendancePercentage = useMemo(
     () => (totalGuests ? (confirmedGuests / totalGuests) * 100 : 0),
@@ -48,7 +52,7 @@ const EventOverView = ({ event }: { event: IEvent }) => {
   return (
     <div className="grid gap-6 p-8">
       <div style={{ minHeight: "300px" }}>
-        <MyPieChart event={event} rsvpData={rsvpData} />
+        <MyPieChart  event={event} guestStats={guestStats}  />
       </div>
 
       {/* Guest Summary Card */}
@@ -137,7 +141,7 @@ const EventOverView = ({ event }: { event: IEvent }) => {
           <Link href={`/events/${event._id}/budget`}>
             <Button
               aria-label="Manage budget"
-              className="bg-indigo-60 hover:bg-indigo-700 bg-indigo-600"
+              className="bg-indigo-600 hover:bg-indigo-700"
             >
               Manage Budget
             </Button>

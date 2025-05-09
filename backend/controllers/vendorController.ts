@@ -220,16 +220,67 @@ export const addVendors = asyncHandler(async (req: Request, res: Response) => {
 export const getVendorsByEvent = asyncHandler(
   async (req: Request, res: Response) => {
     const { eventId } = req.params;
-    const { includeSplit } = req.query;
+    const { includeSplit, search, sortOrder, page = 1, limit = 10 } = req.query;
 
+    // Build query based on parameters
     const query: any = { event: eventId };
 
+    // Add includeSplit filter if provided
     if (includeSplit === "true") {
       query.isIncludedInSplit = true;
     }
 
-    const vendors = await Vendor.find(query);
-    res.json(vendors);
+    // Add search filter if provided
+    if (search) {
+      const searchRegex = new RegExp(String(search), "i");
+      query.$or = [
+        { title: searchRegex },
+        { email: searchRegex },
+        { category: searchRegex },
+      ];
+    }
+
+    // Pagination calculation
+    const pageNumber = parseInt(String(page), 10);
+    const limitNumber = parseInt(String(limit), 10);
+    const skipCount = (pageNumber - 1) * limitNumber;
+
+    // Create sort object based on sortOrder
+    let sortOptions = {};
+    if (sortOrder === "lowToHigh") {
+      sortOptions = { price: 1 }; // Ascending price
+    } else if (sortOrder === "highToLow") {
+      sortOptions = { price: -1 }; // Descending price
+    } else {
+      // Default sort
+      sortOptions = { createdAt: -1 }; // Most recent first
+    }
+
+    try {
+      // Get total count for pagination
+      const totalCount = await Vendor.countDocuments(query);
+
+      // Get vendors with filtering, sorting and pagination
+      const vendors = await Vendor.find(query)
+        .sort(sortOptions)
+        .skip(skipCount)
+        .limit(limitNumber);
+
+      // Return data with pagination metadata
+      res.json({
+        items: vendors,
+        pagination: {
+          totalCount,
+          currentPage: pageNumber,
+          totalPages: Math.ceil(totalCount / limitNumber),
+          hasNextPage: pageNumber < Math.ceil(totalCount / limitNumber),
+          hasPrevPage: pageNumber > 1,
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching vendors:", error);
+      res.status(500).json({ message: "Failed to fetch vendors" });
+    }
   }
 );
 
@@ -504,7 +555,7 @@ export const addManualExpense = asyncHandler(
     const manualVendor = await Vendor.create({
       title,
       price: priceAsNumber,
-      finalPrice:priceAsNumber,
+      finalPrice: priceAsNumber,
       category: status,
       pricingUnit,
       event: eventId,

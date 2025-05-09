@@ -10,22 +10,26 @@ import {
 } from "@/components/ui/table";
 
 import { AppDispatch } from "@/store/store";
-import { getVendorsByEvent, removeAddedVendor } from "@/store/vendorSlice";
+import { removeAddedVendor } from "@/store/vendorSlice";
 import { VendorType } from "@/Interface/interface";
 import VendorActions from "./VendorAction";
 import { fetchById } from "@/store/eventSlice";
 
-const BudgetList = ({ items }: { items: VendorType[] }) => {
+interface BudgetListProps {
+  items: VendorType[];
+  eventId: string;
+  refresh: () => void;
+}
+
+const BudgetList = ({ items, eventId, refresh }: BudgetListProps) => {
   const dispatch = useDispatch<AppDispatch>();
 
   const handleRemoveVendor = async (vendorId: string) => {
     if (confirm("Are you sure you want to remove this vendor?")) {
       try {
         await dispatch(removeAddedVendor(vendorId));
-        if (items.length > 0) {
-          dispatch(getVendorsByEvent({ eventId: items[0].event }));
-        }
-        await dispatch(fetchById(items[0].event));
+        await dispatch(fetchById(eventId));
+        refresh(); // Refresh the data with current filters
       } catch (error) {
         console.log(error);
       }
@@ -47,9 +51,9 @@ const BudgetList = ({ items }: { items: VendorType[] }) => {
         </TableHeader>
         <TableBody>
           {items.length > 0 ? (
-            items.map((item: VendorType) => (
+            items.map((item: VendorType, index: number) => (
               <TableRow
-                key={item._id}
+                key={index}
                 className="text-gray-200 hover:bg-gray-900/40"
               >
                 <TableCell>

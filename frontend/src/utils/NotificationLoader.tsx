@@ -42,7 +42,7 @@ const NotificationLoader = () => {
   const fetchNotifications = useCallback(async () => {
     if (!user?.id || hasFetchedNotificationsRef.current) return;
 
-    hasFetchedNotificationsRef.current = true; // ✅ Prevents duplicate fetches
+    hasFetchedNotificationsRef.current = true; //  Prevents duplicate fetches
     dispatch(fetchNotificationStart());
 
     try {

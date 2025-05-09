@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,23 @@ const BudgetFilters = ({
   setPriceSortOrder,
 }: BudgetFiltersProps) => {
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false);
+  const [localSearchValue, setLocalSearchValue] =
+    useState<string>(searchFilter);
+
+  // Debounce implementation for search input
+  useEffect(() => {
+    const debounceTimeout = setTimeout(() => {
+      if (localSearchValue !== searchFilter) {
+        setSearchFilter(localSearchValue);
+      }
+    }, 400); // 400ms delay before applying search filter
+
+    return () => clearTimeout(debounceTimeout);
+  }, [localSearchValue, setSearchFilter, searchFilter]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalSearchValue(e.target.value);
+  };
 
   return (
     <motion.div
@@ -41,8 +58,8 @@ const BudgetFilters = ({
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
         <motion.div whileTap={{ scale: 0.98 }}>
           <Input
-            value={searchFilter}
-            onChange={(e) => setSearchFilter(e.target.value)}
+            value={localSearchValue}
+            onChange={handleInputChange}
             placeholder="Search Vendors..."
             type="search"
             className="pl-8 h-9 w-full sm:w-64 text-gray-100 transition-all duration-300 ease-in-out"
@@ -67,11 +84,6 @@ const BudgetFilters = ({
           value={priceSortOrder}
           onValueChange={(value: "lowToHigh" | "highToLow") => {
             setPriceSortOrder(value);
-
-            // Create subtle animation effect when changing sort
-            const timeout = setTimeout(() => {}, 300);
-
-            return () => clearTimeout(timeout);
           }}
         >
           <motion.div

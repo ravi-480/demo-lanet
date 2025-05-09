@@ -2,28 +2,49 @@
 
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { IGuest } from "@/Interface/interface";
+import { Guest, GuestStat } from "@/Interface/interface";
 import { Users, CheckCircle, Clock, XCircle } from "lucide-react";
+import { motion } from "framer-motion";
 
-const GuestStats = ({ guests }: { guests: IGuest[] }) => {
+interface GuestStatsProps {
+  guestStats: GuestStat | null;
+  totalCount: number;
+}
+
+const GuestStats = ({  totalCount, guestStats }: GuestStatsProps) => {
   const [isVisible, setIsVisible] = useState(false);
-  const totalGuests = guests.length;
 
-  // Count stats
-  const confirmedGuests = guests.filter(
-    (guest) => guest.status === "Confirmed"
-  ).length;
 
-  const pendingGuests = guests.filter(
-    (guest) => guest.status === "Pending"
-  ).length;
+  // Count stats from current page data
+  const confirmedGuests = guestStats?.confirmed || 0;
 
-  const declinedGuests = guests.filter(
-    (guest) => guest.status === "Declined"
-  ).length;
+  const pendingGuests = guestStats?.pending || 0;
+  const declinedGuests = guestStats?.declined || 0;
 
   const calculatePercentage = (count: number) => {
-    return totalGuests > 0 ? ((count / totalGuests) * 100).toFixed(1) : "0";
+    return totalCount > 0 ? ((count / totalCount) * 100).toFixed(1) : "0";
+  };
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.4, ease: "easeOut" },
+    },
   };
 
   useEffect(() => {
@@ -36,19 +57,19 @@ const GuestStats = ({ guests }: { guests: IGuest[] }) => {
   }, []);
 
   return (
-    <div
-      className={`mb-6 transition-all duration-500 transform ${
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-      }`}
+    <motion.div
+      className="mb-6"
+      initial="hidden"
+      animate={isVisible ? "visible" : "hidden"}
+      variants={containerVariants}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Total Guests"
-          value={totalGuests}
+          value={totalCount}
           textColor="text-blue-400"
           icon={<Users size={20} className="text-blue-400" />}
-          delay="100"
-          isVisible={isVisible}
+          variants={itemVariants}
         />
 
         <StatCard
@@ -57,8 +78,7 @@ const GuestStats = ({ guests }: { guests: IGuest[] }) => {
           textColor="text-green-400"
           percentage={calculatePercentage(confirmedGuests)}
           icon={<CheckCircle size={20} className="text-green-400" />}
-          delay="200"
-          isVisible={isVisible}
+          variants={itemVariants}
         />
 
         <StatCard
@@ -67,8 +87,7 @@ const GuestStats = ({ guests }: { guests: IGuest[] }) => {
           textColor="text-amber-400"
           percentage={calculatePercentage(pendingGuests)}
           icon={<Clock size={20} className="text-amber-400" />}
-          delay="300"
-          isVisible={isVisible}
+          variants={itemVariants}
         />
 
         <StatCard
@@ -77,11 +96,10 @@ const GuestStats = ({ guests }: { guests: IGuest[] }) => {
           textColor="text-red-400"
           percentage={calculatePercentage(declinedGuests)}
           icon={<XCircle size={20} className="text-red-400" />}
-          delay="400"
-          isVisible={isVisible}
+          variants={itemVariants}
         />
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -91,8 +109,7 @@ interface StatCardProps {
   textColor: string;
   icon: React.ReactNode;
   percentage?: string;
-  delay: string;
-  isVisible: boolean;
+  variants: any;
 }
 
 const StatCard = ({
@@ -101,31 +118,28 @@ const StatCard = ({
   textColor,
   percentage,
   icon,
-  delay,
-  isVisible,
+  variants,
 }: StatCardProps) => (
-  <Card
-    className={`bg-gray-800 border-gray-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden ${
-      isVisible ? `animate-card-appear-${delay}` : "opacity-0"
-    }`}
-  >
-    <CardHeader className="pb-2">
-      <CardTitle className="text-sm text-gray-300 flex items-center gap-2">
-        {icon}
-        {title}
-      </CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div className="flex flex-col">
-        <span className={`text-3xl font-bold ${textColor}`}>{value}</span>
-        {percentage && (
-          <span className="text-xs text-gray-400 mt-1">
-            {percentage}% of total guests
-          </span>
-        )}
-      </div>
-    </CardContent>
-  </Card>
+  <motion.div variants={variants}>
+    <Card className="bg-gray-800 border-gray-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm text-gray-300 flex items-center gap-2">
+          {icon}
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col">
+          <span className={`text-3xl font-bold ${textColor}`}>{value}</span>
+          {percentage && (
+            <span className="text-xs text-gray-400 mt-1">
+              {percentage}% of total guests
+            </span>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  </motion.div>
 );
 
 export default GuestStats;

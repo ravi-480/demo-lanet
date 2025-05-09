@@ -32,7 +32,7 @@ export const fetchEvents = asyncHandler(
 
     // Extract query parameters for filtering and pagination
     const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 8;
+    const limit = parseInt(req.query.limit as string) || 5;
     const tab = req.query.tab as string;  // Changed from 'status' to 'tab'
     const search = req.query.search as string;
     const date = req.query.date as string;

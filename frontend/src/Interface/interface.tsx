@@ -1,4 +1,5 @@
 import { EventType } from "react-hook-form";
+import GuestStats from "../app/Components/Guest/GuestStatCard";
 
 export interface IEvent {
   _id: string;
@@ -375,8 +376,6 @@ export interface PaginationState {
   limit: number;
 }
 
-
-
 export interface PaginatedResponse {
   events: IEvent[];
   currentPage: number;
@@ -385,7 +384,6 @@ export interface PaginatedResponse {
   limit: number;
   success?: boolean;
 }
-
 
 export interface EventState {
   events: IEvent[];
@@ -414,9 +412,16 @@ export interface ProcessedEvent {
   name: string;
   location: string;
 }
+
+export interface GuestStat {
+  total: number;
+  confirmed: number;
+  pending: number;
+  declined:number
+}
 export interface MyPieChartProps {
   event: IEvent;
-  rsvpData: IGuest[];
+  guestStats: GuestStat; // ← camelCase
 }
 
 export interface PayloadItem {
@@ -444,6 +449,8 @@ type StatusType = "idle" | "loading" | "succeeded" | "failed";
 
 // Adding pagination interface
 export interface PaginationMeta {
+  hasPrevPage: PaginationMeta | null;
+  hasNextPage: PaginationMeta | null;
   totalItems: number;
   totalPages: number;
   currentPage: number;
@@ -485,6 +492,7 @@ export interface GuestDialogProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
   editGuest: Guest | null;
+  onSuccess: () => void;
   setEditGuest: React.Dispatch<React.SetStateAction<Guest | null>>;
 }
 

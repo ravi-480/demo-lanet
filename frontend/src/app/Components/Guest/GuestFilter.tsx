@@ -13,10 +13,11 @@ import {
 } from "@/components/ui/select";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/store/store";
-import { fetchGuests, sendInviteAll } from "@/store/rsvpSlice";
+import { sendInviteAll } from "@/store/rsvpSlice";
 import { toast } from "sonner";
 import ConfirmDialog from "../Shared/ConfirmDialog";
-import { GuestStatus } from "@/Interface/interface";
+import { Guest } from "@/Interface/interface";
+import { motion } from "framer-motion";
 
 interface GuestFiltersProps {
   searchFilter: string;
@@ -24,7 +25,8 @@ interface GuestFiltersProps {
   statusFilter: string;
   setStatusFilter: (value: string) => void;
   eventId: string;
-  pendingGuests: GuestStatus[];
+  onFilterChange: () => void;
+  pendingGuests: Guest[];
 }
 
 const GuestFilters = ({
@@ -33,11 +35,13 @@ const GuestFilters = ({
   statusFilter,
   setStatusFilter,
   eventId,
+  onFilterChange,
   pendingGuests,
 }: GuestFiltersProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState(searchFilter);
+  const [isInviting, setIsInviting] = useState(false);
 
   // Debounce function for search
   const debounce = (func: Function, delay: number) => {
@@ -54,16 +58,9 @@ const GuestFilters = ({
   const debouncedSearch = useCallback(
     debounce((value: string) => {
       setSearchFilter(value);
-      // Fetch guests with search param
-      dispatch(
-        fetchGuests({
-          id: eventId,
-          search: value,
-          status: statusFilter !== "all" ? statusFilter : undefined,
-        })
-      );
+      onFilterChange(); // Reset to first page when filter changes
     }, 500),
-    [setSearchFilter, dispatch, eventId, statusFilter]
+    [setSearchFilter, onFilterChange]
   );
 
   // Handle search input change
@@ -76,26 +73,8 @@ const GuestFilters = ({
   // Handle status filter change
   const handleStatusChange = (value: string) => {
     setStatusFilter(value);
-    // Fetch guests with status filter
-    dispatch(
-      fetchGuests({
-        id: eventId,
-        search: searchTerm,
-        status: value !== "all" ? value : undefined,
-      })
-    );
+    onFilterChange(); // Reset to first page when filter changes
   };
-
-  // Refetch when component mounts to ensure backend filtering
-  useEffect(() => {
-    dispatch(
-      fetchGuests({
-        id: eventId,
-        search: searchTerm,
-        status: statusFilter !== "all" ? statusFilter : undefined,
-      })
-    );
-  }, [dispatch, eventId]);
 
   const handleInvite = async () => {
     try {
@@ -104,12 +83,21 @@ const GuestFilters = ({
         return;
       }
 
-      await dispatch(sendInviteAll({ pendingGuests }));
+      setIsInviting(true);
+      await dispatch(sendInviteAll({ pendingGuests })).unwrap();
       toast.success("Invitations sent to all pending guests");
-    } catch (error) {
-      toast.error("Failed to send invitations");
-      console.log("Failed to send invitations:", error);
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      toast.error(`Failed to send invitations: ${err.message || "Unknown error"}`);
+    } finally {
+      setIsInviting(false);
     }
+  };
+
+  // Animation variants
+  const buttonVariants = {
+    hover: { scale: 1.05 },
+    tap: { scale: 0.95 },
   };
 
   return (
@@ -126,14 +114,24 @@ const GuestFilters = ({
       </div>
 
       <div className="flex gap-2">
-        <Button
-          size="sm"
-          onClick={() => setOpen(true)}
-          disabled={pendingGuests.length === 0}
+        <motion.div
+          whileHover="hover"
+          whileTap="tap"
+          variants={buttonVariants}
         >
-          <Mail className="mr-1 h-4 w-4" />
-          <span className="hidden xs:inline">Invite All</span>
-        </Button>
+          <Button
+            size="sm"
+            onClick={() => setOpen(true)}
+            disabled={pendingGuests.length === 0 || isInviting}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <Mail className={`mr-1 h-4 w-4 ${isInviting ? "animate-pulse" : ""}`} />
+            <span className="hidden xs:inline">
+              {isInviting ? "Sending..." : "Invite All"}
+            </span>
+            <span className="xs:hidden">Invite</span>
+          </Button>
+        </motion.div>
 
         <ConfirmDialog
           onOpenChange={setOpen}

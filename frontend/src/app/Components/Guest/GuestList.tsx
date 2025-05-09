@@ -22,11 +22,7 @@ import {
 import { CardFooter } from "@/components/ui/card";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/store/store";
-import {
-  fetchGuests,
-  removeSingleGuest,
-  sendReminder,
-} from "@/store/rsvpSlice";
+import { removeSingleGuest, sendReminder } from "@/store/rsvpSlice";
 import { toast } from "sonner";
 import { Guest } from "@/Interface/interface";
 import { VendorAlertDialog } from "./AlertCard";
@@ -34,23 +30,25 @@ import { VendorAlertDialog } from "./AlertCard";
 interface GuestListProps {
   guests: Guest[];
   totalGuests: number;
-  filteredCount: number;
   currentPage: number;
   setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
-  guestsPerPage: number;
+  totalPages: number;
   eventId: string;
   onEdit: (guest: Guest) => void;
+  onRefresh: () => void;
+  loading: boolean;
 }
 
 const GuestListComponent = ({
   guests,
   totalGuests,
-  filteredCount,
   currentPage,
   setCurrentPage,
-  guestsPerPage,
+  totalPages,
   eventId,
   onEdit,
+  onRefresh,
+  loading,
 }: GuestListProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const [showMinGuestAlert, setShowMinGuestAlert] = useState(false);
@@ -61,15 +59,19 @@ const GuestListComponent = ({
   const handleRemoveGuest = async (guestId: string) => {
     try {
       const response = await dispatch(removeSingleGuest(guestId)).unwrap();
-      dispatch(fetchGuests(eventId));
+      
+      // Refresh the guest list after deletion
+      onRefresh();
 
       if (response.violatingVendors?.length > 0) {
         setViolatingVendors(response.violatingVendors);
         setShowMinGuestAlert(true);
+      } else {
+        toast.success("Guest removed successfully");
       }
     } catch (error: unknown) {
       const err = error as { message?: string };
-      toast.error(err.message || "Failed to remove  guests");
+      toast.error(err.message || "Failed to remove guest");
     }
   };
 
@@ -77,14 +79,20 @@ const GuestListComponent = ({
     try {
       dispatch(
         sendReminder({
-          ...guest,
           eventId,
-          guestId: "",
+          guestId: guest._id,
         })
-      );
+      ).unwrap()
+        .then(() => {
+          toast.success("Reminder sent successfully");
+        })
+        .catch((error) => {
+          toast.error("Failed to send reminder");
+          console.error(error);
+        });
     } catch (error) {
       toast.error("Failed to send reminder");
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -101,7 +109,23 @@ const GuestListComponent = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {guests.length > 0 ? (
+            {loading ? (
+              // Loading state
+              Array(5).fill(0).map((_, index) => (
+                <TableRow key={`skeleton-${index}`}>
+                  <TableCell>
+                    <div className="h-5 w-32 bg-gray-700 animate-pulse rounded"></div>
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell">
+                    <div className="h-4 w-40 bg-gray-700 animate-pulse rounded"></div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="h-6 w-20 bg-gray-700 animate-pulse rounded-full"></div>
+                  </TableCell>
+                  <TableCell></TableCell>
+                </TableRow>
+              ))
+            ) : guests.length > 0 ? (
               guests.map((guest) => (
                 <TableRow key={guest._id} className="hover:bg-gray-900/40">
                   <TableCell>
@@ -113,7 +137,7 @@ const GuestListComponent = ({
                     </div>
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
-                    <div className="text-sm ">
+                    <div className="text-sm truncate max-w-[200px]">
                       {guest.email}
                     </div>
                   </TableCell>
@@ -143,26 +167,24 @@ const GuestListComponent = ({
 
       <CardFooter className="flex flex-col sm:flex-row justify-between items-center gap-2 mt-4">
         <div className="text-sm text-gray-300 order-2 sm:order-1">
-          Showing {guests.length} of {totalGuests} guests
+          {totalGuests > 0 
+            ? `Showing page ${currentPage} of ${totalPages} (Total: ${totalGuests} guests)`
+            : "No guests"}
         </div>
         <div className="flex gap-1 order-1 sm:order-2">
           <Button
             variant="outline"
             onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
             size="sm"
-            disabled={currentPage === 1}
+            disabled={currentPage === 1 || loading}
           >
             Previous
           </Button>
           <Button
-            onClick={() =>
-              setCurrentPage((p) =>
-                p < Math.ceil(filteredCount / guestsPerPage) ? p + 1 : p
-              )
-            }
+            onClick={() => setCurrentPage(p => p + 1)}
             variant="default"
             size="sm"
-            disabled={currentPage >= Math.ceil(filteredCount / guestsPerPage)}
+            disabled={currentPage >= totalPages || loading}
           >
             Next
           </Button>

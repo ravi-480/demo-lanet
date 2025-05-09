@@ -1,63 +1,56 @@
 "use client";
 
-import DashboardSections from "./DashboardSection";
 import { motion } from "framer-motion";
 import Welcome from "@/app/Components/DashBoard/Welcome";
 import EventDisplay from "@/app/Components/DashBoard/EventDisplay";
 import EventCalendar from "@/app/Components/DashBoard/EventCalendar";
-
-// Animation variants for staggered children
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: {
-      type: "spring",
-      stiffness: 100,
-      damping: 12,
-    },
-  },
-};
+import DashboardSections from "./DashboardSection";
 
 const Dashboard = () => {
   return (
-    <motion.div
-      className="min-h-screen px-4 sm:px-6 md:px-8 lg:px-16 py-4 sm:py-7 bg-gray-900"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      <motion.div variants={itemVariants}>
+    <div className="min-h-screen px-4 sm:px-6 md:px-8 lg:px-16 py-4 sm:py-7 bg-gray-900">
+      {/* Welcome section */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
         <Welcome />
       </motion.div>
 
-      <motion.div variants={itemVariants} className="w-full mb-6">
+      {/* Events and Calendar section */}
+      <div className="w-full mb-6">
         <div className="flex flex-col lg:flex-row gap-4">
-          <motion.div className="flex-grow" variants={itemVariants}>
+          {/* Event Display */}
+          <motion.div 
+            className="flex-grow"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
             <EventDisplay />
           </motion.div>
-          <motion.div variants={itemVariants}>
+          
+          {/* Calendar */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+          >
             <EventCalendar />
           </motion.div>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div variants={itemVariants}>
+      {/* Dashboard Sections */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.3 }}
+      >
         <DashboardSections />
       </motion.div>
-    </motion.div>
+    </div>
   );
 };
 

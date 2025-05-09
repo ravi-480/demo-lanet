@@ -7,9 +7,6 @@ const EventDetailClient = dynamic(
     loading: () => (
       <div className="w-full h-screen flex items-center justify-center">
         <LoadSpinner />
-        <span className="ml-3 text-cyan-400 text-lg animate-pulse">
-          Loading event details...
-        </span>
       </div>
     ),
   }

@@ -24,9 +24,9 @@ import {
 } from "@/components/ui/select";
 
 import { AppDispatch } from "@/store/store";
-import { fetchGuests } from "@/store/rsvpSlice";
 import { addManualVendorExpense, getVendorsByEvent } from "@/store/vendorSlice";
 import { allowOnlyLetters, filterPastedLetters } from "@/utils/helper";
+import { fetchById } from "@/store/eventSlice";
 
 interface BudgetDialogProps {
   eventId: string;
@@ -79,6 +79,7 @@ const BudgetDialog = ({ eventId, isOpen, setIsOpen }: BudgetDialogProps) => {
       ).unwrap();
 
       await dispatch(getVendorsByEvent({ eventId }));
+      await dispatch(fetchById(eventId));
       handleClose();
     } catch (err) {
       console.log(err);

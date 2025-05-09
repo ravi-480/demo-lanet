@@ -115,7 +115,7 @@ const EventCalendar = () => {
                 "bg-indigo-600 text-white rounded-xl hover:bg-indigo-500",
               selected: "",
             }}
-            className="rounded-lg border md:h-91 border-gray-400 w-full"
+            className="rounded-lg border md:h-97 border-gray-400 w-full"
             onDayClick={handleDateSelect}
           />
         </motion.div>

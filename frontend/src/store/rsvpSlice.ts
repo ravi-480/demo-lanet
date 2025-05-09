@@ -3,11 +3,25 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import api from "@/utils/api";
 
+interface GuestStats {
+  total: number;
+  confirmed: number;
+  pending: number;
+  declined: number;
+}
+interface GuestResponse {
+  guests: Guest[];
+  totalCount: number;
+  guestStats: GuestStats;
+}
+
 interface RSVPState {
   rsvpData: Guest[];
   loading: boolean;
   status: "idle" | "loading" | "succeeded" | "failed";
   error: null | string;
+  totalCount: number;
+  guestStats: GuestStats | null;
 }
 
 const initialState: RSVPState = {
@@ -15,6 +29,8 @@ const initialState: RSVPState = {
   status: "idle",
   loading: false,
   error: null,
+  totalCount: 0,
+  guestStats: null,
 };
 
 export const uploadFile = createAsyncThunk(
@@ -38,28 +54,26 @@ export const uploadFile = createAsyncThunk(
   }
 );
 
-// Fetch added guests
-export const fetchGuests = createAsyncThunk(
+// Fetch guests with pagination and filtering
+export const fetchGuests = createAsyncThunk<
+  GuestResponse,
+  { id: string; status: string; search: string; page: number; limit: number }
+>(
   "rsvp/fetchGuests",
   async (
-    params: { id: string; search?: string; status?: string } | string,
+    params: {
+      id: string;
+      search?: string;
+      status?: string;
+      page?: number;
+      limit?: number;
+    },
     { rejectWithValue }
   ) => {
     try {
-      // Handle both object and string formats to maintain backward compatibility
-      let eventId: string;
-      let search: string | undefined;
-      let status: string | undefined;
+      const { id: eventId, search, status, page = 1, limit = 10 } = params;
 
-      if (typeof params === "string") {
-        eventId = params;
-      } else {
-        eventId = params.id;
-        search = params.search;
-        status = params.status;
-      }
-
-      // Build query string for backend filtering
+      // Build query string for backend filtering and pagination
       let url = `/guest/${eventId}`;
       const queryParams = [];
 
@@ -71,12 +85,43 @@ export const fetchGuests = createAsyncThunk(
         queryParams.push(`status=${encodeURIComponent(status)}`);
       }
 
+      // Add pagination parameters
+      queryParams.push(`page=${page}`);
+      queryParams.push(`limit=${limit}`);
+
       if (queryParams.length > 0) {
         url += `?${queryParams.join("&")}`;
       }
 
       const response = await api.get(url);
-      return response.data.rsvpList;
+
+      // Return both the guest list and the total count
+      return {
+        guests: response.data.rsvpList || [],
+        totalCount:
+          response.data.totalCount || response.data.rsvpList?.length || 0,
+        guestStats: {
+          confirmed: response.data.confirmed || 0,
+          pending: response.data.pending || 0,
+          declined: response.data.declined || 0,
+          total:
+            response.data.totalCount || response.data.rsvpList?.length || 0,
+        },
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+// fetch guest guestStats
+
+export const fetchGuestStats = createAsyncThunk<GuestStats, string>(
+  "rsvp/fetchGuestStats",
+  async (eventId, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/guest/${eventId}?onlyStats=true`);
+      return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || error.message);
     }
@@ -98,8 +143,8 @@ export const removeAllGuest = createAsyncThunk(
         // If the response includes violatingVendors, pass that along
         if (error.response?.data?.violatingVendors) {
           return rejectWithValue({
-            message: error.response.data.message,
-            violatingVendors: error.response.data.violatingVendors,
+            message: error.response?.data.message,
+            violatingVendors: error.response?.data.violatingVendors,
           });
         }
         return rejectWithValue(
@@ -142,8 +187,8 @@ export const removeSingleGuest = createAsyncThunk(
         // If the error includes violatingVendors, pass that along
         if (error.response?.data?.violatingVendors) {
           return rejectWithValue({
-            message: error.response.data.message,
-            violatingVendors: error.response.data.violatingVendors,
+            message: error.response?.data.message,
+            violatingVendors: error.response?.data.violatingVendors,
           });
         }
         return rejectWithValue(
@@ -223,6 +268,10 @@ const rsvpSlice = createSlice({
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
+    resetGuestList: (state) => {
+      state.rsvpData = [];
+      state.totalCount = 0;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -233,8 +282,12 @@ const rsvpSlice = createSlice({
       })
       .addCase(
         fetchGuests.fulfilled,
-        (state, action: PayloadAction<Guest[]>) => {
-          state.rsvpData = action.payload;
+        (state, action: PayloadAction<GuestResponse>) => {
+          console.log(action);
+
+          state.rsvpData = action.payload.guests;
+          state.totalCount = action.payload.totalCount;
+          state.guestStats = action.payload.guestStats;
           state.status = "succeeded";
           state.loading = false;
         }
@@ -242,11 +295,11 @@ const rsvpSlice = createSlice({
       .addCase(fetchGuests.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+        state.status = "failed";
       })
 
       .addCase(uploadFile.pending, (state) => {
         state.loading = true;
-        state.status = "failed";
         state.error = null;
       })
       .addCase(uploadFile.fulfilled, (state) => {
@@ -263,7 +316,8 @@ const rsvpSlice = createSlice({
       })
       .addCase(addSingleGuest.fulfilled, (state, action) => {
         state.loading = false;
-        state.rsvpData.push(action.payload);
+        // Don't modify state here - let the component refresh the data
+        // to get accurate pagination information from the server
       })
       .addCase(addSingleGuest.rejected, (state, action) => {
         state.loading = false;
@@ -279,18 +333,14 @@ const rsvpSlice = createSlice({
       })
       .addCase(removeSingleGuest.fulfilled, (state, action) => {
         state.loading = false;
-        // If the backend returns a guestId, use it
-        if (action.payload.guestId) {
-          state.rsvpData = state.rsvpData.filter(
-            (guest) => guest._id !== action.payload.guestId
-          );
-        }
-        // We'll let the component handle refreshing the list with fetchGuests instead
+        // Don't modify the state here - let the component refresh via fetchGuests
+        // to get accurate pagination information from the server
       })
-      .addCase(removeSingleGuest.rejected, (state) => {
+      .addCase(removeSingleGuest.rejected, (state, action) => {
         state.loading = false;
-        state.error = "Failed to remove guest";
+        state.error = (action.payload as string) || "Failed to remove guest";
       })
+
       .addCase(updateSingleGuest.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -321,6 +371,7 @@ const rsvpSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
+
       // send reminder
       .addCase(sendReminder.pending, (state) => {
         state.loading = true;
@@ -333,6 +384,7 @@ const rsvpSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
+
       // remove all guests
       .addCase(removeAllGuest.pending, (state) => {
         state.loading = true;
@@ -341,13 +393,18 @@ const rsvpSlice = createSlice({
       .addCase(removeAllGuest.fulfilled, (state) => {
         state.loading = false;
         state.rsvpData = []; // clear guest list on success
+        state.totalCount = 0; // reset total count
       })
-      .addCase(removeAllGuest.rejected, (state) => {
+      .addCase(removeAllGuest.rejected, (state, action) => {
         state.loading = false;
-        state.error = "Failed to remove all guests";
+        state.error =
+          (action.payload as string) || "Failed to remove all guests";
+      })
+      .addCase(fetchGuestStats.fulfilled, (state, action) => {
+        state.guestStats = action.payload;
       });
   },
 });
 
-export const { setLoading } = rsvpSlice.actions;
+export const { setLoading, resetGuestList } = rsvpSlice.actions;
 export default rsvpSlice.reducer;

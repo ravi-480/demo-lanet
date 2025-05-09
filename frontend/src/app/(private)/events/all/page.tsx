@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,11 +12,13 @@ import LoadingState from "@/app/Components/Loading/Loading";
 import EventTabs from "@/app/Components/Events/EventTab";
 import EventCard from "@/app/Components/Events/EventCard";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
 const AllEventsPage = () => {
   const { events, isLoading } = useSelector((state: RootState) => state.event);
   const dispatch = useDispatch<AppDispatch>();
   const [showFilters, setShowFilters] = React.useState(false);
+  const [pageTransition, setPageTransition] = useState(false);
 
   const {
     activeTab,
@@ -34,30 +36,20 @@ const AllEventsPage = () => {
 
   const router = useRouter();
 
-  useEffect(() => {
-    // Initial load of events - now handled by useEventFilter
-    let retryTimeout: ReturnType<typeof setTimeout>;
+  
 
-    const loadEvents = async () => {
-      try {
-        await dispatch(
-          fetchEvents({
-            page: pagination.currentPage,
-            limit: pagination.limit,
-          })
-        ).unwrap();
-      } catch (err) {
-        console.log(err);
-        retryTimeout = setTimeout(() => loadEvents(), 10000);
-      }
-    };
+  // Custom page change handler with animation
+  const handlePageChangeWithAnimation = async (newPage: number) => {
+    if (newPage === pagination.currentPage) return;
 
-    loadEvents();
+    setPageTransition(true);
 
-    return () => {
-      if (retryTimeout) clearTimeout(retryTimeout);
-    };
-  }, []);
+    // Wait for exit animation to complete
+    setTimeout(async () => {
+      await handlePageChange(newPage);
+      setPageTransition(false);
+    }, 300);
+  };
 
   if (isLoading) {
     return <LoadingState />;
@@ -106,6 +98,34 @@ const AllEventsPage = () => {
     }
 
     return pageNumbers;
+  };
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+    exit: {
+      opacity: 0,
+      transition: {
+        duration: 0.3,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.4,
+      },
+    },
   };
 
   return (
@@ -200,21 +220,39 @@ const AllEventsPage = () => {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {events.map((event) => (
-              <EventCard key={event._id} event={event} variant="detailed" />
-            ))}
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={pagination.currentPage}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+              variants={containerVariants}
+              initial="hidden"
+              animate={pageTransition ? "exit" : "visible"}
+              exit="exit"
+            >
+              {events.map((event) => (
+                <motion.div key={event._id} variants={itemVariants}>
+                  <EventCard event={event} variant="detailed" />
+                </motion.div>
+              ))}
+            </motion.div>
+          </AnimatePresence>
         )}
 
         {events.length > 0 && pagination.totalPages > 1 && (
           <div className="mt-8 flex flex-col items-center">
-            <div className="flex items-center space-x-2">
+            <motion.div
+              className="flex items-center space-x-2"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
               <Button
                 variant="outline"
                 size="icon"
                 onClick={() =>
-                  handlePageChange(Math.max(1, pagination.currentPage - 1))
+                  handlePageChangeWithAnimation(
+                    Math.max(1, pagination.currentPage - 1)
+                  )
                 }
                 disabled={pagination.currentPage === 1}
                 className="bg-gray-800 border-gray-700 text-white"
@@ -239,9 +277,11 @@ const AllEventsPage = () => {
                     className={`${
                       pagination.currentPage === page
                         ? "bg-indigo-600 text-white"
-                        : "bg-gray-800 border-gray-700 text-white"
+                        : "bg-gray-800 border-gray-700 text-white hover:bg-gray-700 transition-colors duration-300"
                     }`}
-                    onClick={() => handlePageChange(page as number)}
+                    onClick={() =>
+                      handlePageChangeWithAnimation(page as number)
+                    }
                   >
                     {page}
                   </Button>
@@ -252,7 +292,7 @@ const AllEventsPage = () => {
                 variant="outline"
                 size="icon"
                 onClick={() =>
-                  handlePageChange(
+                  handlePageChangeWithAnimation(
                     Math.min(pagination.totalPages, pagination.currentPage + 1)
                   )
                 }
@@ -261,12 +301,17 @@ const AllEventsPage = () => {
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
-            </div>
+            </motion.div>
 
-            <p className="text-gray-400 mt-4">
+            <motion.p
+              className="text-gray-400 mt-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
               Showing page {pagination.currentPage} of {pagination.totalPages}(
               {pagination.totalEvents} total events)
-            </p>
+            </motion.p>
           </div>
         )}
 

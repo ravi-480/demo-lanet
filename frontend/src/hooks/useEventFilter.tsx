@@ -1,49 +1,55 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchEvents, setPage, selectPagination } from "@/store/eventSlice";
 import { AppDispatch } from "@/store/store";
 
 interface UseEventFilterProps {
   initialTab?: string;
+  skipInitialFetch?: boolean;
 }
 
 export const useEventFilter = ({
   initialTab = "all",
+  skipInitialFetch = false,
 }: UseEventFilterProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const [activeTab, setActiveTab] = useState<string>(initialTab);
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFilter, setDateFilter] = useState<string>("");
   const [locationFilter, setLocationFilter] = useState<string>("");
-  const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
-  
-  const pagination = useSelector(selectPagination);
+  const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(
+    null
+  );
 
-  // Effects to handle filtering
+  const pagination = useSelector(selectPagination);
+  const isFirstRun = useRef(true);
+
   useEffect(() => {
-    // Clear any existing debounce timeout
+    if (isFirstRun.current) {
+      isFirstRun.current = false;
+      if (skipInitialFetch) return;
+    }
+
     if (debounceTimeout) {
       clearTimeout(debounceTimeout);
     }
 
-    // Set a new timeout to debounce the filter changes
     const timeout = setTimeout(() => {
-      // Reset to page 1 when filters change
       dispatch(setPage(1));
-      
-      dispatch(fetchEvents({
-        page: 1,
-        limit: pagination.limit,
-        tab: activeTab,
-        search: searchTerm,
-        date: dateFilter,
-        location: locationFilter
-      }));
-    }, 500); // 500ms debounce delay
+      dispatch(
+        fetchEvents({
+          page: 1,
+          limit: pagination.limit,
+          tab: activeTab,
+          search: searchTerm,
+          date: dateFilter,
+          location: locationFilter,
+        })
+      );
+    }, 500);
 
     setDebounceTimeout(timeout);
 
-    // Clean up on unmount
     return () => {
       if (debounceTimeout) {
         clearTimeout(debounceTimeout);
@@ -51,33 +57,33 @@ export const useEventFilter = ({
     };
   }, [activeTab, searchTerm, dateFilter, locationFilter, dispatch]);
 
-  // Effect for page changes
   const handlePageChange = (newPage: number) => {
     dispatch(setPage(newPage));
-    
-    dispatch(fetchEvents({
-      page: newPage,
-      limit: pagination.limit,
-      tab: activeTab,
-      search: searchTerm,
-      date: dateFilter,
-      location: locationFilter
-    }));
+    dispatch(
+      fetchEvents({
+        page: newPage,
+        limit: pagination.limit,
+        tab: activeTab,
+        search: searchTerm,
+        date: dateFilter,
+        location: locationFilter,
+      })
+    );
   };
 
   const clearFilters = () => {
     setDateFilter("");
     setLocationFilter("");
     setSearchTerm("");
-    
-    // Reset to page 1 when filters are cleared
+
     dispatch(setPage(1));
-    
-    dispatch(fetchEvents({
-      page: 1,
-      limit: pagination.limit,
-      tab: activeTab
-    }));
+    dispatch(
+      fetchEvents({
+        page: 1,
+        limit: pagination.limit,
+        tab: activeTab,
+      })
+    );
   };
 
   return {
@@ -91,6 +97,6 @@ export const useEventFilter = ({
     setLocationFilter,
     clearFilters,
     pagination,
-    handlePageChange
+    handlePageChange,
   };
 };

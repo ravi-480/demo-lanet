@@ -12,10 +12,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useVisibilityLoader } from "@/hooks/useVisibilityLoader";
 import { usePagination } from "@/hooks/usePagination";
 import Pagination from "./Pagination";
 import { motion } from "framer-motion";
+import LoadSpinner from "../Shared/LoadSpinner";
 
 const Budget = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -28,10 +28,6 @@ const Budget = () => {
     },
     [dispatch]
   );
-
-  const { elementRef } = useVisibilityLoader({
-    onVisible: () => fetchPage(1),
-  });
 
   // Custom hook for pagination
   const { currentPage, totalPages, goToPage } = usePagination({
@@ -50,8 +46,8 @@ const Budget = () => {
   // Loading and error states
   if (vendorDetail.status === "loading") {
     return (
-      <div className="text-center py-10" ref={elementRef}>
-        Loading...
+      <div className="text-center py-10">
+        <LoadSpinner />
       </div>
     );
   }
@@ -87,7 +83,6 @@ const Budget = () => {
   return (
     <motion.div
       className="w-full"
-      ref={elementRef}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{

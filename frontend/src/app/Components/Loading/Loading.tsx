@@ -1,19 +1,14 @@
 import React from "react";
+import LoadSpinner from "../Shared/LoadSpinner";
 
 interface LoadingStateProps {
   message?: string;
 }
 
 const LoadingState: React.FC<LoadingStateProps> = ({
-  message = "Loading events...",
+  message = "Loading evdfdfdents...",
 }) => {
-  return (
-    <div className="bg-gray-900 text-white rounded-lg shadow-sm p-6 mb-6 w-full">
-      <div className="text-center py-12">
-        <p className="text-white">{message}</p>
-      </div>
-    </div>
-  );
+  return <LoadSpinner />;
 };
 
 export default LoadingState;

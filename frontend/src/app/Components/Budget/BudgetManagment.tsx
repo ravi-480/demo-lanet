@@ -3,10 +3,22 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Link from "next/link";
-import { ArrowRight, RefreshCcw, Wallet } from "lucide-react";
+import {
+  ArrowRight,
+  RefreshCcw,
+  Wallet,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 import BudgetFilters from "./BudgetFilters";
 import BudgetList from "./BudgetList";
 import BudgetDialog from "./BudgetDialog";
@@ -16,7 +28,6 @@ import { fetchById, singleEvent } from "@/store/eventSlice";
 import { getVendorsByEvent, removeAllVendor } from "@/store/vendorSlice";
 import BudgetStats from "./BudgetStatCard";
 import ConfirmDialog from "../Shared/ConfirmDialog";
-import { VendorType } from "@/Interface/interface";
 
 const BudgetManagement = ({ eventId }: { eventId: string }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -27,41 +38,72 @@ const BudgetManagement = ({ eventId }: { eventId: string }) => {
   const [priceSortOrder, setPriceSortOrder] = useState<
     "lowToHigh" | "highToLow"
   >("highToLow");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(8);
 
   const event = useSelector(singleEvent);
-  const { items } = useSelector((state: RootState) => state.vendors);
+  const { items, pagination, status } = useSelector(
+    (state: RootState) => state.vendors
+  );
 
+  // Load vendors with filters when component mounts or filters change
   useEffect(() => {
     if (eventId) {
       dispatch(fetchById(eventId));
-      dispatch(getVendorsByEvent({ eventId }));
+      loadVendors();
     }
-  }, [dispatch, eventId]);
+  }, [dispatch, eventId, searchFilter, priceSortOrder, page, limit]);
 
-  const filteredVendors = items
-    .filter((item: VendorType) => {
-      const searchTerm = searchFilter.toLowerCase();
-      return (
-        item.title?.toLowerCase().includes(searchTerm) ||
-        item.email?.toLowerCase().includes(searchTerm)
-      );
-    })
-    .sort((a: VendorType, b: VendorType) => {
-      return priceSortOrder === "lowToHigh"
-        ? a.price - b.price
-        : b.price - a.price;
-    });
+  // Function to load vendors with current filters
+  const loadVendors = () => {
+    dispatch(
+      getVendorsByEvent({
+        eventId,
+        searchFilter: searchFilter || undefined,
+        sortOrder: priceSortOrder,
+        page,
+        limit,
+      })
+    );
+  };
 
-  const handleRemoveAllVendors = () => {
-    dispatch(removeAllVendor({ id: eventId, query: "vendor" }));
+  // Handle search filter change with debounce (handled in BudgetFilters component)
+  const handleSearchChange = (value: string) => {
+    setSearchFilter(value);
+    // Reset to first page when filtering
+    setPage(1);
+  };
+
+  // Handle sort order change
+  const handleSortChange = (value: "lowToHigh" | "highToLow") => {
+    setPriceSortOrder(value);
+    // Reset to first page when sorting
+    setPage(1);
+  };
+
+  const handleRemoveAllVendors = async () => {
+    await dispatch(removeAllVendor({ id: eventId, query: "vendor" }));
+    dispatch(fetchById(eventId));
   };
 
   const refreshData = async () => {
     setIsRefreshing(true);
-
-    await dispatch(getVendorsByEvent({ eventId }));
     await dispatch(fetchById(eventId));
+    await loadVendors();
     setIsRefreshing(false);
+  };
+
+  // Handle pagination
+  const handleNextPage = () => {
+    if (pagination && pagination.hasNextPage) {
+      setPage(page + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (pagination && pagination.hasPrevPage) {
+      setPage(page - 1);
+    }
   };
 
   return (
@@ -131,16 +173,45 @@ const BudgetManagement = ({ eventId }: { eventId: string }) => {
               />
               <BudgetFilters
                 searchFilter={searchFilter}
-                setSearchFilter={setSearchFilter}
+                setSearchFilter={handleSearchChange}
                 priceSortOrder={priceSortOrder}
-                setPriceSortOrder={setPriceSortOrder}
+                setPriceSortOrder={handleSortChange}
               />
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <BudgetList items={filteredVendors} />
+          <BudgetList items={items} eventId={eventId} refresh={loadVendors} />
         </CardContent>
+
+        {/* Pagination controls */}
+        {pagination && (
+          <CardFooter className="flex justify-between items-center py-3 text-gray-200">
+            <div className="text-sm">
+              Page {pagination.currentPage} of {pagination.totalPages}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                onClick={handlePrevPage}
+                disabled={!pagination.hasPrevPage || status === "loading"}
+                className="border-gray-600 text-gray-200 hover:bg-gray-700"
+              >
+                <ChevronLeft size={16} />
+                Previous
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleNextPage}
+                disabled={!pagination.hasNextPage || status === "loading"}
+                className="border-gray-600 text-gray-200 hover:bg-gray-700"
+              >
+                Next
+                <ChevronRight size={16} />
+              </Button>
+            </div>
+          </CardFooter>
+        )}
       </Card>
     </div>
   );

@@ -37,19 +37,35 @@ export const createVendor = createAsyncThunk<
   }
 });
 
-// Get vendors by event
+// Get vendors by event with filters
 export const getVendorsByEvent = createAsyncThunk<
-  VendorType[],
-  { eventId: string },
+  { items: VendorType[]; pagination: PaginationMeta },
+  {
+    eventId: string;
+    searchFilter?: string;
+    sortOrder?: string;
+    page?: number;
+    limit?: number;
+    includeSplit?: boolean;
+  },
   { rejectValue: string }
 >(
   "vendors/getVendorsByEvent",
-  async ({eventId}, { rejectWithValue }) => {
-    console.log(eventId);
-    
+  async (
+    { eventId, searchFilter, sortOrder, page = 1, limit = 10, includeSplit },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await api.get(`/vendors/event/${eventId}`, {});
-      return response.data as VendorType[];
+      const response = await api.get(`/vendors/event/${eventId}`, {
+        params: {
+          search: searchFilter,
+          sortOrder,
+          page,
+          limit,
+          includeSplit,
+        },
+      });
+      return response.data;
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
         return rejectWithValue(error.response?.data || error.message);
@@ -62,14 +78,34 @@ export const getVendorsByEvent = createAsyncThunk<
 // Updated getVendorByUser to support pagination
 export const getVendorByUser = createAsyncThunk<
   { vendors: VendorType[]; pagination: PaginationMeta },
-  { page?: number; limit?: number } | void,
+  {
+    page?: number;
+    limit?: number;
+    searchFilter?: string;
+    sortOrder?: string;
+  } | void,
   { rejectValue: string }
 >("vendors/fetchByUser", async (params = {}, { rejectWithValue }) => {
-  const { page = 1, limit = 5 } = params as { page?: number; limit?: number };
+  const {
+    page = 1,
+    limit = 5,
+    searchFilter,
+    sortOrder,
+  } = params as {
+    page?: number;
+    limit?: number;
+    searchFilter?: string;
+    sortOrder?: string;
+  };
 
   try {
     const response = await api.get("/vendors/getByUser", {
-      params: { page, limit },
+      params: {
+        page,
+        limit,
+        search: searchFilter,
+        sortOrder,
+      },
     });
     return response.data;
   } catch (error: unknown) {
@@ -179,7 +215,8 @@ const vendorSlice = createSlice({
       })
       .addCase(getVendorsByEvent.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.items = action.payload;
+        state.items = action.payload.items;
+        state.pagination = action.payload.pagination;
       })
       .addCase(getVendorsByEvent.rejected, (state, action) => {
         state.status = "failed";

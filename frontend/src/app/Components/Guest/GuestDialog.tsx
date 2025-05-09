@@ -22,11 +22,7 @@ import {
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/store/store";
-import {
-  addSingleGuest,
-  fetchGuests,
-  updateSingleGuest,
-} from "@/store/rsvpSlice";
+import { addSingleGuest, updateSingleGuest } from "@/store/rsvpSlice";
 import { toast } from "sonner";
 import { FormData, Guest, GuestDialogProps } from "@/Interface/interface";
 import { motion, AnimatePresence } from "framer-motion";
@@ -71,6 +67,7 @@ const GuestDialog = ({
   setIsOpen,
   editGuest,
   setEditGuest,
+  onSuccess,
 }: GuestDialogProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const isEditing = Boolean(editGuest);
@@ -135,8 +132,11 @@ const GuestDialog = ({
             data: data as unknown as Record<string, string>,
           })
         );
+
         if (updateSingleGuest.fulfilled.match(result)) {
-          await dispatch(fetchGuests(eventId));
+          if (onSuccess) {
+            onSuccess();
+          }
           handleClose();
         }
       } else {
@@ -146,14 +146,18 @@ const GuestDialog = ({
             ...data,
           } as Guest)
         );
+
         if (addSingleGuest.fulfilled.match(result)) {
-          await dispatch(fetchGuests(eventId));
+          if (onSuccess) {
+            onSuccess();
+          }
           handleClose();
         }
       }
     } catch (error: unknown) {
-      toast.error("An error occurred");
-      console.log(error);
+      const err = error as { message?: string };
+      toast.error(err.message || "An error occurred");
+      console.error(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -181,7 +185,7 @@ const GuestDialog = ({
     >
       <DialogTrigger asChild>
         <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-          <Button size="sm" className="flex items-center gap-1">
+          <Button size="sm" className="flex mt-[25px] items-center gap-1">
             <PlusCircle size={16} />
             Add Guest
           </Button>
@@ -243,6 +247,10 @@ const GuestDialog = ({
                         placeholder="Enter email address"
                         {...register("email", {
                           required: "Email is required",
+                          pattern: {
+                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                            message: "Invalid email address",
+                          },
                         })}
                       />
                       {errors.email && (

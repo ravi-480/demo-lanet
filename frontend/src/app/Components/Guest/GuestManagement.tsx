@@ -4,7 +4,11 @@ import React, { lazy, Suspense, useEffect, useState } from "react";
 import { Users, RefreshCcw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchGuests, removeAllGuest } from "@/store/rsvpSlice";
+import {
+  fetchGuests,
+  fetchGuestStats,
+  removeAllGuest,
+} from "@/store/rsvpSlice";
 import { AppDispatch, RootState } from "@/store/store";
 import GuestList from "./GuestList";
 import GuestStats from "./GuestStatCard";
@@ -58,41 +62,47 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
   const [preservedVendors, setPreservedVendors] = useState<
     { id: string; title: string; minGuestLimit: number }[]
   >([]);
+  const [totalCount, setTotalCount] = useState(0);
   const guestsPerPage = 10;
 
   const dispatch = useDispatch<AppDispatch>();
-  const { rsvpData, loading } = useSelector((state: RootState) => state.rsvp);
+  const { rsvpData, loading, guestStats } = useSelector(
+    (state: RootState) => state.rsvp
+  );
 
-  // Initial fetch of guest data
+  // Load guests with backend filtering and pagination
   useEffect(() => {
     if (eventId) {
-      dispatch(fetchGuests({ id: eventId })).then(() => {
-        setTimeout(() => setIsLoaded(true), 100);
-      });
+      loadGuests();
     }
-  }, [dispatch, eventId]);
+  }, [eventId, statusFilter, searchFilter, currentPage]);
+
+  const loadGuests = async () => {
+    try {
+      const result = await dispatch(
+        fetchGuests({
+          id: eventId,
+          status: statusFilter,
+          search: searchFilter,
+          page: currentPage,
+          limit: guestsPerPage,
+        })
+      ).unwrap();
+
+      console.log(result);
+
+      setTotalCount(result.totalCount);
+    } catch (error) {
+    } finally {
+      setTimeout(() => setIsLoaded(true), 100);
+    }
+  };
 
   const refreshData = async () => {
     setIsRefreshing(true);
-    // Refresh with current filters
-    await dispatch(fetchGuests({
-      id: eventId,
-      search: searchFilter,
-      status: statusFilter !== "all" ? statusFilter : undefined
-    }));
+    await loadGuests();
     setIsRefreshing(false);
   };
-
-  const pendingGuests = React.useMemo(() => {
-    return rsvpData.filter((guest) => guest.status === "Pending");
-  }, [rsvpData]);
-
-  // No need to filter guests manually as it's done on the backend
-  const currentGuests = React.useMemo(() => {
-    const indexOfLast = currentPage * guestsPerPage;
-    const indexOfFirst = indexOfLast - guestsPerPage;
-    return rsvpData.slice(indexOfFirst, indexOfLast);
-  }, [rsvpData, currentPage, guestsPerPage]);
 
   const RemoveAllGuest = React.useCallback(async () => {
     try {
@@ -104,11 +114,17 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
         setPreservedVendors(result.preservedVendors);
         setShowMinGuestAlert(true);
       }
+
+      // Reset to first page after removing all guests
+      setCurrentPage(1);
     } catch (error: unknown) {
       const err = error as { message?: string };
       toast.error(err.message || "Failed to remove all guests");
     }
   }, [dispatch, eventId]);
+
+  // Calculate total pages based on total count from backend
+  const totalPages = Math.ceil(totalCount / guestsPerPage);
 
   return (
     <motion.div
@@ -131,7 +147,7 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
               <div className="h-9 w-28 bg-gray-700 animate-pulse rounded"></div>
             }
           >
-            <GuestUpload eventId={eventId} />
+            <GuestUpload eventId={eventId} onSuccess={refreshData} />
           </Suspense>
           <Suspense
             fallback={
@@ -144,13 +160,14 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
               setIsOpen={setIsAddGuestOpen}
               editGuest={editGuest}
               setEditGuest={setEditGuest}
+              onSuccess={refreshData}
             />
           </Suspense>
         </div>
       </motion.div>
 
       <motion.div variants={itemVariants}>
-        <GuestStats guests={rsvpData} />
+        <GuestStats totalCount={totalCount} guestStats={guestStats} />
       </motion.div>
 
       <motion.div variants={itemVariants}>
@@ -178,7 +195,7 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
                   <Button
                     variant="destructive"
                     size="sm"
-                    disabled={rsvpData.length === 0}
+                    disabled={totalCount === 0 || loading}
                     className="bg-red-600 hover:bg-red-700"
                     onClick={() => setOpen(true)}
                   >
@@ -204,31 +221,29 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
                   statusFilter={statusFilter}
                   setStatusFilter={setStatusFilter}
                   eventId={eventId}
-                  pendingGuests={pendingGuests}
+                  onFilterChange={() => setCurrentPage(1)}
+                  pendingGuests={rsvpData.filter(
+                    (guest) => guest.status === "Pending"
+                  )}
                 />
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            {loading ? (
-              <div className="flex justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-              </div>
-            ) : (
-              <GuestList
-                guests={currentGuests}
-                totalGuests={rsvpData.length}
-                filteredCount={rsvpData.length}
-                currentPage={currentPage}
-                setCurrentPage={setCurrentPage}
-                guestsPerPage={guestsPerPage}
-                eventId={eventId}
-                onEdit={(guest) => {
-                  setEditGuest(guest);
-                  setTimeout(() => setIsAddGuestOpen(true), 0);
-                }}
-              />
-            )}
+            <GuestList
+              guests={rsvpData}
+              totalGuests={totalCount}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              totalPages={totalPages}
+              eventId={eventId}
+              onRefresh={refreshData}
+              loading={loading}
+              onEdit={(guest) => {
+                setEditGuest(guest);
+                setTimeout(() => setIsAddGuestOpen(true), 0);
+              }}
+            />
           </CardContent>
         </Card>
       </motion.div>
