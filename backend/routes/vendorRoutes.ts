@@ -18,7 +18,6 @@ import {
 } from "../controllers/vendorController";
 
 const router = Router();
-// router.use(authenticate);
 router.get("/", getVendor);
 router.post("/add", addVendors);
 router.get("/event/:eventId", getVendorsByEvent);
@@ -33,7 +32,7 @@ router.delete("/remove-vendor/:id", removeAddedVendor);
 
 router.post("/send-mail", sendMailToUser);
 
-// New unified contact vendor route (handles both regular mail and negotiation)
+//  contact vendor route (handles both regular mail and negotiation)
 router.post("/send-mail-toVendor", authenticate, contactVendor);
 
 // remove added user for split

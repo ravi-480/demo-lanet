@@ -96,7 +96,6 @@ export const formatEmailTemplate = (
   `;
 };
 
-
 // validate id format
 export const validateIdFormat = (id: string): boolean => {
   return mongoose.Types.ObjectId.isValid(id);

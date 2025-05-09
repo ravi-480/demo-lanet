@@ -19,7 +19,6 @@ import { toast } from "sonner";
 import { AlertCircle, Users, ShoppingBag } from "lucide-react";
 import { getCurrentUser } from "@/store/authSlice";
 
-// Simple user interface with payment status
 interface ExtendedUser {
   _id: string;
   name: string;
@@ -45,7 +44,7 @@ const SplitTabsDialog = ({ users, eventId, onClose }: ExtendedProps) => {
   // Load data on component mount
   useEffect(() => {
     if (eventId) {
-      dispatch(getVendorsByEvent({ eventId}));
+      dispatch(getVendorsByEvent({ eventId }));
       dispatch(getCurrentUser());
     }
   }, [dispatch, eventId]);
@@ -119,8 +118,8 @@ const SplitTabsDialog = ({ users, eventId, onClose }: ExtendedProps) => {
       setLoading(false);
       onClose();
     } catch (err) {
+      console.log(err);
       setLoading(false);
-      toast.error("Failed to send email");
     }
   };
 

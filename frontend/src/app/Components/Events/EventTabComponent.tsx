@@ -152,7 +152,6 @@ const EventTabComponent = memo(() => {
         </motion.div>
       </Tabs>
 
-      {/* Shared animation styles */}
       <style jsx global>{`
         @keyframes fadeIn {
           from {

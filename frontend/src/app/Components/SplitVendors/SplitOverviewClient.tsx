@@ -29,7 +29,6 @@ import {
 } from "@/components/ui/card";
 import ConfirmDialog from "../Shared/ConfirmDialog";
 
-// Define an Error interface to handle API errors
 interface ApiError {
   message?: string;
   toString: () => string;
@@ -187,7 +186,6 @@ const SplitOverviewClient = () => {
     if (id) {
       refreshEventData();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   return (
@@ -231,7 +229,7 @@ const SplitOverviewClient = () => {
             users={event.includedInSplit}
             isLoading={isLoading}
             onEdit={openEditDialog}
-            onDelete={openDeleteDialog} // Trigger delete dialog
+            onDelete={openDeleteDialog}
           />
         ) : (
           <EmptyState

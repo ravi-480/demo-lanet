@@ -29,7 +29,7 @@ const GuestUpload = ({ eventId, onSuccess }: GuestUploadProps) => {
 
     if (!validFileTypes.includes(fileExtension || "")) {
       toast.error("Only xlsx, xls, or csv files are allowed.");
-      e.target.value = ""; // Clear the file input
+      e.target.value = "";
       return;
     }
 
@@ -57,15 +57,14 @@ const GuestUpload = ({ eventId, onSuccess }: GuestUploadProps) => {
         if (fileInput) fileInput.value = "";
       }
     } catch (error: unknown) {
-      const err = error as { message?: string };
-      toast.error(`Upload failed: ${err.message || "Unknown error"}`);
+      console.log(error);
     } finally {
       setIsUploading(false);
     }
   };
 
   return (
-    <motion.div 
+    <motion.div
       className="flex flex-col gap-2 max-w-xs sm:max-w-md"
       whileHover={{ scale: 1.01 }}
       transition={{ duration: 0.2 }}
@@ -91,7 +90,9 @@ const GuestUpload = ({ eventId, onSuccess }: GuestUploadProps) => {
             onClick={handleUpload}
             className="whitespace-nowrap bg-blue-600 hover:bg-blue-700"
           >
-            <Upload className={`h-4 w-4 mr-1 ${isUploading ? "animate-spin" : ""}`} />
+            <Upload
+              className={`h-4 w-4 mr-1 ${isUploading ? "animate-spin" : ""}`}
+            />
             <span>{isUploading ? "Uploading..." : "Upload"}</span>
           </Button>
         </motion.div>

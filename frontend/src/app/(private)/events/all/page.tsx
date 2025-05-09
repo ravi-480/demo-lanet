@@ -1,12 +1,11 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import Link from "next/link";
-import { AppDispatch, RootState } from "@/store/store";
-import { fetchEvents } from "@/store/eventSlice";
+import { RootState } from "@/store/store";
 import { useEventFilter } from "@/hooks/useEventFilter";
 import LoadingState from "@/app/Components/Loading/Loading";
 import EventTabs from "@/app/Components/Events/EventTab";
@@ -16,7 +15,6 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const AllEventsPage = () => {
   const { events, isLoading } = useSelector((state: RootState) => state.event);
-  const dispatch = useDispatch<AppDispatch>();
   const [showFilters, setShowFilters] = React.useState(false);
   const [pageTransition, setPageTransition] = useState(false);
 
@@ -35,8 +33,6 @@ const AllEventsPage = () => {
   } = useEventFilter({});
 
   const router = useRouter();
-
-  
 
   // Custom page change handler with animation
   const handlePageChangeWithAnimation = async (newPage: number) => {
@@ -69,7 +65,7 @@ const AllEventsPage = () => {
       // Calculate which pages to show
       const halfMax = Math.floor(maxDisplayedPages / 2);
       let startPage = Math.max(1, pagination.currentPage - halfMax);
-      let endPage = Math.min(
+      const endPage = Math.min(
         pagination.totalPages,
         startPage + maxDisplayedPages - 1
       );

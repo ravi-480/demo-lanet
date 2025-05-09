@@ -15,7 +15,6 @@ const connectDB = async (retries = 5): Promise<void> => {
       {
         serverSelectionTimeoutMS: 5000,
         maxPoolSize: 10,
-        // Always use TLS for Atlas connections regardless of environment
         tls: true,
         tlsAllowInvalidCertificates: process.env.NODE_ENV !== "production",
       }

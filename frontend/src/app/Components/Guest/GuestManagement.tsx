@@ -1,14 +1,10 @@
 "use client";
 
-import React, { lazy, Suspense, useEffect, useState } from "react";
+import React, { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { Users, RefreshCcw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchGuests,
-  fetchGuestStats,
-  removeAllGuest,
-} from "@/store/rsvpSlice";
+import { fetchGuests, removeAllGuest } from "@/store/rsvpSlice";
 import { AppDispatch, RootState } from "@/store/store";
 import GuestList from "./GuestList";
 import GuestStats from "./GuestStatCard";
@@ -70,14 +66,8 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
     (state: RootState) => state.rsvp
   );
 
-  // Load guests with backend filtering and pagination
-  useEffect(() => {
-    if (eventId) {
-      loadGuests();
-    }
-  }, [eventId, statusFilter, searchFilter, currentPage]);
 
-  const loadGuests = async () => {
+  const loadGuests = useCallback(async () => {
     try {
       const result = await dispatch(
         fetchGuests({
@@ -89,14 +79,14 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
         })
       ).unwrap();
 
-      console.log(result);
 
       setTotalCount(result.totalCount);
     } catch (error) {
+      console.log(error);
     } finally {
       setTimeout(() => setIsLoaded(true), 100);
     }
-  };
+  }, [dispatch, eventId, statusFilter, searchFilter, currentPage]);
 
   const refreshData = async () => {
     setIsRefreshing(true);
@@ -104,12 +94,18 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
     setIsRefreshing(false);
   };
 
-  const RemoveAllGuest = React.useCallback(async () => {
+  useEffect(() => {
+    if (eventId) {
+      loadGuests();
+    }
+  }, [eventId, loadGuests]);
+
+  const RemoveAllGuest = useCallback(async () => {
     try {
       const result = await dispatch(
         removeAllGuest({ id: eventId, query: "guest" })
       ).unwrap();
-
+      await refreshData();
       if (result.preservedVendors && result.preservedVendors.length > 0) {
         setPreservedVendors(result.preservedVendors);
         setShowMinGuestAlert(true);

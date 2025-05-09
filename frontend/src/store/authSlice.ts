@@ -90,7 +90,6 @@ export const loginUser = createAsyncThunk<
   const result = await makeAuthRequest("login", credentials);
 
   if (result.success && result.data) {
-    // Handle nested data structure from API
     const data = result.data.data || result.data;
     const user = data.user;
     const accessToken = data.accessToken;

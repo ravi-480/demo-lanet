@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
-import { AuthenticatedRequest } from "../interfaces/user.interface";
+import { AuthenticatedRequest } from "../Interfaces/user.interface";
 import ApiError from "../utils/ApiError";
 import * as eventService from "../services/eventService";
 
@@ -33,29 +33,21 @@ export const fetchEvents = asyncHandler(
     // Extract query parameters for filtering and pagination
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 5;
-    const tab = req.query.tab as string;  // Changed from 'status' to 'tab'
+    const tab = req.query.tab as string;
     const search = req.query.search as string;
     const date = req.query.date as string;
     const location = req.query.location as string;
 
-  
     // Get events with filters and pagination
-    const { 
-      events, 
-      currentPage, 
-      totalPages, 
-      totalEvents 
-    } = await eventService.getEvents(
-      req.user.id, 
-      { 
-        page, 
-        limit, 
-        tab,  // Changed from 'status' to 'tab'
-        search, 
-        date, 
-        location 
-      }
-    );
+    const { events, currentPage, totalPages, totalEvents } =
+      await eventService.getEvents(req.user.id, {
+        page,
+        limit,
+        tab,
+        search,
+        date,
+        location,
+      });
 
     return res.status(200).json({
       success: true,
@@ -63,7 +55,7 @@ export const fetchEvents = asyncHandler(
       currentPage,
       totalPages,
       totalEvents,
-      limit
+      limit,
     });
   }
 );

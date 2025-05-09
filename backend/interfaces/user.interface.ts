@@ -54,39 +54,6 @@ export interface User {
   user?: string;
 }
 
-export interface IEvent {
-  name: string;
-  date: Date;
-  location: string;
-  description: string;
-  image: string | null;
-  budget: {
-    allocated: number;
-    spent: number;
-  };
-  placeId: number;
-  guestLimit: number;
-  durationInDays: number;
-  noOfGuestAdded: number;
-  includedInSplit: {
-    _id?: string;
-    userId: string;
-    amount: number;
-    status: "pending" | "Paid" | "declined";
-    name: string;
-    email: string;
-    joinedAt?: Date;
-    paymentId?: string | null;
-    paymentTimestamp?: Date | null;
-  }[];
-
-  eventType: string;
-  creator: string;
-
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
 import { Request } from "express";
 
 export interface AuthenticatedRequest extends Request {

@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
-import { IEvent } from "../interfaces/user.interface";
+import { IEvent } from "../Interfaces/event.interface";
 
 export interface EventDocument extends Omit<Document, "id">, IEvent {
   _id: mongoose.Types.ObjectId;

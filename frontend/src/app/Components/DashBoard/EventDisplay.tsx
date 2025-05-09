@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useEventFilter } from "../../../hooks/useEventFilter";
 import EventTabs from "../Events/EventTab";
 import EventCard from "../Events/EventCard";
+import { Button } from "@/components/ui/button";
 
 const EventDisplay = () => {
   const events = useSelector(selectEvents);
@@ -18,13 +19,11 @@ const EventDisplay = () => {
   const error = useSelector(selectEventError);
   const pagination = useSelector(selectPagination);
 
-  // Pass skipInitialFetch: true if events are already loaded
   const { activeTab, setActiveTab } = useEventFilter({
     initialTab: "all",
     skipInitialFetch: events.length > 0,
   });
 
-  // Simple loading state without animations
   if (isLoading) {
     return (
       <div className="bg-gray-900 border border-gray-400 rounded-lg p-4 sm:p-6 mb-6 w-full">
@@ -61,9 +60,9 @@ const EventDisplay = () => {
           <h3 className="text-lg font-medium text-gray-300">
             No events available
           </h3>
-          <p className="text-gray-300 mt-2">
-            Click 'Create New Event' to add events
-          </p>
+          <Link href={"/create-events"}>
+            <Button className="text-gray-300 mt-2">Create New Event</Button>
+          </Link>
         </div>
       ) : (
         <>

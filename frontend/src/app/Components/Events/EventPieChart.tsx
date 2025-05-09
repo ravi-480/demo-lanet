@@ -26,11 +26,9 @@ const MyPieChart = ({ event, guestStats }: MyPieChartProps) => {
     { name: "Remaining", value: remaining > 0 ? remaining : 0 },
   ];
 
-  // Use the stats from API instead of calculating from rsvpData
   const totalGuests = guestStats?.total || 0;
   const confirmedGuests = guestStats?.confirmed || 0;
   const pendingGuests = guestStats?.pending || 0;
-  // If your API also provides declined count, use it. Otherwise, calculate it or set to 0
   const declinedGuests = guestStats?.declined || 0;
 
   let guestData = [

@@ -17,9 +17,6 @@ export const useEventFilter = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFilter, setDateFilter] = useState<string>("");
   const [locationFilter, setLocationFilter] = useState<string>("");
-  const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(
-    null
-  );
 
   const pagination = useSelector(selectPagination);
   const isFirstRun = useRef(true);
@@ -30,10 +27,7 @@ export const useEventFilter = ({
       if (skipInitialFetch) return;
     }
 
-    if (debounceTimeout) {
-      clearTimeout(debounceTimeout);
-    }
-
+    // Clear any existing timeout
     const timeout = setTimeout(() => {
       dispatch(setPage(1));
       dispatch(
@@ -48,14 +42,19 @@ export const useEventFilter = ({
       );
     }, 500);
 
-    setDebounceTimeout(timeout);
-
+    // Cleanup function to clear timeout
     return () => {
-      if (debounceTimeout) {
-        clearTimeout(debounceTimeout);
-      }
+      clearTimeout(timeout);
     };
-  }, [activeTab, searchTerm, dateFilter, locationFilter, dispatch]);
+  }, [
+    activeTab,
+    searchTerm,
+    dateFilter,
+    locationFilter,
+    dispatch,
+    pagination.limit,
+    skipInitialFetch,
+  ]);
 
   const handlePageChange = (newPage: number) => {
     dispatch(setPage(newPage));

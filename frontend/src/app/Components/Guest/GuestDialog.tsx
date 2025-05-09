@@ -102,7 +102,6 @@ const GuestDialog = ({
       setValue("email", values.email);
       setValue("status", values.status);
 
-      // Store original values for comparison
       setOriginalValues(values);
     }
   }, [editGuest, setValue]);
@@ -174,7 +173,7 @@ const GuestDialog = ({
     <Dialog
       open={isOpen}
       onOpenChange={(open) => {
-        if (isSubmitting) return; // Prevent closing while submitting
+        if (isSubmitting) return;
         setIsOpen(open);
         if (!open) {
           setEditGuest(null);

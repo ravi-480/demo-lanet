@@ -3,7 +3,6 @@
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { PlusCircle } from "lucide-react";
-import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

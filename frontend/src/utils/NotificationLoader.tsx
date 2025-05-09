@@ -13,6 +13,7 @@ import { AxiosError } from "axios";
 import { useSocket } from "@/hooks/useSocket";
 import api from "@/utils/api";
 import { setUser } from "../store/authSlice";
+import { INotification } from "@/Interface/interface";
 
 const NotificationLoader = () => {
   const dispatch = useDispatch();
@@ -95,8 +96,8 @@ const NotificationLoader = () => {
         if (!hasFetchedNotificationsRef.current) fetchNotifications();
       };
 
-      const handleNewNotification = (notification: any) => {
-        dispatch(addNotification(notification)); // ✅ Add to list without refetching
+      const handleNewNotification = (notification: INotification) => {
+        dispatch(addNotification(notification));
       };
 
       socket.on("connect", handleConnect);

@@ -26,13 +26,13 @@ const vendorSchema = new Schema(
     pricingUnit: { type: String, required: true },
     category: { type: String, required: true },
     numberOfGuests: { type: Number, default: 0 },
-    minGuestLimit: { type: Number }, // Added this field for minimum guest requirement
+    minGuestLimit: { type: Number },
     addedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    days: { type: Number }, // Added days field for per day pricing
+    days: { type: Number },
   },
   { timestamps: true }
 );

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { AppDispatch } from "@/store/store";
-import { createEvent } from "@/store/eventSlice";
+import { createEvent, fetchById, fetchEvents } from "@/store/eventSlice";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import EventForm from "@/app/Components/Form/EventForm";
@@ -19,11 +19,21 @@ const CreateEventPage = () => {
 
     dispatch(createEvent(formData))
       .unwrap()
-      .then(() => {
+      .then(async () => {
+        await dispatch(
+          fetchEvents({
+            page: 1,
+            limit: 8,
+            tab: "all",
+            search: "",
+            date: "",
+            location: "", 
+          })
+        );
         router.push("/events");
       })
       .catch((error: unknown) => {
-        console.log(error);
+        console.error(error);
       })
       .finally(() => {
         setIsLoading(false);

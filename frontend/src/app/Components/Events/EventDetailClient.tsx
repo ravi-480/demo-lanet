@@ -25,7 +25,7 @@ const EventDetailClient = ({ id }: { id: string }) => {
     if (!hasFetched) {
       dispatch(fetchById(id))
         .then(() => {
-          setTimeout(() => setIsLoading(false), 300); // Add slight delay for smoother transitions
+          setTimeout(() => setIsLoading(false), 300);
         })
         .catch(() => {
           setIsLoading(false);

@@ -7,7 +7,7 @@ import {
   IForgotPasswordRequest,
   IResetPasswordRequest,
   AuthenticatedRequest,
-} from "../interfaces/user.interface";
+} from "../Interfaces/user.interface";
 import User from "../models/UserModel";
 
 export const signup = asyncHandler(async (req: Request, res: Response) => {
@@ -142,7 +142,7 @@ export const forgotPassword = asyncHandler(
     const { email }: IForgotPasswordRequest = req.body;
 
     // Call service to handle the forgot password process
-    const result = await authService.forgotPassword(email);
+    await authService.forgotPassword(email);
 
     res.status(200).json({
       success: true,

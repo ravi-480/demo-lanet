@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { Search, Filter, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,7 +34,6 @@ const GuestFilters = ({
   setSearchFilter,
   statusFilter,
   setStatusFilter,
-  eventId,
   onFilterChange,
   pendingGuests,
 }: GuestFiltersProps) => {
@@ -43,31 +42,38 @@ const GuestFilters = ({
   const [searchTerm, setSearchTerm] = useState(searchFilter);
   const [isInviting, setIsInviting] = useState(false);
 
-  // Debounce function for search
-  const debounce = (func: Function, delay: number) => {
+  // Debounce function for search with proper typing
+  const debounce = <T extends (...args: string[]) => void>(
+    func: T,
+    delay: number
+  ) => {
     let timeoutId: NodeJS.Timeout;
-    return function (...args: any[]) {
+    return (...args: Parameters<T>) => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
-        func.apply(null, args);
+        func(...args);
       }, delay);
     };
   };
 
   // Create debounced search handler
   const debouncedSearch = useCallback(
-    debounce((value: string) => {
+    (value: string) => {
       setSearchFilter(value);
       onFilterChange(); // Reset to first page when filter changes
-    }, 500),
-    [setSearchFilter, onFilterChange]
+    },
+    [setSearchFilter, onFilterChange] // Include onFilterChange here
   );
+
+  const handleDebouncedSearch = useCallback(debounce(debouncedSearch, 500), [
+    debouncedSearch,
+  ]);
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
-    debouncedSearch(value);
+    handleDebouncedSearch(value);
   };
 
   // Handle status filter change
@@ -88,7 +94,9 @@ const GuestFilters = ({
       toast.success("Invitations sent to all pending guests");
     } catch (error: unknown) {
       const err = error as { message?: string };
-      toast.error(`Failed to send invitations: ${err.message || "Unknown error"}`);
+      toast.error(
+        `Failed to send invitations: ${err.message || "Unknown error"}`
+      );
     } finally {
       setIsInviting(false);
     }
@@ -114,18 +122,16 @@ const GuestFilters = ({
       </div>
 
       <div className="flex gap-2">
-        <motion.div
-          whileHover="hover"
-          whileTap="tap"
-          variants={buttonVariants}
-        >
+        <motion.div whileHover="hover" whileTap="tap" variants={buttonVariants}>
           <Button
             size="sm"
             onClick={() => setOpen(true)}
             disabled={pendingGuests.length === 0 || isInviting}
             className="bg-blue-600 hover:bg-blue-700"
           >
-            <Mail className={`mr-1 h-4 w-4 ${isInviting ? "animate-pulse" : ""}`} />
+            <Mail
+              className={`mr-1 h-4 w-4 ${isInviting ? "animate-pulse" : ""}`}
+            />
             <span className="hidden xs:inline">
               {isInviting ? "Sending..." : "Invite All"}
             </span>

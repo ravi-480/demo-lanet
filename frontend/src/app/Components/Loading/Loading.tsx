@@ -5,9 +5,7 @@ interface LoadingStateProps {
   message?: string;
 }
 
-const LoadingState: React.FC<LoadingStateProps> = ({
-  message = "Loading evdfdfdents...",
-}) => {
+const LoadingState: React.FC<LoadingStateProps> = () => {
   return <LoadSpinner />;
 };
 

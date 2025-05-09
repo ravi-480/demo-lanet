@@ -4,7 +4,6 @@ import ApiError from "./ApiError";
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
-
 if (!JWT_SECRET) {
   throw new Error("JWT_SECRET is not defined in environment variables.");
 }
@@ -19,7 +18,6 @@ export const verifyToken = (token: string): DecodedUser | null => {
   try {
     return jwt.verify(token, JWT_SECRET as jwt.Secret) as DecodedUser;
   } catch (error) {
-    console.error("Invalid or expired token:", error);
     throw new ApiError(401, "Invalid or expired token");
   }
 };

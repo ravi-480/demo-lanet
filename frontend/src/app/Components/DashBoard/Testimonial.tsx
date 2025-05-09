@@ -13,7 +13,7 @@ const Testimonials: React.FC = () => {
       setActiveTestimonial((prevIndex) =>
         prevIndex === testimonials2.length - 1 ? 0 : prevIndex + 1
       );
-    }, 5000); // 5 seconds
+    }, 5000);
 
     return () => clearInterval(interval); // Cleanup on unmount
   }, []);

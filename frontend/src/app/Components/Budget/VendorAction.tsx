@@ -88,7 +88,7 @@ const VendorActions = ({ item, onRemove }: VendorActionsProps) => {
           <DropdownMenuItem
             onClick={() => {
               setTimeout(() => {
-                setIsMailDialogOpen(true), 0;
+                setIsMailDialogOpen(true);
               });
             }}
           >

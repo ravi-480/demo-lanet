@@ -221,7 +221,6 @@ export const eventVendorMapping = {
   ],
 };
 
- // Also include common vendor terms
  export const commonTerms = [
   "photographer",
   "catering",

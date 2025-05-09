@@ -72,7 +72,6 @@ const VendorCard = ({
   );
 
   useEffect(() => {
-    // Consolidated validation for all pricing units
     if (localNoOfDay > noOfDay) {
       setError(
         `Cannot book for more than ${noOfDay} day${

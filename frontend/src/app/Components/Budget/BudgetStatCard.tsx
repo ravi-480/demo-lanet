@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/store/store";
-import { adjustEventBudget } from "@/store/eventSlice";
+import { adjustEventBudget, fetchById } from "@/store/eventSlice";
 import { toast } from "sonner";
 
 interface StatCardProps {
@@ -95,11 +95,11 @@ const BudgetStats = ({ eventBudget }: { eventBudget: IEvent | null }) => {
       await dispatch(
         adjustEventBudget({ eventId: eventBudget._id, adjustAmount })
       ).unwrap();
-
+      await dispatch(fetchById(eventBudget._id));
       setIsDialogOpen(false);
       setAdjustAmount(0);
-    } catch (error: unknown) {
-      // toast.error(` ${error} `);
+    } catch (e: unknown) {
+      console.log(e);
     }
   };
 

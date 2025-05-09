@@ -13,7 +13,6 @@ import {
   sendBudgetWarningEmail,
 } from "../utils/emailTemplate";
 import User from "../models/UserModel";
-import mongoose from "mongoose";
 import { getIO } from "../utils/socketUtils";
 import { validateIdFormat } from "../utils/helper";
 const axios = require("axios");
@@ -212,7 +211,6 @@ export const addVendors = asyncHandler(async (req: Request, res: Response) => {
       }
     }
   } catch (error) {
-    // Log any errors but don't affect the response
     console.log("Error processing budget alerts:", error);
   }
 });
@@ -278,7 +276,6 @@ export const getVendorsByEvent = asyncHandler(
         },
       });
     } catch (error) {
-      console.error("Error fetching vendors:", error);
       res.status(500).json({ message: "Failed to fetch vendors" });
     }
   }

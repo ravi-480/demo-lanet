@@ -4,7 +4,6 @@ import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import api from "@/utils/api";
 
-// UI Components
 import {
   Card,
   CardContent,
@@ -18,7 +17,6 @@ import { Loader2, CheckCircle, XCircle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import axios from "axios";
 
-// Define proper types instead of using 'any'
 interface VendorData {
   id: string;
   title: string;

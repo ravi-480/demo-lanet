@@ -1,17 +1,11 @@
 import Notification from "../models/notificationModel";
 import Event from "../models/eventModel";
 import ApiError from "../utils/ApiError";
+import { INotification, NotificationServiceData } from "../Interfaces/notification.interface";
 
-interface NotificationData {
-  eventId: string;
-  senderId: string;
-  recipientId?: string;
-  message: string;
-  type: string;
-  metadata: any;
-}
-
-export const createNotificationService = async (data: NotificationData) => {
+export const createNotificationService = async (
+  data: NotificationServiceData
+): Promise<INotification> => {
   const { eventId, senderId, recipientId, message, type, metadata } = data;
 
   let targetUserId = recipientId;
@@ -41,8 +35,9 @@ export const createNotificationService = async (data: NotificationData) => {
   return notification;
 };
 
-
-export const markAllReadService = async (userId: string) => {
+export const markAllReadService = async (
+  userId: string
+): Promise<{ success: boolean }> => {
   if (!userId) {
     throw new ApiError(400, "User ID is required");
   }
@@ -55,8 +50,10 @@ export const markAllReadService = async (userId: string) => {
   return { success: true };
 };
 
-
-export const getNotificationsForUserService = async (userId: string) => {
+export const getNotificationsForUserService = async (
+  userId: string,
+  limit: number = 20
+): Promise<INotification[]> => {
   if (!userId) {
     throw new ApiError(400, "User ID is required");
   }
@@ -66,5 +63,5 @@ export const getNotificationsForUserService = async (userId: string) => {
     status: "unread",
   })
     .sort({ createdAt: -1 })
-    .limit(20);
+    .limit(limit);
 };

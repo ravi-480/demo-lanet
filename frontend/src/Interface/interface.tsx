@@ -1,5 +1,4 @@
 import { EventType } from "react-hook-form";
-import GuestStats from "../app/Components/Guest/GuestStatCard";
 
 export interface IEvent {
   _id: string;
@@ -417,11 +416,11 @@ export interface GuestStat {
   total: number;
   confirmed: number;
   pending: number;
-  declined:number
+  declined: number;
 }
 export interface MyPieChartProps {
   event: IEvent;
-  guestStats: GuestStat; // ← camelCase
+  guestStats: GuestStat | null;
 }
 
 export interface PayloadItem {

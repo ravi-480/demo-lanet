@@ -30,7 +30,6 @@ export const calculateTotalEstimate = (
   switch (priceUnit) {
     case "per plate":
       // For catering, multiply by guests and number of days
-      // Most events serve food each day of the event
       return price * guestCount * noOfDay;
 
     case "per hour":
@@ -46,7 +45,6 @@ export const calculateTotalEstimate = (
       if (
         ["decoration", "lighting/sound"].includes(category?.toLowerCase() || "")
       ) {
-        // These services typically need setup once but might have maintenance costs
         // Base price + 30% additional for each extra day
         return price * (1 + (noOfDay - 1) * 0.3);
       }

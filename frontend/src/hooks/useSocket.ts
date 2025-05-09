@@ -53,10 +53,7 @@ export const useSocket = () => {
       socket.on("new-notification", (notification: INotification) => {
         console.log("New notification received:", notification);
         if (notification && notification._id) {
-          // Validate notification
           dispatch(addNotification(notification));
-        } else {
-          console.error("Received invalid notification:", notification);
         }
       });
 

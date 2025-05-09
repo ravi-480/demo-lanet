@@ -1,14 +1,5 @@
-import mongoose, { Schema,Document } from "mongoose";
-
-export interface INotification extends Document {
-  userId: string;
-  eventId: string;
-  message: string;
-  type: "response" | "payment" | "reminder" | "message";
-  status: "read" | "unread";
-  metadata: Record<string, any>;
-  createdAt: Date;
-}
+import mongoose, { Schema } from "mongoose";
+import { INotification } from "../Interfaces/notification.interface";
 
 const NotificationSchema: Schema = new Schema({
   userId: {
@@ -28,7 +19,7 @@ const NotificationSchema: Schema = new Schema({
   type: {
     type: String,
     required: true,
-    enum: ["response", "payment", "reminder", "message","warning"],
+    enum: ["response", "payment", "reminder", "message", "warning"],
   },
   status: {
     type: String,

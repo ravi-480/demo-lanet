@@ -8,10 +8,10 @@ import { logout } from "@/store/authSlice";
 import { useEffect, useState } from "react";
 import ConfirmDialog from "../../Shared/ConfirmDialog";
 import { useRouter } from "next/navigation";
-import { AppDispatch } from "@/store/store"; // Import AppDispatch type
+import { AppDispatch } from "@/store/store";
 
 export const AuthButtons = () => {
-  const dispatch = useDispatch<AppDispatch>(); // Type dispatch properly
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const { user, isAuthenticated } = useSelector(
     (state: RootState) => state.auth
@@ -27,9 +27,7 @@ export const AuthButtons = () => {
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
-      // Dispatch logout action with proper typing
       await dispatch(logout());
-      // Navigate to home page instead of reload
       router.push("/");
     } catch (error) {
       console.log("Logout failed:", error);

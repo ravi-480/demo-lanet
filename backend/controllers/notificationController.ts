@@ -4,9 +4,17 @@ import Event from "../models/eventModel";
 import Notification from "../models/notificationModel";
 import ApiError from "../utils/ApiError";
 import { getIO } from "../utils/socketUtils";
+import {
+  CreateNotificationDto,
+  MarkNotificationsDto,
+  NotificationResponseDto,
+} from "../Interfaces/notification.interface";
 
 export const createNewNotification = asyncHandler(
-  async (req: Request, res: Response): Promise<any> => {
+  async (
+    req: Request<{}, {}, CreateNotificationDto>,
+    res: Response<NotificationResponseDto>
+  ): Promise<any> => {
     const { eventId, senderId, recipientId, message, type, metadata } =
       req.body;
 
@@ -37,7 +45,10 @@ export const createNewNotification = asyncHandler(
 );
 
 export const markAllRead = asyncHandler(
-  async (req: Request, res: Response): Promise<any> => {
+  async (
+    req: Request<{}, {}, MarkNotificationsDto>,
+    res: Response<NotificationResponseDto>
+  ): Promise<any> => {
     const { userId } = req.body;
     if (!userId) {
       throw new ApiError(400, "User ID is required");
@@ -51,14 +62,17 @@ export const markAllRead = asyncHandler(
     io.to(`user:${userId}`).emit("notifications-marked-read");
 
     return res.status(200).json({
-      status: "success",
+      success: true,
       message: "All notification marked as Read successfully",
     });
   }
 );
 
 export const getNotificationForUser = asyncHandler(
-  async (req: Request, res: Response): Promise<any> => {
+  async (
+    req: Request,
+    res: Response<NotificationResponseDto>
+  ): Promise<any> => {
     const userId = req.query.userId as string;
 
     if (!userId) {

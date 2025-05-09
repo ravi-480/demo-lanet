@@ -1,24 +1,43 @@
-import mongoose from "mongoose";
 import XLSX from "xlsx";
 import Guest from "../models/rsvpSchema";
 import Event from "../models/eventModel";
 import Vendor from "../models/vendorModel";
 import { sendEmail } from "./emailService";
 import { createNotification, formatEmailTemplate } from "../utils/helper";
+import ApiError from "../utils/ApiError";
+import {
+  IGuest,
+  GuestDocument,
+  GuestLimitCheckResult,
+  VendorPriceUpdateResult,
+  AddSingleGuestInput,
+  AddSingleGuestResponse,
+  RemoveGuestResponse,
+  ProcessGuestsFromFileResponse,
+  RemoveAllByTypeResponse,
+  GuestValidationResponse,
+  SubmitGuestResponseResult,
+  UpdateGuestInfoInput,
+  GuestWithEventData,
+  GetUserByEventIdQuery,
+  GetUserByEventIdResponse,
+} from "../Interfaces/rsvp.interface";
 
-// Reusable function to get event by ID
+//  Get event by ID
+
 export const getEventById = async (eventId: string) => {
   return await Event.findById(eventId);
 };
 
-// Reusable function to check if adding guests would exceed the limit
+// Check if adding guests would exceed the limit
+
 export const checkGuestLimit = async (
   eventId: string,
   additionalGuestCount: number
-) => {
+): Promise<GuestLimitCheckResult> => {
   const event = await getEventById(eventId);
   if (!event) {
-    throw new Error("Event not found");
+    throw new ApiError(404, "Event not found");
   }
 
   const currentGuestCount = event.noOfGuestAdded || 0;
@@ -44,12 +63,12 @@ export const checkGuestLimit = async (
   };
 };
 
-// Reusable function to handle vendor price updates for guest count changes
+// Handle vendor price updates for guest count changes
 export const updateVendorPrices = async (
   eventId: string,
   guestCountChange: number,
   currentGuestCount: number
-) => {
+): Promise<VendorPriceUpdateResult> => {
   const vendors = await Vendor.find({
     event: eventId,
     pricingUnit: "per plate",
@@ -69,7 +88,7 @@ export const updateVendorPrices = async (
       currentGuestCount < vendor.minGuestLimit
     ) {
       violatingVendors.push({
-        id: vendor._id,
+        id: vendor._id.toString(),
         title: vendor.title,
         minGuestLimit: vendor.minGuestLimit,
       });
@@ -91,7 +110,7 @@ export const updateVendorPrices = async (
     totalCostChange += priceChange;
 
     updatedVendors.push({
-      id: vendor._id,
+      id: vendor._id.toString(),
       title: vendor.title,
       priceChange,
       newPrice,
@@ -105,11 +124,12 @@ export const updateVendorPrices = async (
   };
 };
 
-// Reusable function to update event budget
+// Update event budget
+
 export const updateEventBudget = async (
   eventId: string,
   costChange: number
-) => {
+): Promise<number | undefined> => {
   if (costChange === 0) return;
 
   const event = await getEventById(eventId);
@@ -128,17 +148,18 @@ export const updateEventBudget = async (
 };
 
 // Process guests from an Excel file
+
 export const processGuestsFromFile = async (
   eventId: string,
   fileBuffer: Buffer
-) => {
+): Promise<ProcessGuestsFromFileResponse> => {
   // Process the Excel file
   const workBook = XLSX.read(fileBuffer, { type: "buffer" });
   const sheet = workBook.Sheets[workBook.SheetNames[0]];
   const guests = XLSX.utils.sheet_to_json(sheet);
 
   if (!Array.isArray(guests) || guests.length === 0) {
-    throw new Error("No data found in file");
+    throw new ApiError(400, "No data found in file");
   }
 
   // Get existing guests count
@@ -148,7 +169,7 @@ export const processGuestsFromFile = async (
   );
 
   // Calculate potential new guests (excluding duplicates)
-  const newGuestsList = [];
+  const newGuestsList: IGuest[] = [];
   let duplicateCount = 0;
 
   for (const guest of guests) {
@@ -175,7 +196,8 @@ export const processGuestsFromFile = async (
   const limitCheck = await checkGuestLimit(eventId, newGuestsList.length);
 
   if (limitCheck.exceedsLimit) {
-    throw new Error(
+    throw new ApiError(
+      400,
       `Guest limit exceeded. Your limit is ${limitCheck.limit}, and this upload would bring your total to ${limitCheck.potentialTotal}. Please reduce your guest list and try again.`
     );
   }
@@ -212,56 +234,119 @@ export const processGuestsFromFile = async (
 };
 
 // Get all guests by event ID
+
 export const getGuestsByEventId = async (
-  eventId: string, 
-  search?: string,
-  status?: string
-) => {
+  eventId: string,
+  query: GetUserByEventIdQuery
+): Promise<GetUserByEventIdResponse> => {
+  const { search, status, page = "1", limit = "10" } = query;
+
+  // Parse pagination parameters
+  const pageNum = parseInt(page) || 1;
+  const limitNum = parseInt(limit) || 10;
+  const skip = (pageNum - 1) * limitNum;
+
   // Build the filter object
   const filter: any = { eventId };
-  
-  // Add status filter if provided
-  if (status && status !== 'all') {
+
+  // Add status filter if provided and not 'all'
+  if (status && status !== "all") {
     filter.status = status;
   }
-  
+
   // Add search filter if provided
-  if (search) {
-    const searchRegex = new RegExp(search, 'i');
-    filter.$or = [
-      { name: searchRegex },
-      { email: searchRegex }
-    ];
+  if (search && typeof search === "string") {
+    const searchRegex = new RegExp(search, "i");
+    filter.$or = [{ name: searchRegex }, { email: searchRegex }];
   }
 
-  const rsvpList = await Guest.find(filter);
-  return rsvpList;
+  // Get counts for different statuses
+  const [total, confirmed, pending, declined] = await Promise.all([
+    Guest.countDocuments({ eventId }),
+    Guest.countDocuments({ eventId, status: "Confirmed" }),
+    Guest.countDocuments({ eventId, status: "Pending" }),
+    Guest.countDocuments({ eventId, status: "Declined" }),
+  ]);
+
+  console.log(total);
+
+  // If only stats requested, return just the stats
+  if (query.onlyStats === "true") {
+    console.log(total);
+
+    return {
+      success: true,
+      message: "Stats fetched successfully",
+      total,
+      confirmed,
+      pending,
+      declined,
+      rsvpList: [],
+      pagination: {
+        currentPage: pageNum,
+        totalPages: Math.ceil(total / limitNum),
+        limit: limitNum,
+      },
+    };
+  }
+
+  // Get paginated list of guests
+  const rsvpList = await Guest.find(filter)
+    .sort({ createdAt: -1 }) // Sort by creation date, newest first
+    .skip(skip)
+    .limit(limitNum);
+
+  return {
+    success: true,
+    message: "Guests fetched successfully",
+    rsvpList,
+    total,
+    confirmed,
+    pending,
+    declined,
+    pagination: {
+      currentPage: pageNum,
+      totalPages: Math.ceil(total / limitNum),
+      limit: limitNum,
+    },
+  };
 };
 
-// Add a single guest
-export const addSingleGuestToEvent = async (guestData: any) => {
+// Add a single guest to an event
+
+export const addSingleGuestToEvent = async (
+  guestData: AddSingleGuestInput
+): Promise<AddSingleGuestResponse> => {
   const { eventId } = guestData;
 
   const existingGuest = await Guest.findOne({
     eventId,
-    email: guestData.email,
+    email: guestData.email.toLowerCase(),
   });
 
   if (existingGuest) {
-    throw new Error("A guest with this email is already added to the event.");
+    throw new ApiError(
+      400,
+      "A guest with this email is already added to the event."
+    );
   }
 
   // Check if adding this guest would exceed the limit
   const limitCheck = await checkGuestLimit(eventId, 1);
 
   if (limitCheck.exceedsLimit) {
-    throw new Error(
+    throw new ApiError(
+      400,
       `Guest limit exceeded. Your limit is ${limitCheck.limit}, and adding this guest would bring your total to ${limitCheck.potentialTotal}.`
     );
   }
 
   // Create the guest
-  const guest = await Guest.create(guestData);
+  const guest = await Guest.create({
+    ...guestData,
+    email: guestData.email.toLowerCase(),
+    status: guestData.status || "Pending",
+  });
 
   // Update event guest count
   await Event.findByIdAndUpdate(eventId, {
@@ -290,15 +375,18 @@ export const addSingleGuestToEvent = async (guestData: any) => {
 };
 
 // Remove a single guest
-export const removeGuestById = async (guestId: string) => {
+
+export const removeGuestById = async (
+  guestId: string
+): Promise<RemoveGuestResponse> => {
   const guest = await Guest.findById(guestId);
   if (!guest) {
-    throw new Error("Guest not found");
+    throw new ApiError(404, "Guest not found");
   }
 
   const event = await getEventById(guest.eventId);
   if (!event) {
-    throw new Error("Associated event not found");
+    throw new ApiError(404, "Associated event not found");
   }
 
   const updatedGuestCount = (event.noOfGuestAdded || 0) - 1;
@@ -321,21 +409,25 @@ export const removeGuestById = async (guestId: string) => {
   }
 
   return {
-    violatingVendors,
+    violatingVendors:
+      violatingVendors.length > 0 ? violatingVendors : undefined,
     budgetUpdated: totalCostChange < 0,
     budgetReduction: Math.abs(totalCostChange),
   };
 };
 
-// Remove all guests or vendors
-export const removeAllByType = async (id: string, type: string) => {
+//  Remove all guests or vendors
+
+export const removeAllByType = async (
+  id: string,
+  type: string
+): Promise<RemoveAllByTypeResponse> => {
   if (type === "guest") {
     // Get event details first
     const event = await getEventById(id);
     if (!event) {
-      throw new Error("Event not found");
+      throw new ApiError(404, "Event not found");
     }
-
 
     // Get all catering vendors
     const allCateringVendors = await Vendor.find({
@@ -371,7 +463,7 @@ export const removeAllByType = async (id: string, type: string) => {
         });
 
         preservedVendors.push({
-          id: vendor._id,
+          id: vendor._id.toString(),
           title: vendor.title,
           minGuestLimit,
           adjustedPrice: vendor.price - priceReduction,
@@ -396,7 +488,8 @@ export const removeAllByType = async (id: string, type: string) => {
     }
 
     return {
-      preservedVendors,
+      preservedVendors:
+        preservedVendors.length > 0 ? preservedVendors : undefined,
       budgetUpdated: totalBudgetReduction > 0,
       budgetReduction: totalBudgetReduction,
     };
@@ -406,7 +499,7 @@ export const removeAllByType = async (id: string, type: string) => {
     // Get event details first
     const event = await getEventById(id);
     if (!event) {
-      throw new Error("Event not found");
+      throw new ApiError(404, "Event not found");
     }
 
     // Get the total vendor costs before deletion
@@ -430,15 +523,16 @@ export const removeAllByType = async (id: string, type: string) => {
     };
   }
 
-  throw new Error("Invalid type. Must be 'guest' or 'vendor'");
+  throw new ApiError(400, "Invalid type. Must be 'guest' or 'vendor'");
 };
 
 // Update guest information
+
 export const updateGuestInfo = async (
   eventId: string,
   guestId: string,
-  updateData: { name: string; email: string; status: string }
-) => {
+  updateData: UpdateGuestInfoInput
+): Promise<GuestDocument> => {
   const updatedGuest = await Guest.findOneAndUpdate(
     { _id: guestId, eventId },
     updateData,
@@ -446,18 +540,19 @@ export const updateGuestInfo = async (
   );
 
   if (!updatedGuest) {
-    throw new Error("Guest not found");
+    throw new ApiError(404, "Guest not found");
   }
 
   return updatedGuest;
 };
 
-// Reusable function to send emails to guests
+// Send emails to guests
+
 export const sendEmailToGuests = async (
-  guests: any[],
+  guests: GuestWithEventData[],
   event: any,
   isReminder = false
-) => {
+): Promise<void> => {
   // Send emails in batches to avoid overwhelming the email service
   const batchSize = 10;
   const emailPromises = [];
@@ -483,11 +578,15 @@ export const sendEmailToGuests = async (
     }
   }
 
-  return Promise.all(emailPromises.flat());
+  await Promise.all(emailPromises.flat());
 };
 
 // Validate guest URL
-export const validateGuestURL = async (eventId: string, guestId: string) => {
+
+export const validateGuestURL = async (
+  eventId: string,
+  guestId: string
+): Promise<GuestValidationResponse> => {
   // Fetch both event and guest in parallel
   const [event, guest] = await Promise.all([
     getEventById(eventId),
@@ -495,7 +594,7 @@ export const validateGuestURL = async (eventId: string, guestId: string) => {
   ]);
 
   if (!event || !guest) {
-    throw new Error("Invalid RSVP link");
+    throw new ApiError(404, "Invalid RSVP link");
   }
 
   return {
@@ -510,14 +609,15 @@ export const validateGuestURL = async (eventId: string, guestId: string) => {
 };
 
 // Submit guest RSVP response
+
 export const submitGuestResponse = async (
   guestId: string,
   eventId: string,
   attending: boolean
-) => {
+): Promise<SubmitGuestResponseResult> => {
   const guest = await Guest.findById(guestId);
   if (!guest) {
-    throw new Error("Guest not found");
+    throw new ApiError(404, "Guest not found");
   }
 
   // Update guest status

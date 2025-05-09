@@ -108,8 +108,14 @@ export const fetchGuests = createAsyncThunk<
             response.data.totalCount || response.data.rsvpList?.length || 0,
         },
       };
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data || error.message);
+    } catch (error: unknown) {
+      return rejectWithValue(
+        error instanceof AxiosError
+          ? error.response?.data
+          : error instanceof Error
+          ? error.message
+          : "Unknown error"
+      );
     }
   }
 );
@@ -122,8 +128,14 @@ export const fetchGuestStats = createAsyncThunk<GuestStats, string>(
     try {
       const response = await api.get(`/guest/${eventId}?onlyStats=true`);
       return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data || error.message);
+    } catch (error: unknown) {
+      return rejectWithValue(
+        error instanceof AxiosError
+          ? error.response?.data
+          : error instanceof Error
+          ? error.message
+          : "Unknown error"
+      );
     }
   }
 );
@@ -246,9 +258,18 @@ export const sendInviteAll = createAsyncThunk(
 // send reminder to pending guest
 export const sendReminder = createAsyncThunk(
   "rsvp/sendReminder",
-  async (data: { eventId: string; guestId: string }, { rejectWithValue }) => {
+  async (
+    guest: {
+      _id: string;
+      name: string;
+      email: string;
+      status: string;
+      eventId: string;
+    },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await api.post("/guest/sendReminder", data);
+      const response = await api.post("/guest/sendReminder", guest);
       return response.data;
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
@@ -260,7 +281,6 @@ export const sendReminder = createAsyncThunk(
     }
   }
 );
-
 const rsvpSlice = createSlice({
   name: "rsvp",
   initialState,
@@ -314,10 +334,8 @@ const rsvpSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(addSingleGuest.fulfilled, (state, action) => {
+      .addCase(addSingleGuest.fulfilled, (state) => {
         state.loading = false;
-        // Don't modify state here - let the component refresh the data
-        // to get accurate pagination information from the server
       })
       .addCase(addSingleGuest.rejected, (state, action) => {
         state.loading = false;
@@ -331,10 +349,8 @@ const rsvpSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(removeSingleGuest.fulfilled, (state, action) => {
+      .addCase(removeSingleGuest.fulfilled, (state) => {
         state.loading = false;
-        // Don't modify the state here - let the component refresh via fetchGuests
-        // to get accurate pagination information from the server
       })
       .addCase(removeSingleGuest.rejected, (state, action) => {
         state.loading = false;
@@ -401,6 +417,8 @@ const rsvpSlice = createSlice({
           (action.payload as string) || "Failed to remove all guests";
       })
       .addCase(fetchGuestStats.fulfilled, (state, action) => {
+        console.log(action);
+
         state.guestStats = action.payload;
       });
   },

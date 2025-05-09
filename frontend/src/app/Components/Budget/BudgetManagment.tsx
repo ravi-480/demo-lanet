@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Link from "next/link";
 import {
@@ -39,23 +39,14 @@ const BudgetManagement = ({ eventId }: { eventId: string }) => {
     "lowToHigh" | "highToLow"
   >("highToLow");
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(8);
-
+  const limit = 8;
   const event = useSelector(singleEvent);
   const { items, pagination, status } = useSelector(
     (state: RootState) => state.vendors
   );
 
-  // Load vendors with filters when component mounts or filters change
-  useEffect(() => {
-    if (eventId) {
-      dispatch(fetchById(eventId));
-      loadVendors();
-    }
-  }, [dispatch, eventId, searchFilter, priceSortOrder, page, limit]);
-
   // Function to load vendors with current filters
-  const loadVendors = () => {
+  const loadVendors = useCallback(() => {
     dispatch(
       getVendorsByEvent({
         eventId,
@@ -65,7 +56,15 @@ const BudgetManagement = ({ eventId }: { eventId: string }) => {
         limit,
       })
     );
-  };
+  }, [dispatch, eventId, searchFilter, priceSortOrder, page, limit]);
+
+  // Load vendors with filters when component mounts or filters change
+  useEffect(() => {
+    if (eventId) {
+      dispatch(fetchById(eventId));
+      loadVendors();
+    }
+  }, [dispatch, eventId, limit, loadVendors]);
 
   // Handle search filter change with debounce (handled in BudgetFilters component)
   const handleSearchChange = (value: string) => {

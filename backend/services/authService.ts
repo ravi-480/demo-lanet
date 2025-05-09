@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import crypto from "crypto";
-  
+
 import User from "../models/UserModel";
 import ApiError from "../utils/ApiError";
 import jwt from "jsonwebtoken";
@@ -11,10 +11,10 @@ import {
   ILoginRequest,
   IAuthResponse,
   ISignupResponse,
-} from "../interfaces/user.interface";
+} from "../Interfaces/user.interface";
 import { sendForgotPasswordEmail } from "../utils/emailTemplate";
 
-// Environment variables with fallbacks
+// Environment variables
 const JWT_ACCESS_SECRET = process.env.JWT_SECRET as string;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as string;
 const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY as string;
@@ -67,7 +67,6 @@ export const signup = async (
 };
 
 // login user
-
 export const login = async (
   loginData: ILoginRequest
 ): Promise<IAuthResponse> => {

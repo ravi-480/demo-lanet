@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 import bcrypt from "bcryptjs";
-import { IUser } from "../interfaces/user.interface";
+import { IUser } from "../Interfaces/user.interface";
 
 export interface UserDocument extends Omit<Document, "id">, IUser {
   _id: mongoose.Types.ObjectId;
@@ -35,7 +35,7 @@ const userSchema = new Schema<UserDocument>(
     },
     refreshToken: {
       type: String,
-      select: false, // Keep it private by default
+      select: false,
     },
     resetPasswordToken: {
       type: String,
