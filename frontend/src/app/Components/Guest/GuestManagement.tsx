@@ -66,7 +66,6 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
     (state: RootState) => state.rsvp
   );
 
-
   const loadGuests = useCallback(async () => {
     try {
       const result = await dispatch(
@@ -78,7 +77,7 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
           limit: guestsPerPage,
         })
       ).unwrap();
-
+      console.log(result);
 
       setTotalCount(result.totalCount);
     } catch (error) {
@@ -118,9 +117,11 @@ const GuestManagement = ({ eventId }: { eventId: string }) => {
       toast.error(err.message || "Failed to remove all guests");
     }
   }, [dispatch, eventId]);
+  console.log(totalCount);
 
   // Calculate total pages based on total count from backend
   const totalPages = Math.ceil(totalCount / guestsPerPage);
+  console.log(totalPages);
 
   return (
     <motion.div

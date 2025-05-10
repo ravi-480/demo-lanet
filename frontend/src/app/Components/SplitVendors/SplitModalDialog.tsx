@@ -367,10 +367,10 @@ const SplitTabsDialog = ({ users, eventId, onClose }: ExtendedProps) => {
                 </Button>
                 <Button
                   onClick={handleSendRequest}
-                  disabled={isCustomInvalid || vendors.length === 0}
-                  className="flex-1 bg-red-600 hover:bg-red-700 h-9 text-sm"
+                  disabled={loading || isCustomInvalid}
+                  className="flex-1 h-9 text-sm bg-red-600 hover:bg-red-500 text-white"
                 >
-                  Confirm
+                  {loading ? "Sending..." : "Confirm & Send"}
                 </Button>
               </div>
             </div>

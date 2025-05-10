@@ -50,7 +50,7 @@ const Header = () => {
   return (
     <>
       {!hideNavbarRoutes.includes(pathname) && (
-        <header className="w-full sticky top-0 h-16 z-70 shadow-sm bg-sky-950">
+        <header className="w-full sticky top-0 h-16 z-70 shadow-sm bg-[#0B192C]">
           <div className="container mx-auto px-4 md:px-6 lg:px-8 h-full flex items-center justify-between">
             <Link href="/" className="flex items-center">
               <Calendar className="h-6 w-6 text-primary-500 mr-2" />

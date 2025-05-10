@@ -67,6 +67,7 @@ const GuestListComponent = ({
       }
     } catch (error: unknown) {
       const err = error as { message?: string };
+      console.log(err);
     }
   };
 

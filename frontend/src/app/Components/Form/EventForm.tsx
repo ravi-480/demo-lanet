@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 
 interface EventFormProps {
-  initialData?: Partial<IEvent>;
+  initialData?: Partial<IEvent> ;
   onSubmit: (data: FormData) => void;
   isEditing?: boolean;
   isLoading?: boolean;

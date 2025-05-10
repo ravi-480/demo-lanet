@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
-import { fetchById, updateEvent } from "@/store/eventSlice";
+import { fetchById, fetchEvents, updateEvent } from "@/store/eventSlice";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import EventForm from "@/app/Components/Form/EventForm";
@@ -28,7 +28,17 @@ const EditEventPage = () => {
 
     dispatch(updateEvent({ id, formData }))
       .unwrap()
-      .then(() => {
+      .then(async () => {
+        await dispatch(
+          fetchEvents({
+            page: 1,
+            limit: 8,
+            tab: "all",
+            search: "",
+            date: "",
+            location: "",
+          })
+        );
         router.push("/events");
       })
       .catch((error: unknown) => {

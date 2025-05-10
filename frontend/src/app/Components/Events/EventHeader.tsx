@@ -6,7 +6,7 @@ import { getEventStatus, getStatusColor } from "@/utils/helper";
 import Link from "next/link";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/store/store";
-import { deleteEvent } from "@/store/eventSlice";
+import { deleteEvent, fetchEvents } from "@/store/eventSlice";
 import { useRouter } from "next/navigation";
 import { useState, useCallback } from "react";
 import { formatFullDateWithTime } from "@/StaticData/Static";
@@ -18,12 +18,25 @@ const EventHeader = ({ event }: { event: IEvent }) => {
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
-  const handleDelete = useCallback(() => {
-    dispatch(deleteEvent(event._id))
-      .unwrap()
-      .then(() => {
-        router.push("/events");
-      });
+  const handleDelete = useCallback(async () => {
+    try {
+      await dispatch(deleteEvent(event._id)).unwrap();
+
+      await dispatch(
+        fetchEvents({
+          page: 1,
+          limit: 8,
+          tab: "all",
+          search: "",
+          date: "",
+          location: "",
+        })
+      ).unwrap();
+
+      router.push("/events");
+    } catch (error) {
+      console.log(error);
+    }
   }, [dispatch, event._id, router]);
 
   const status = getEventStatus(event.date);
@@ -107,7 +120,7 @@ const EventHeader = ({ event }: { event: IEvent }) => {
               className="text-cyan-400"
               aria-hidden="true"
             />
-            {event.location}, 123 Beach Road
+            {event.location}
           </motion.p>
 
           <motion.div className="mt-2 flex gap-2" variants={buttonVariants}>

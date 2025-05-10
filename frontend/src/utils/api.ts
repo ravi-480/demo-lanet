@@ -107,7 +107,6 @@ api.interceptors.response.use(
         error.response?.data?.message ||
         error.message ||
         "Something went wrong";
-      console.log(error);
 
       toast.error(message);
     }

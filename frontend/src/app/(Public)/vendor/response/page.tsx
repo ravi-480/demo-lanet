@@ -89,13 +89,21 @@ const VendorResponsePage = () => {
         finalPrice = negotiatedPrice;
       }
 
-      await api.post("/vendors/response", {
-        vendorId,
-        eventId,
-        userId,
-        response: action,
-        finalPrice,
-      });
+      await api.post(
+        "/vendors/response",
+        {
+          vendorId,
+          eventId,
+          userId,
+          response: action,
+          finalPrice,
+        },
+        {
+          headers: {
+            "x-skip-success-toast": "true",
+          },
+        }
+      );
 
       setResponseStatus("success");
       toast.success(

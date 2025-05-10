@@ -63,6 +63,7 @@ export const formatDateForInput = (dateString?: string | Date): string => {
     return iso.slice(0, 16);
   } catch (e) {
     console.log(e);
+
     return "";
   }
 };
@@ -107,7 +108,6 @@ export const filterPastedLetters = (
     e.preventDefault();
   }
 };
-
 
 // event color based on status
 

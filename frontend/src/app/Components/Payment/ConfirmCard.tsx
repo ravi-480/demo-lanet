@@ -138,7 +138,6 @@ const ConfirmCard = ({ eventId, userId }: Props) => {
       .unwrap()
       .then((data) => {
         if (!isRazorpayReady) {
-          console.log("Razorpay is not loaded");
           alert("Razorpay is still loading. Please try again in a moment.");
           return;
         }
@@ -146,18 +145,11 @@ const ConfirmCard = ({ eventId, userId }: Props) => {
         // Make sure we have the correct key
         const key = process.env.NEXT_PUBLIC_RAZORPAY_KEY;
         if (!key) {
-          console.log("Razorpay key not found");
           alert("Payment system configuration error. Please contact support.");
           return;
         }
 
-        console.log("Opening Razorpay with options:", {
-          key,
-          amount: data.amount,
-          currency: currency,
-          orderId: data.id,
-        });
-
+       
         const options = {
           key: key,
           amount: data.amount, // amount in smallest currency unit (paise)
@@ -166,7 +158,6 @@ const ConfirmCard = ({ eventId, userId }: Props) => {
           description: `Payment for ${eventId}`,
           order_id: data.id,
           handler: function (response: RazorpaySuccessResponse) {
-            console.log("Payment success, verifying...", response);
             // Handle the success callback
             dispatch(
               verifyPayment({
@@ -186,7 +177,6 @@ const ConfirmCard = ({ eventId, userId }: Props) => {
           },
           modal: {
             ondismiss: function () {
-              console.log("Payment modal dismissed");
               // Reset loading state
               dispatch({ type: "payment/resetPaymentStatus" });
             },
@@ -210,14 +200,14 @@ const ConfirmCard = ({ eventId, userId }: Props) => {
 
           rzp.open();
         } catch (e) {
-          console.log(e);
+console.log(e);
 
           alert("Failed to open payment window. Please try again.");
           dispatch({ type: "payment/resetPaymentStatus" });
         }
       })
       .catch((e) => {
-        console.log(e);
+console.log(e);
 
         alert("Failed to initialize payment. Please try again.");
         dispatch({ type: "payment/resetPaymentStatus" });

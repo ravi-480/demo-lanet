@@ -11,7 +11,6 @@ import {
 } from "@/Interface/interface";
 import { toast } from "sonner";
 
-
 const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
@@ -36,8 +35,6 @@ const makeAuthRequest = async (
   url: string,
   data: unknown
 ): Promise<ApiResponse> => {
-  console.log(data);
-
   try {
     const response = await axios.post(`/auth/${url}`, data, {
       withCredentials: true,

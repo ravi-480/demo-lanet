@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { AppDispatch } from "@/store/store";
-import { createEvent, fetchById, fetchEvents } from "@/store/eventSlice";
+import { createEvent, fetchEvents } from "@/store/eventSlice";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import EventForm from "@/app/Components/Form/EventForm";
@@ -27,7 +27,7 @@ const CreateEventPage = () => {
             tab: "all",
             search: "",
             date: "",
-            location: "", 
+            location: "",
           })
         );
         router.push("/events");

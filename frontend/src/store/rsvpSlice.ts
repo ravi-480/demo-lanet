@@ -98,14 +98,12 @@ export const fetchGuests = createAsyncThunk<
       // Return both the guest list and the total count
       return {
         guests: response.data.rsvpList || [],
-        totalCount:
-          response.data.totalCount || response.data.rsvpList?.length || 0,
+        totalCount: response.data.total || response.data.rsvpList?.length || 0,
         guestStats: {
           confirmed: response.data.confirmed || 0,
           pending: response.data.pending || 0,
           declined: response.data.declined || 0,
-          total:
-            response.data.totalCount || response.data.rsvpList?.length || 0,
+          total: response.data.total || response.data.rsvpList?.length || 0,
         },
       };
     } catch (error: unknown) {
@@ -303,8 +301,6 @@ const rsvpSlice = createSlice({
       .addCase(
         fetchGuests.fulfilled,
         (state, action: PayloadAction<GuestResponse>) => {
-          console.log(action);
-
           state.rsvpData = action.payload.guests;
           state.totalCount = action.payload.totalCount;
           state.guestStats = action.payload.guestStats;
@@ -417,8 +413,6 @@ const rsvpSlice = createSlice({
           (action.payload as string) || "Failed to remove all guests";
       })
       .addCase(fetchGuestStats.fulfilled, (state, action) => {
-        console.log(action);
-
         state.guestStats = action.payload;
       });
   },

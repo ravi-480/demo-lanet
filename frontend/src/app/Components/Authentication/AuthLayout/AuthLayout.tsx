@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect } from "react";
+import { ReactNode } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import eventwise from "../../../../../public/images/eventwise.png";

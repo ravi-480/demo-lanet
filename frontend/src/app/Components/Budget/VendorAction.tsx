@@ -86,15 +86,20 @@ const VendorActions = ({ item, onRemove }: VendorActionsProps) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem
+            disabled={item.status === "accepted"} // disable if already accepted
             onClick={() => {
-              setTimeout(() => {
-                setIsMailDialogOpen(true);
-              });
+              if (item.status !== "accepted") {
+                setTimeout(() => {
+                  setIsMailDialogOpen(true);
+                });
+              }
             }}
           >
-            Send Mail
+            {item.status === "accepted" ? "Already Booked" : "Book Request"}
           </DropdownMenuItem>
+
           <DropdownMenuSeparator />
+
           <DropdownMenuItem
             className="text-red-600"
             onClick={() => onRemove(item._id as string)}
