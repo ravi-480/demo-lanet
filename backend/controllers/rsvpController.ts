@@ -259,11 +259,15 @@ export const inviteAllGuest = asyncHandler(
   async (req: Request, res: Response) => {
     const guestData = req.body;
 
-    if (!guestData || !Array.isArray(guestData) || guestData.length === 0) {
+    if (
+      !guestData ||
+      !Array.isArray(guestData.pendingGuests) ||
+      guestData.length === 0
+    ) {
       throw new ApiError(400, "No guest data provided");
     }
 
-    const eventId = guestData[0].eventId;
+    const eventId = guestData.pendingGuests[0].eventId;
 
     if (!validateIdFormat(eventId)) {
       throw new ApiError(400, "Invalid Event ID");
@@ -275,7 +279,7 @@ export const inviteAllGuest = asyncHandler(
         throw new ApiError(404, "Event not found");
       }
 
-      await GuestService.sendEmailToGuests(guestData, event);
+      const ans = await GuestService.sendEmailToGuests(guestData.pendingGuests, event);
 
       return res.status(200).json({
         success: true,
@@ -363,8 +367,7 @@ export const responseInvite = asyncHandler(
   }
 );
 
-
- // Send reminder email to guest
+// Send reminder email to guest
 export const sendReminder = asyncHandler(
   async (req: Request, res: Response) => {
     const { eventId, name, email, _id: guestId } = req.body;

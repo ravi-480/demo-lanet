@@ -35,6 +35,7 @@ export const sendEmail = async (options: EmailOptions): Promise<void> => {
     await transporter.sendMail(mailOptions);
     console.log(` Email sent successfully to ${options.to}`);
   } catch (error) {
+    console.log(error);
     throw new ApiError(500, "Failed to send email");
   }
 };

@@ -170,7 +170,7 @@ export const forgotPassword = async (email: string): Promise<void> => {
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
     await user.save();
-
+console.log(error)
     throw new ApiError(500, "Failed to send password reset email");
   }
 };
